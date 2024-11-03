@@ -9,6 +9,28 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
 {
     public InstructorInfoRepository(AppDbContext appDbContext) : base(appDbContext) { }
 
+    public async Task<InstructorInfo?> GetInstructorInfoById(Guid instructorId, 
+        string semester,
+        string academicYear,
+        bool shouldTrack = false, 
+        CancellationToken cancellationToken = default)
+    {
+        return await (shouldTrack ?
+            GetAll()
+            .Include(x => x.User)
+            .Include(x => x.Department)
+            .Include(x => x.Section)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(x => x.Id == instructorId, cancellationToken) :
+            GetAll()
+            .Include(x => x.User)
+            .Include(x => x.Department)
+            .Include(x => x.Section)
+            .AsSplitQuery()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == instructorId, cancellationToken));
+    }
+
     public async Task<List<InstructorInfo>?> GetList(bool includePlaceholder, 
         bool shouldTrack = false, 
         CancellationToken cancellation = default)

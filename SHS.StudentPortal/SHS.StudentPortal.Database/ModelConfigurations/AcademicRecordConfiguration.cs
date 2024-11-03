@@ -36,5 +36,11 @@ public class AcademicRecordConfiguration : IEntityTypeConfiguration<AcademicReco
             .WithMany(x => x.AcademicRecords)
             .HasForeignKey(x => x.SubjectId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Property(x => x.Semester)
+            .IsRequired();
+
+        builder.Property(x => x.AcademicYear)
+            .IsRequired();
     }
 }

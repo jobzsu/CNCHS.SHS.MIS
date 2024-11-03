@@ -86,26 +86,39 @@
 @section Scripts {
     <script type="text/javascript">
         var detailsModal;
+        var isLoading = false;
 
         function viewInstructorInfo(id) {
-            $.ajax({
-                url: `/Instructors/${id}`,
-                type: 'GET',
-                success: function (data) {
-                    $('#modalPlaceholder').html(data);
-                    detailsModal = new bootstrap.Modal(document.getElementById('instructorInfoDetailsModal'), {
-                        keyboard: false,
-                        backdrop: 'static'
-                    });
-                    detailsModal.show();
-                },
-                error: () => {
-                    Toast.fire({
-                        icon: "warning",
-                        title: "Error retrieving Instructor info details"
-                    });
-                }
-            });
+            if(isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page Loading"
+                });
+            } else {
+                isLoading = true;
+
+                $.ajax({
+                    url: `/Instructors/${id}`,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#modalPlaceholder').html(data);
+                        detailsModal = new bootstrap.Modal(document.getElementById('instructorInfoDetailsModal'), {
+                            keyboard: false,
+                            backdrop: 'static'
+                        });
+                        detailsModal.show();
+                    },
+                    error: () => {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Error retrieving Instructor Info"
+                        });
+                    },
+                    complete: () => {
+                        isLoading = false;
+                    }
+                });
+            }
         }
     </script>
 }

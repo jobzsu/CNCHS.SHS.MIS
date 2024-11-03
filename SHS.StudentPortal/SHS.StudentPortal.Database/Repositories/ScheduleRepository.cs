@@ -115,6 +115,36 @@ public class ScheduleRepository : BaseRepository<Schedule>, IScheduleRepository
             .FirstOrDefaultAsync(cancellationToken));
     }
 
+    public async Task<List<Schedule>?> GetSchedulesByInstructorIdSemesterAcademicYear(Guid instructorId, 
+        string semester,
+        string academicYear,
+        bool shouldTrack = false, 
+        CancellationToken cancellationToken = default)
+    {
+        return await (shouldTrack ?
+            GetAll()
+            .Include(x => x.Subject)
+            .Include(x => x.StudentSchedules)
+            .ThenInclude(x => x.Student)
+            .ThenInclude(x => x.AcademicRecords)
+            .AsSplitQuery()
+            .Where(x => x.InstructorId == instructorId &&
+                        x.Subject.Semester == semester &&
+                        x.Subject.AcademicYear == academicYear)
+            .ToListAsync(cancellationToken) :
+            GetAll()
+            .AsNoTracking()
+            .Include(x => x.Subject)
+            .Include(x => x.StudentSchedules)
+            .ThenInclude(x => x.Student)
+            .ThenInclude(x => x.AcademicRecords)
+            .AsSplitQuery()
+            .Where(x => x.InstructorId == instructorId &&
+                        x.Subject.Semester == semester &&
+                        x.Subject.AcademicYear == academicYear)
+            .ToListAsync(cancellationToken));
+    }
+
     public async Task<List<Schedule>?> GetSchedulesForStudentEnrollment(string track, 
         string strand, 
         string currentSemester, 

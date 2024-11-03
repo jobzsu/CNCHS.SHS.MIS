@@ -11,4 +11,10 @@ public interface IInstructorInfoRepository
     Task<List<InstructorInfo>?> GetList(bool includePlaceholder,
         bool shouldTrack = false,
         CancellationToken cancellationToken = default);
+
+    Task<InstructorInfo?> GetInstructorInfoById(Guid instructorId,
+        string semester,
+        string academicYear,
+        bool shouldTrack = false,
+        CancellationToken cancellationToken = default);
 }

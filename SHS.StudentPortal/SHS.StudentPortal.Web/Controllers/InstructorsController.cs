@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SHS.StudentPortal.App.Queries;
 
 namespace SHS.StudentPortal.Web.Controllers;
 
@@ -18,8 +19,18 @@ public class InstructorsController : Controller
     {
         try
         {
+            var query = new GetInstructorViewModel(id);
 
-            return PartialView();
+            var result = Task.Run(() => _sender.Send(query)).Result;
+
+            if (result.IsSuccess)
+            {
+                return PartialView(result.Data);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
         catch (Exception)
         {

@@ -16,6 +16,10 @@ public class AcademicRecord : BaseModel<long>, IAuditable
     [NotMapped]
     public Subject Subject { get; set; }
 
+    public string Semester { get; set; }
+
+    public string AcademicYear { get; set; }
+
     #region > IAuditable Properties
     public Guid? CreatedById { get; set; }
 

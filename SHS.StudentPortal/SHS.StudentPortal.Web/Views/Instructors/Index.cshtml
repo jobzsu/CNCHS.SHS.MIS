@@ -1,7 +1,5 @@
-﻿
-@{
-    ViewData["Title"] = "Instructor Detail";
-}
+﻿@using SHS.StudentPortal.Common.Models
+@model InstructorViewModel
 
 <div class="modal fade" id="instructorInfoDetailsModal" tabindex="-1">
     <div class="modal-dialog modal-xl" role="document">
@@ -14,19 +12,22 @@
                     <h5 class="card-title">Employee Information</h5>
                     <hr />
                     <div class="row gx-3 gy-3">
-                        <div class="col-lg-4 col-12">
+                        <div class="col-lg-3 col-12">
                             <label>Employee Id</label>
-                            <input type="text" class="form-control" value="1000"  disabled/>
+                            <input type="text" class="form-control" asp-for="@Model.EmployeeId" disabled/>
                         </div>
-                        <div class="col-lg-4 col-12">
+                        <div class="col-lg-3 col-12">
                             <label>Major</label>
-                            <input type="text" class="form-control" value="Computer Science" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.Major" disabled />
                         </div>
-                        <div class="col-lg-4 col-12">
+                        <div class="col-lg-3 col-12">
                             <label>Department</label>
-                            <select class="form-select" disabled>
-                                <option selected value="pending">ICT</option>
+                            <select class="form-select" asp-for="@Model.DepartmentId" asp-items="@(new SelectList(Model.DepartmentList, "Key", "Value"))" disabled>
                             </select>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Advisory</label>
+                            <input type="text" class="form-control" asp-for="@Model.AdvisorySection" disabled />
                         </div>
                     </div>
                     <h5 class="card-title mt-3">Personal Information</h5>
@@ -34,22 +35,22 @@
                     <div class="row gx-3 gy-3">
                         <div class="col-lg-3 col-12">
                             <label>First Name</label>
-                            <input type="text" class="form-control" value="John" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.FirstName" disabled />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Middle Name</label>
-                            <input type="text" class="form-control" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.MiddleName"  disabled  />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Last Name</label>
-                            <input type="text" class="form-control" value="Doe" disabled  />
+                            <input type="text" class="form-control" asp-for="@Model.LastName" disabled   />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Contact Information</label>
-                            <input type="text" class="form-control" value="+63 912 345 6789" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.ContactInfo" disabled  />
                         </div>
                     </div>
-                    <h5 class="card-title mt-3">Sections Assigned</h5>
+                    <h5 class="card-title mt-3">Assigned Schedules</h5>
                     <hr />
                     <div class="row gx-3 gy-3">
                         <div class="col-lg-4">
@@ -62,32 +63,37 @@
                             <table class="table table-striped table-hover text-center">
                                 <thead>
                                     <tr>
-                                        <th scope="col">Section</th>
+                                        <th scope="col">Subject</th>
+                                        <th scope="col">Day</th>
+                                        <th scope="col">Time</th>
+                                        <th scope="col">Room No.</th>
                                         <th scope="col">Grades Submitted</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <th colspan="5"><h3>No Records Found</h3></th>
-                                    </tr>
-                                    @* else
+                                    @if(Model.Schedules.Count() == 0)
                                     {
-                                        foreach (var sched in Model.CurrentSchedules.Schedules)
+                                        <tr>
+                                            <th colspan="5"><h3>No Schedules Found</h3></th>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        foreach (var sched in Model.Schedules)
                                         {
                                             <tr>
                                                 <td>@sched.Days</td>
                                                 <td>@sched.Subject</td>
-                                                <td>@sched.Instructor</td>
                                                 <td>@sched.Time</td>
                                                 <td>@sched.RoomNumber</td>
+                                                <td>@sched.GradesSubmitted</td>
                                             </tr>
                                         }
-                                    } *@
+                                    }
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                    @* <button type="submit" class="btn btn-primary float-end">Submit</button> *@
                 </form>
             </div>
             <div class="modal-footer">
