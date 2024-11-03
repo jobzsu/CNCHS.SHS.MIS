@@ -14,4 +14,24 @@ public class DepartmentRepository : BaseRepository<Department>, IDepartmentRepos
             await GetAll().ToListAsync(cancellationToken) :
             await GetAll().AsNoTracking().ToListAsync(cancellationToken);
     }
+
+    public async Task<List<Department>?> GetListViaFilter(string? searchKeyword, 
+        bool shouldTrack = false, 
+        CancellationToken cancellationToken = default)
+    {
+        return await (shouldTrack ?
+            GetAll()
+            .Include(x => x.Instructors)
+            .AsSplitQuery()
+            .Where(x => string.IsNullOrWhiteSpace(searchKeyword) ?
+                true : x.Name.ToLower().Contains(searchKeyword))
+            .ToListAsync(cancellationToken) :
+            GetAll()
+            .Include(x => x.Instructors)
+            .AsSplitQuery()
+            .AsNoTracking()
+            .Where(x => string.IsNullOrWhiteSpace(searchKeyword) ?
+                true : x.Name.ToLower().Contains(searchKeyword))
+            .ToListAsync(cancellationToken));
+    }
 }

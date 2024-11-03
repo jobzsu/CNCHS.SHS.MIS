@@ -6,6 +6,7 @@ using SHS.StudentPortal.App.Commands;
 using SHS.StudentPortal.App.Queries;
 using SHS.StudentPortal.Common.Models;
 using SHS.StudentPortal.Common.Utilities.Models;
+using SHS.StudentPortal.Domain.Models;
 using SHS.StudentPortal.Web.Models;
 using System.Diagnostics;
 
@@ -54,7 +55,7 @@ public class HomeController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,instructor")]
     public IActionResult Students(string? searchKeyword,
         int yearLevel,
         string? sectionId,
@@ -121,6 +122,31 @@ public class HomeController : Controller
                 pageNumber);
 
         var query = new GetPaginatedInstructorListQuery(instructorListPaginationFilter);
+
+        var result = Task.Run(() => _sender.Send(query)).Result;
+
+        if (result.IsSuccess)
+            return View(result.Data);
+        else
+        {
+            ViewData["ErrorMessage"] = result.Error!.Message;
+
+            return RedirectToAction("Error");
+        }
+    }
+
+    [Authorize(Roles = "admin")]
+    public IActionResult Departments(string? searchKeyword,
+        int pageNumber = 1)
+    {
+        ViewData["ActiveMenu"] = "departmentsMenu";
+
+        ViewData["SearchKeyword"] = searchKeyword;
+
+        var departmentListPaginationFilter = DepartmentPaginationFilter
+            .NewDepartmentListSearch(searchKeyword, pageNumber);
+
+        var query = new GetPaginatedDepartmentListQuery(departmentListPaginationFilter);
 
         var result = Task.Run(() => _sender.Send(query)).Result;
 
