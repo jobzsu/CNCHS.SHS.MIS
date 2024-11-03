@@ -1,0 +1,103 @@
+﻿@using SHS.StudentPortal.Common.Models
+@model LoginViewModel;
+@{
+    Layout = null;
+    ViewData["Title"] = "Login";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CNCHS SHS Student Portal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/SHS.StudentPortal.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-3 mt-5">
+                <div class="card">
+                    <div class="card-header">Login</div>
+                    <div class="card-body">
+                        <form asp-controller="Account" asp-action="Login" method="post" asp-route-returnurl="@ViewData["ReturnUrl"]">
+                            <div>
+                                @if (ViewData["UserLoginFailed"] != null)
+                                {
+                                    <p class="text-danger">@ViewData["UserLoginFailed"]</p>
+                                }
+                            </div>
+                            <div class="form-group mb-3">
+                                <div class="dropdown">
+                                    <select id="userAccountTypeSelect" class="form-select" asp-for="@Model.UserAccountType">
+                                        <option value="admin">Admin</option>
+                                        <option value="instructor">Instructor</option>
+                                        <option value="student">Student</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="@Model.UserAccountType" class="text-danger"></span>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label asp-for="@Model.UserName">Username</label>
+                                <input asp-for="@Model.UserName" class="form-control" />
+                                <span asp-validation-for="@Model.UserName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label asp-for="@Model.Password">Password</label>
+                                <input type="password" asp-for="@Model.Password" class="form-control" />
+                                <span asp-validation-for="@Model.Password" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="float-end">
+                                <button id="registerBtn" type="button" class="btn btn-secondary">Register</button>
+                                <button type="submit" class="btn btn-primary">Login</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/sweetalert2/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        document.getElementById("registerBtn").onclick = function () {
+            window.location.href = '@Url.Action("Register", "Account")';
+        };
+        document.getElementById("userAccountTypeSelect").addEventListener("change", (event) => {
+            console.log(event.target.value);
+            if (event.target.value != "student") {
+                document.getElementById("registerBtn").setAttribute("hidden", true);
+            } else {
+                document.getElementById("registerBtn").removeAttribute("hidden");
+            }
+        });
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+        if ('@(TempData["SpecialMessage"])' != '') {
+            Toast.fire({
+                icon: 'info',
+                title: '@(TempData["SpecialMessage"])'
+            });
+        }
+        if ('@(TempData["RegisterStudentFailed"])' != '') {
+            Toast.fire({
+                icon: 'warning',
+                title: '@(TempData["RegisterStudentFailed"])'
+            });
+        }
+    </script>
+</body>
+</html>

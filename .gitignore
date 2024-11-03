@@ -396,3 +396,10 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Docker volumes for dev env
+/SHS.StudentPortal/DockerVolume
+
+# ASP.NET Core web app publish output
+wwwroot/
+!wwwroot/**/*.json

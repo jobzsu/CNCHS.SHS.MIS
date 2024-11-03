@@ -1,0 +1,342 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CNCHS SHS Student Portal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SHS.StudentPortal.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Navbar header -->
+    <nav class="navbar fixed-top navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="javascript:void(0)">
+                <img src="~/cnchs_logo_white_bg.jfif" alt="" width="37" height="34" class="d-inline-block align-text-middle">
+                Cabatuan National Comprehensive High School
+            </a>
+            <div class="d-flex">
+                <div class="dropdown">
+                    <a class="dropdown-toggle"
+                       href="javascript:void(0)"
+                       role="button"
+                       id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false"
+                       style="text-decoration: none; color: black;">
+                        Welcome, @(User.Claims?.FirstOrDefault(x => x.Type == "FullName")?.Value.ToString() ?? "")
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="openProfileModal()">Personal Info</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="openUpdatePasswordModal()">Update Password</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("Logout", "Account")">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar + Main content -->
+    <div class="container-fluid" style="margin-top:62px;">
+        <div class="row" id="sidebarMainContent">
+            <!-- Sidebar -->
+            <div class="d-flex flex-column flex-shrink-0 p-3 col-2" style="background-color: #e3f2fd">
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a id="studentsMenu" class="nav-link link-dark" asp-controller="Home" asp-action="Students">
+                            <i class="bi bi-people me-2"></i>
+                            Students
+                        </a>
+                    </li>
+                    <li>
+                        <a id="instructorsMenu" class="nav-link link-dark" asp-controller="Home" asp-action="Instructors">
+                            <i class="bi bi-person-badge me-2"></i>
+                            Instructors
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link link-dark">
+                            <i class="bi bi-buildings me-2"></i>
+                            Departments
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link link-dark">
+                            <i class="bi bi-journals me-2"></i>
+                            Track and Strand
+                        </a>
+                    </li>
+                    <li>
+                        <a id="schedulesMenu" class="nav-link link-dark" asp-controller="Home" asp-action="Schedules">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            Schedules
+                        </a>
+                    </li>   
+                    <li>
+                        <a href="#" class="nav-link link-dark">
+                            <i class="bi bi-building-gear me-2"></i>
+                            System Settings
+                        </a>
+                    </li>
+                </ul>
+                <hr>
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a id="aboutUsMenu" class="nav-link link-dark" aria-current="page" asp-controller="Home" asp-action="AboutUs">
+                            <i class="bi bi-info-circle"></i>
+                            About Us
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="contactUsMenu" class="nav-link link-dark" aria-current="page" asp-controller="Home" asp-action="ContactUs">
+                            <i class="bi bi-telephone"></i>
+                            Contact Us
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- Main Content -->
+            <main class="container-fluid col-10">
+                @RenderBody()
+            </main>
+
+            <!-- Personal Info Modal -->
+            <div class="modal fade" id="personalInfoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Personal Information</h5>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="row gx-3 gy-3">
+                                    <div class="col-12">
+                                        <label>First Name</label>
+                                        <input id="updateProfileFirstName" type="text" class="form-control" required value="@User.Claims!.FirstOrDefault(x => x.Type == "FirstName")!.Value.ToString()" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Middle Name</label>
+                                        <input id="updateProfileMiddleName" type="text" class="form-control" value="@User.Claims!.FirstOrDefault(x => x.Type == "MiddleName")!.Value.ToString()" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Last Name</label>
+                                        <input id="updateProfileLastName" type="text" class="form-control" required value="@User.Claims!.FirstOrDefault(x => x.Type == "LastName")!.Value.ToString()" />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary float-end" tabindex="-1" onclick="updatePersonalInfo()">Save</button>
+                            <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal" tabindex="-1">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Password Modal -->
+            <div class="modal fade" id="updatePasswordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Update Password</h5>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="row gx-3 gy-3">
+                                    <div class="col-12">
+                                        <label>New Password</label>
+                                        <input id="updatePasswordNewPassword" type="password" class="form-control" required minlength="6" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Confirm New Password</label>
+                                        <input id="updatePasswordConfirmNewPassword" type="password" class="form-control" required minlength="6" />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary float-end" tabindex="-1" onclick="updatePassword()">Save</button>
+                            <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal" tabindex="-1">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/sweetalert2/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        var activeMenu = document.getElementById('@(ViewData["ActiveMenu"])');
+        if (activeMenu) {
+            activeMenu.classList.add('active');
+        }
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+
+        var isLoading = false;
+
+        function openProfileModal() {
+            $('#personalInfoModal').modal('show');
+        }
+
+        function updatePersonalInfo() {
+            if(isLoading) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please is loading'
+                })
+                return;
+            } else {
+                let firstName = document.getElementById('updateProfileFirstName').value;
+                let middleName = document.getElementById('updateProfileMiddleName').value;
+                let lastName = document.getElementById('updateProfileLastName').value;
+
+                if(firstName == '' || lastName == '') {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Please enter First and Last name'
+                    })
+                    return;
+                } else {
+                    isLoading = true;
+                    let isSuccess = false;
+                    let errorMssg = '';
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/Account/UpdatePersonalInfo',
+                        data: {
+                            FirstName: firstName,
+                            MiddleName: middleName,
+                            LastName: lastName
+                        },
+                        success: function (result) { 
+                            isSuccess = result.IsSuccess;
+                            if(!isSuccess) errorMssg = result.Message;
+                        },
+                        error: function(error) {
+                            errorMssg = "An error occurred while updating Personal Information.";
+                        },
+                        complete: function() {
+                            isLoading = false;
+
+                            if(isSuccess) {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Personal Information Updated - Logging out in a few seconds'
+                                })
+
+                                $('#personalInfoModal').modal('hide');
+
+                                setTimeout(() => {
+                                    window.location = '/Account/Logout';
+                                }, 5000);
+                            } else {
+                                Toast.fire({
+                                    icon: 'warning',
+                                    title: errorMssg
+                                })
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        function openUpdatePasswordModal() {
+            $('#updatePasswordModal').modal('show');
+        }
+
+        function updatePassword() {
+            if(isLoading) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please is loading'
+                })
+                return;
+            } else {
+                let newPassword = document.getElementById('updatePasswordNewPassword').value;
+                let confirmNewPassword = document.getElementById('updatePasswordConfirmNewPassword').value;
+                let strongPasswordRegex = @Html.Raw("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@.#$!%*?&^])[A-Za-z\\d@.#$!%*?&]{8,15}$/");
+
+                if(newPassword == '' || confirmNewPassword == '') {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Please enter New Password and Confirm New Password'
+                    })
+                    return;
+                } else if (!strongPasswordRegex.test(newPassword)) {
+                    Toast.fire({
+                        timer: 5000,
+                        icon: 'warning',
+                        title: 'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.'
+                    })
+                    return;
+                } else if (newPassword != confirmNewPassword) {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'New Password and Confirm New Password do not match'
+                    })
+                    return;
+                } else {
+                    isLoading = true;
+                    let isSuccess = false;
+                    let errorMssg = '';
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/Account/UpdatePassword',
+                        data: {
+                            newPassword: newPassword
+                        },
+                        success: function (result) { 
+                            isSuccess = result.IsSuccess;
+                            if(!isSuccess) errorMssg = result.Message;
+                        },
+                        error: function(error) {
+                            errorMssg = "An error occurred while updating Password.";
+                        },
+                        complete: function() {
+                            isLoading = false;
+
+                            if(isSuccess) {
+                                Toast.fire({
+                                    timer: 5000,
+                                    icon: 'success',
+                                    title: 'Password Updated - Logging out in a few seconds'
+                                });
+
+                                $('#updatePasswordModal').modal('hide');
+
+                                setTimeout(() => {
+                                    window.location = '/Account/Logout';
+                                }, 5000);
+                            } else {
+                                Toast.fire({
+                                    icon: 'warning',
+                                    title: errorMssg
+                                })
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+    @await RenderSectionAsync("PartialScripts", required: false)
+</body>
+</html>

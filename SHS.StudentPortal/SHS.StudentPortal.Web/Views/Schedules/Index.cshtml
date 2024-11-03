@@ -1,0 +1,97 @@
+﻿@using SHS.StudentPortal.Common.Models
+@model ViewScheduleViewModel
+
+<!-- Modal -->
+<div class="modal fade" id="viewScheduleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">View Schedule</h5>
+            </div>
+            <div class="modal-body">
+                <form id="viewSchedForm">
+                    <input id="viewSchedIdHiddenInput" type="hidden" asp-for="@Model.Id" />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-4 col-12">
+                            <label>Subject</label>
+                            <select id="schedSubject" class="form-select" asp-for="@Model.SubjectId" asp-items="@(new SelectList(Model.SubjectList, "Key", "Value"))">
+                                <option value="">-- Select Subject --</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Instructor</label>
+                            <select id="schedInstructor" class="form-select" asp-for="@Model.InstructorId" asp-items="@(new SelectList(Model.InstructorList, "Key", "Value"))">
+                                <option value="">-- Select Instructor --</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Room</label>
+                            <input id="schedRoom" type="text" class="form-control" required asp-for="@Model.Room" />
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Day(s)</label>
+                            <div class="dropdown">
+                                <button id="viewSchedSelectBtn" class="btn btn-outline-primary dropdown-toggle" style="min-width: 100%;" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                    -- Select Days --
+                                </button>
+                                <input id="viewSchedSelectedDaysHiddenInput" type="hidden" asp-for="@Model.Days" />
+                                <ul id="viewSchedDaysList" class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li>
+                                        <label class="dropdown-item"><input type="checkbox" value="M" /> Monday</label>
+                                    </li>
+                                    <li>
+                                        <label class="dropdown-item"><input type="checkbox" value="TU" /> Tuesday</label>
+                                    </li>
+                                    <li>
+                                        <label class="dropdown-item"><input type="checkbox" value="W" /> Wednesday</label>
+                                    </li>
+                                    <li>
+                                        <label class="dropdown-item"><input type="checkbox" value="TH" /> Thursday</label>
+                                    </li>
+                                    <li>
+                                        <label class="dropdown-item"><input type="checkbox" value="F" /> Friday</label>
+                                    </li>
+                                    <li>
+                                        <label class="dropdown-item"><input type="checkbox" value="S" /> Saturday</label>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Time Start</label>
+                            <div class="input-group">
+                                <input id="timeStartHour" type="number" class="form-control" asp-for="@Model.TimeStartHour" />
+                                <span class="input-group-text" style="background-color: #fff; font-weight: bold;">:</span>
+                                <input id="timeStartMin" type="number" class="form-control" asp-for="@Model.TimeStartMinute" />
+                                <select id="timeStartAMPM" class="form-select" style="max-width: 90px;" asp-for="@Model.TimeStartAMPM">
+                                    <option value="am">AM</option>
+                                    <option value="pm">PM</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Time End</label>
+                            <div class="input-group">
+                                <input id="timeEndHour" type="number" class="form-control" asp-for="@Model.TimeEndHour" />
+                                <span class="input-group-text" style="background-color: #fff; font-weight: bold;">:</span>
+                                <input id="timeEndMin" type="number" class="form-control" asp-for="@Model.TimeEndMinute" />
+                                <select id="timeEndAMPM" class="form-select" style="max-width: 90px;" asp-for="@Model.TimeEndAMPM">
+                                    <option value="am">AM</option>
+                                    <option value="pm">PM</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label>Remarks</label>
+                            <input id="schedRemarks" type="text" class="form-control" asp-for="@Model.Remarks" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary float-end" tabindex="-1" onclick="updateSchedule()">Save</button>
+                <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal" tabindex="-1">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

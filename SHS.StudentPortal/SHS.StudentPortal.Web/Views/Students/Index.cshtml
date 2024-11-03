@@ -1,0 +1,280 @@
+﻿@using SHS.StudentPortal.Common.Models
+@model StudentInfoForAdminViewingViewModel
+
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">STUDENT @(Model.StudentIdNum)</h5>
+            </div>
+            <div class="modal-body">
+                <form class="mt-2" asp-controller="Account" asp-action="Register" method="post">
+                    <h5 class="card-title">Academic Information</h5>
+                    <hr />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-3 col-12">
+                            <label>Id No.</label>
+                            <input type="text" class="form-control" value="@(Model.Status == "REGULAR" || Model.Status == "IRREGULAR" ? Model.StudentIdNum : "TBA")" disabled/>
+                            <span class="text-danger" asp-validation-for="@Model.StudentIdNum"></span>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Status</label>
+                            <select class="form-select" asp-for="@Model.Status" asp-items="@(new SelectList(StudentStatuses.AllStatusList, "Id", "Name"))" disabled>
+                            </select>
+                            <span class="text-danger" asp-validation-for="@Model.Status"></span>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Year Level</label>
+                            <select class="form-select" asp-for="@Model.YearLevel" disabled>
+                                <option value="11" selected>Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                            <span class="text-danger" asp-validation-for="@Model.YearLevel"></span>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Section</label>
+                            <select class="form-select" asp-for="@Model.SectionId" asp-items="@(new SelectList(Model.SectionList, "Key", "Value"))" disabled>
+                            </select>
+                            <span class="text-danger" asp-validation-for="@Model.SectionId"></span>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Track</label>
+                            <select class="form-select" asp-for="@Model.Track" asp-items="@(new SelectList(Track.GetAllTracks, "Id", "Name"))" disabled>
+                            </select>
+                            <span class="text-danger" asp-validation-for="@Model.Track"></span>
+                        </div>
+                        <div class="col-lg-6 col-12">
+                            <label>Strand</label>
+                            <select class="form-select" asp-for="@Model.Strand" asp-items="@(new SelectList(Strand.GetAllStrandsIncludePlaceholder, "Id", "Name"))" disabled>
+                            </select>
+                            <span class="text-danger" asp-validation-for="@Model.Track"></span>
+                        </div>
+                        <div class="col-lg-2 col-12">
+                            @if(Model.Status == "ASSESSMENT" || Model.Status == "ENROLLMENT")
+                            {
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary form-control" type="button" onclick="openPrevAcademicRecordModal()">Assess Records</button>
+                            }
+                        </div>
+                    </div>
+                    <h5 class="card-title mt-3">Login Information</h5>
+                    <hr />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-4 col-12">
+                            <label>Username</label>
+                            <input type="text" class="form-control" asp-for="@Model.Username" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.Username"></span>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Last Login</label>
+                            <input type="text" class="form-control" asp-for="@Model.LastLogin" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.LastLogin"></span>
+                        </div>
+                        @if(Model.Status != "PENDING")
+                        {
+                            <div class="col-lg-2 col-12" >
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary form-control" type="button" onclick="openUpdatePasswordModal()">Update Password</button>
+                            </div>
+                        }
+                    </div>
+                    <h5 class="card-title mt-3">Personal Information</h5>
+                    <hr />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-4 col-12">
+                            <label>First Name</label>
+                            <input type="text" class="form-control" asp-for="@Model.FirstName" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.FirstName"></span>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Middle Name</label>
+                            <input type="text" class="form-control" asp-for="@Model.MiddleName" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.MiddleName"></span>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Last Name</label>
+                            <input type="text" class="form-control" asp-for="@Model.LastName" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.LastName"></span>
+                        </div>
+                        <div class="col-lg-2 col-12">
+                            <label>Gender</label>
+                            <select class="form-select" asp-for="@Model.Gender" disabled>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                            <span class="text-danger" asp-validation-for="@Model.Gender"></span>
+                        </div>
+                        <div class="col-lg-2 col-12">
+                            <label>Date Of Birth</label>
+                            <input type="date" class="form-control" asp-for="@Model.DateOfBirth" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.DateOfBirth"></span>
+                        </div>
+                        <div class="col-lg-8 col-12">
+                            <label>Place Of Birth</label>
+                            <input type="text" class="form-control" asp-for="@Model.PlaceOfBirth" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.PlaceOfBirth"></span>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Civil Status</label>
+                            <select class="form-select" asp-for="@Model.CivilStatus" disabled>
+                                <option value="single">Single</option>
+                                <option value="married">Married</option>
+                                <option value="widowed">Widowed</option>
+                                <option value="legallySeparated">Legally Separated</option>
+                            </select>
+                            <span class="text-danger" asp-validation-for="@Model.CivilStatus"></span>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Nationality</label>
+                            <input type="text" class="form-control" asp-for="@Model.Nationality" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.Nationality"></span>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Religion</label>
+                            <input type="text" class="form-control" asp-for="@Model.Religion" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.Religion"></span>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Contact Info</label>
+                            <input type="text" class="form-control" asp-for="@Model.ContactInfo" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.ContactInfo"></span>
+                        </div>
+                        <div class="col-12">
+                            <label>Address</label>
+                            <input type="text" class="form-control" asp-for="@Model.Address" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.Address"></span>
+                        </div>
+                    </div>
+                    @if ((Model.Status == StudentStatuses.Regular.Id.ToUpper() || Model.Status == StudentStatuses.Irregular.Id.ToUpper()) && Model.CurrentSchedules is not null)
+                    {
+                        <h5 class="card-title mt-3">Schedule Information</h5>
+                        <hr />
+                        <div class="row gx-3 gy-3">
+                            <div class="col-lg-4">
+                                <h4>Semester: @(Model.CurrentSchedules.Semester)</h4>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4>Academic Year: @(Model.CurrentSchedules.AcademicYear)</h4>
+                            </div>
+                            <div class="col-12">
+                                <table class="table table-striped table-hover text-center">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Day</th>
+                                            <th scope="col">Subject</th>
+                                            <th scope="col">Instructor</th>
+                                            <th scope="col">Time</th>
+                                            <th scope="col">Room</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(Model.CurrentSchedules.Schedules.Count() == 0)
+                                        {
+                                            <tr>
+                                                <th colspan="5"><h3>No Records Found</h3></th>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            foreach(var sched in Model.CurrentSchedules.Schedules)
+                                            {
+                                                <tr>
+                                                    <td>@sched.Days</td>
+                                                    <td>@sched.Subject</td>
+                                                    <td>@sched.Instructor</td>
+                                                    <td>@sched.Time</td>
+                                                    <td>@sched.RoomNumber</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    @* <button type="submit" class="btn btn-primary float-end">Submit</button> *@
+                </form>
+            </div>
+            <div class="modal-footer">
+                @if(Model.Status == "PENDING")
+                {
+                    <button type="button" class="btn btn-primary" onclick="approveStudent('@Model.Id')" tabindex="-1">Approve</button>                    
+                }
+                @if(Model.Status == "ENROLLMENT")
+                {
+                    <button type="button" class="btn btn-primary" onclick="beginEnrollment('@Model.Id')" tabindex="-1">Enroll</button>
+                }
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="-1">@(Model.Status == "PENDING" ? "Cancel" : "Close")</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="prevAcademicRecordModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"  style="border-color: brown; border-width: 3px">
+            <div class="modal-header">
+                <h5 class="modal-title" id="prevAcademicRecordModalLabel">Previous Academic Records</h5>
+            </div>
+            <div class="modal-body">
+                <table id="prevAcadRecordListTable" class="table table-striped table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Subject Name</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Semester</th>
+                            <th scope="col">Academic Year</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prevAcadRecordListTableBody">
+                        @foreach (var par in Model.PreviousAcademicRecords)
+                        {
+                            <tr>
+                                <td>@par.SubjectName</td>
+                                <td>@par.Rating</td>
+                                <td>@par.Semester</td>
+                                <td>@par.AcademicYear</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary float-end" tabindex="-1" onclick="markStudentForEnrollment('@Model.Id', '@Model.Status')">Mark as Verified</button>
+                <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal" tabindex="-1">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update PW Modal -->
+<div class="modal fade" id="updatePasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content"  style="border-color: brown; border-width: 3px">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Student Password</h5>
+            </div>
+            <div class="modal-body">
+                <form id="updatePasswordForm">
+                    <div class="row gx-3 gy-3">
+                        <div class="col-12">
+                            <label>New Password</label>
+                            <input id="updatePasswordNewPassword" type="password" class="form-control" required minlength="6"/>
+                        </div>
+                        <div class="col-12">
+                            <label>Confirm New Password</label>
+                            <input id="updatePasswordConfirmNewPassword" type="password" class="form-control" required minlength="6"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="updatePasswordButton" class="btn btn-primary float-end" tabindex="-1" onclick="updateStudentPassword('@Model.Id')">Update</button>
+                <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal" tabindex="-1">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="enrollmentModalPlaceholder"></div>

@@ -1,0 +1,748 @@
+﻿@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities.Models
+@model SchedulePaginatedList
+
+@{
+    ViewData["Title"] = "Schedules";
+}
+
+<!-- Navbar Pagination -->
+<div class="mt-3">
+    <nav class="navbar navbar-light" style="background-color: #e3f2fd; border-radius: 5px">
+        <div class="container-fluid">
+            <form class="d-flex" asp-controller="Home" asp-action="Schedules" method="get">
+                <div class="dropdown">
+                    <button id="multiSelectDropdown" class="btn btn-outline-primary dropdown-toggle me-2" style="min-width: 150px; max-width: 150px;" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                        -- Select Days --
+                    </button>
+                    <input id="selectedDaysHiddenInput" type="hidden" name="selectedDays" asp-for="@ViewData["SelectedDays"]" />
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li>
+                            <label class="dropdown-item"><input type="checkbox" value="M" /> Monday</label>
+                        </li>
+                        <li>
+                            <label class="dropdown-item"><input type="checkbox" value="TU" /> Tuesday</label>
+                        </li>
+                        <li>
+                            <label class="dropdown-item"><input type="checkbox" value="W" /> Wednesday</label>
+                        </li>
+                        <li>
+                            <label class="dropdown-item"><input type="checkbox" value="TH" /> Thursday</label>
+                        </li>
+                        <li>
+                            <label class="dropdown-item"><input type="checkbox" value="F" /> Friday</label>
+                        </li>
+                        <li>
+                            <label class="dropdown-item"><input type="checkbox" value="S" /> Saturday</label>
+                        </li>
+                    </ul>
+                </div>
+                <select id="trackSelectList" class="form-select me-2" name="track" asp-for="@ViewData["Track"]" asp-items="@(new SelectList(Track.GetAllTracks, "Id", "Name"))" style="min-width: 250px; max-width: 250px">
+                    <option value="">-- Select Track --</option>
+                </select>
+                <select id="strandSelectList" class="form-select me-2" name="strand" asp-for="@ViewData["Strand"]" asp-items="@(new SelectList(Strand.GetAllStrandsIncludePlaceholder, "Id", "Name"))" style="min-width: 470px; max-width: 470px">
+                    <option value="">-- Select Strand --</option>
+                </select>
+                <button class="btn btn-outline-primary float-end me-2" type="submit">Search</button>
+                <a href="@Url.Action("Schedules", "Home")" class="btn btn-outline-success float-end">Reset</a>
+            </form>
+        </div>
+    </nav>
+</div>
+<div class="mt-2 row gx-3 gy-3">
+    <div class="col-6">
+        <p class="card-title">Displaying data for <b>@(Model.CurrentSemester) Semester - A.Y @(Model.CurrentAcademicYear)</b></p>
+        <button class="btn btn-outline-primary" type="button" onclick="getAddScheduleModel()">Add Schedule</button>
+    </div>
+    <div class="col-6">
+        <nav aria-label="Page navigation example" class="mt-3">
+            <ul class="pagination justify-content-end">
+                <li class="page-item @(Model.ScheduleList.HasPreviousPage ? " " : " disabled")">
+                    <a class="page-link link-dark"
+                       asp-action="Students"
+                       asp-route-searchKeyword="@ViewData["SearchKeyword"]"
+                       asp-route-studentType="@ViewData["StudentType"]"
+                       asp-route-yearLevel="@ViewData["YearLevel"]"
+                       asp-route-pageNumber="@(Model.ScheduleList.PageIndex + 1)">Previous</a>
+                </li>
+                @for (int i = 1; i <= Model.ScheduleList.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.ScheduleList.PageIndex ? "active" : "")">
+                        <a class="page-link link-dark"
+                            asp-action="Schedules"
+                            asp-route-searchKeyword="@ViewData["SearchKeyword"]"
+                            asp-route-studentType="@ViewData["StudentType"]"
+                            asp-route-yearLevel="@ViewData["YearLevel"]"
+                            asp-route-pageNumber="@i">
+                           @i
+                        </a>
+                    </li>
+                }
+                <li class="page-item @(Model.ScheduleList.HasNextPage ? "" : "disabled")">
+                <a class="page-link link-dark"
+                    asp-action="Students"
+                    asp-route-searchKeyword="@ViewData["SearchKeyword"]"
+                    asp-route-studentType="@ViewData["StudentType"]"
+                    asp-route-yearLevel="@ViewData["YearLevel"]"
+                    asp-route-pageNumber="@(Model.ScheduleList.PageIndex + 1)">
+                    Next
+                </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+<table class="table table-striped table-hover text-center">
+    <thead>
+        <tr>
+            <th scope="col">Day</th>
+            <th scope="col">Subject</th>
+            <th scope="col">Track & Strand</th>
+            <th scope="col">Instructor</th>
+            <th scope="col">Time</th>
+            <th scope="col">Room Number</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.ScheduleList.Count() == 0)
+        {
+            <tr>
+                <th colspan="7"><h3>No Records Found</h3></th>
+            </tr>
+        }
+        else
+        {
+            foreach (var sched in Model.ScheduleList.ToList())
+            {
+                <tr>
+                    <td>@sched.Days</td>
+                    <td>@sched.Subject</td>
+                    <td>@sched.TrackAndStrand</td>
+                    <td>@sched.Instructor</td>
+                    <td>@sched.Time</td>
+                    <td>@sched.RoomNumber</td>
+                    <td><button class="btn btn-sm btn-primary" id="viewScheduleInfo" onclick="viewSchedule(@sched.Id)">View</button></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<div id="addScheduleModalPlaceholder"></div>
+<div id="viewScheduleModalPlaceholder"></div>
+
+@section Scripts {
+    <script type="text/javascript">
+
+        var isLoading = false;
+
+        var daysDropdownBtn = document.getElementById('multiSelectDropdown');
+        var selectedCheckboxValues = [];
+        var daysCheckboxes = document.querySelectorAll('.dropdown-menu input[type="checkbox"]');
+        var selectedDaysHiddenInputValue = document.getElementById('selectedDaysHiddenInput').value;
+
+        if(selectedDaysHiddenInputValue != '') {
+            selectedCheckboxValues = selectedDaysHiddenInputValue.split(',');
+        }
+
+        daysCheckboxes.forEach((checkbox) => {
+
+            if(selectedDaysHiddenInputValue.includes(checkbox.value)) {
+                checkbox.checked = true;
+
+                daysDropdownBtn.innerText = selectedCheckboxValues.length > 0 ?
+                    selectedCheckboxValues.join(',') : '-- Select Days --';
+            }
+
+            checkbox.addEventListener('change', (event) => {
+                if(checkbox.checked) {
+                    selectedCheckboxValues.push(checkbox.value);
+                } else {
+                    selectedCheckboxValues = selectedCheckboxValues.filter(x => x != checkbox.value);
+                }
+
+                daysDropdownBtn.innerText = selectedCheckboxValues.length > 0 ?
+                    selectedCheckboxValues.join(',') : '-- Select Days --';
+
+                document.getElementById('selectedDaysHiddenInput').value = selectedCheckboxValues.length > 0 ?
+                    selectedCheckboxValues.join(',') : '';
+            });
+        });
+
+        document.getElementById('trackSelectList')
+            .addEventListener('change', (event) => {
+                switch (event.target.value) {
+                    case 'academic':
+                        setAcademicTrackStrands();
+                        break;
+                    case 'artsanddesign':
+                        setArtsAndDesignTrackStrands();
+                        break;
+                    case 'sports':
+                        setSportsTrackStrands();
+                        break;
+                    case 'technicalvocational':
+                        setTechnicalVocationalTrackStrands();
+                        break;
+                    default:
+                        defaultList();
+                        break;
+                }
+            });
+
+        function setAcademicTrackStrands() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            var academicTrackStrands = @Html.Raw(Json.Serialize(ViewBag.AcademicTrackStrands));
+
+            academicTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
+        function setArtsAndDesignTrackStrands() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            var artsAndDesignTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.ArtsAndDesignTrackStrands)));
+
+            artsAndDesignTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
+        function setSportsTrackStrands() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            var sportsTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.SportsTrackStrands)));
+
+            sportsTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
+        function setTechnicalVocationalTrackStrands() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            var technicalVocationalTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.TVLTrackStrands)));
+
+            technicalVocationalTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`;
+            });
+        }
+
+        function defaultList() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            document.getElementById('strandSelectList').innerHTML += `<option value="">-- Select Strand --</option>`;
+
+            var academicTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.AcademicTrackStrands)));
+
+            academicTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+
+            var technicalVocationalTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.TVLTrackStrands)));
+
+            technicalVocationalTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`;
+            });
+
+            document.getElementById('strandSelectList').innerHTML += `<option value="">N/A</option>`;
+        }
+
+        var addScheduleModal;
+        function getAddScheduleModel() {
+            if (isLoading) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Page Loading'
+                });
+
+                return;
+            }
+
+            isLoading = true;
+
+            $.ajax({
+                url: `/Schedules/New`,
+                type: 'GET',
+                success: function (data) {
+                    $('#addScheduleModalPlaceholder').html(data);
+                    addScheduleModal = new bootstrap.Modal(document.getElementById('addScheduleModal'), {
+                        keyboard: false,
+                        backdrop: 'static'
+                    });
+                    addScheduleModal.show();
+                },
+                error: () => {
+                    Toast.fire({
+                        icon: "warning",
+                        title: "Error retrieving Schedule view model"
+                    });
+                },
+                complete: () => {
+                    loadNewScheduleScripts();
+                    isLoading = false
+                }
+            });
+        }
+
+        function saveSchedule() {
+            if (isLoading) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Page Loading'
+                });
+
+                return;
+            }
+
+            // Validate form inputs
+            let schedSubject = document.getElementById('schedSubject').value;
+            if (schedSubject == '') {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please Select a Subject'
+                });
+
+                return;
+            }
+            let schedInstructor = document.getElementById('schedInstructor').value;
+            if (schedInstructor == '') {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please Select an Instructor'
+                });
+
+                return;
+            }
+            let schedRoom = document.getElementById('schedRoom').value;
+            if (schedRoom == '') {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please provide a Room'
+                });
+
+                return;
+            }
+            let newSchedSelectedDaysHiddenInput = document.getElementById('newSchedSelectedDaysHiddenInput').value;
+            if (newSchedSelectedDaysHiddenInput == '') {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please select a Schedule day'
+                });
+
+                return;
+            }
+            let timeStartHour = document.getElementById('timeStartHour').value;
+            if (timeStartHour == '' || timeStartHour <= 0 || timeStartHour > 12) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time Start (Hour) invalid'
+                });
+
+                return;
+            }
+            let timeStartMin = document.getElementById('timeStartMin').value;
+            if (timeStartMin == '' || timeStartMin > 60) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time Start (Minute) invalid'
+                });
+
+                return;
+            }
+            let timeEndHour = document.getElementById('timeEndHour').value;
+            if (timeEndHour == '' || timeEndHour <= 0 || timeEndHour > 12) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time End (Hour) invalid'
+                });
+
+                return;
+            }
+            let timeEndMin = document.getElementById('timeEndMin').value;
+            if (timeEndMin == '' || timeEndMin > 60) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time End (Minute) invalid'
+                });
+
+                return;
+            }
+
+            let timeStart = new Date(2001, 1, 20, timeStartHour, timeStartMin, 0);
+            let timeEnd = new Date(2001, 1, 20, timeEndHour, timeEndMin, 0);
+
+            if (timeStart >= timeEnd) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time Start cannot be on or after Time End'
+                });
+
+                return;
+            }
+
+            var newScheduleObj = {
+                SubjectId: schedSubject,
+                InstructorId: schedInstructor,
+                Room: schedRoom,
+                Day: document.getElementById('newSchedSelectedDaysHiddenInput').value,
+                TimeStartHour: timeStartHour,
+                TimeStartMin: timeStartMin,
+                TimeStartAMPM: document.getElementById('timeStartAMPM').value,
+                TimeEndHour: timeEndHour,
+                TimeEndMin: timeEndMin,
+                TimeEndAMPM: document.getElementById('timeEndAMPM').value,
+                Remarks: document.getElementById('schedRemarks').value
+            }
+
+            isLoading = true;
+            let isSuccess = false;
+            let errorMssg = '';
+
+            $.ajax({
+                url: `/Schedules/New`,
+                type: 'POST',
+                data: newScheduleObj,
+                success: function (data) {
+                    isSuccess = data.IsSuccess;
+                    if (!isSuccess) errorMssg = data.Message;
+                },
+                error: () => {
+                    errorMssg = "An error occurred while verifying the Student.";
+                },
+                complete: () => {
+                    isLoading = false;
+
+                    if (isSuccess) {
+
+                        addScheduleModal.hide();
+
+                        Toast.fire({
+                            icon: "success",
+                            title: "Schedule Created"
+                        });
+
+                        setTimeout(() => {
+                            window.location = window.location.href;
+                        }, 3000)
+                    } else {
+                        Toast.fire({
+                            icon: "warning",
+                            title: errorMssg
+                        });
+                    }
+                }
+            });
+        }
+
+        function loadNewScheduleScripts() {
+            var newSchedSelectBtn = document.getElementById('newSchedSelectBtn');
+            var newSchedDaysCheckboxes = document.querySelectorAll('#newSchedDaysList input[type="checkbox"]');
+            var newSchedSelectedDaysHiddenInputValue = document.getElementById('newSchedSelectedDaysHiddenInput').value;
+            var newSchedSelectedCheckboxValues = [];
+
+            if (newSchedSelectedDaysHiddenInputValue != '') {
+                newSchedSelectedCheckboxValues = newSchedSelectedDaysHiddenInputValue.split(',');
+            }
+
+            newSchedSelectBtn.innerText = newSchedSelectedCheckboxValues.length > 0 ?
+                newSchedSelectedCheckboxValues.join(',') : '-- Select Days --';
+
+            newSchedDaysCheckboxes.forEach((checkbox) => {
+
+                if (newSchedSelectedDaysHiddenInputValue.includes(checkbox.value)) {
+                    checkbox.checked = true;
+                }
+
+                checkbox.addEventListener('change', (event) => {
+                    if (checkbox.checked) {
+                        newSchedSelectedCheckboxValues.push(checkbox.value);
+                    } else {
+                        newSchedSelectedCheckboxValues = newSchedSelectedCheckboxValues.filter(x => x != checkbox.value);
+                    }
+
+                    newSchedSelectBtn.innerText = newSchedSelectedCheckboxValues.length > 0 ?
+                        newSchedSelectedCheckboxValues.join(',') : '-- Select Days --';
+
+                    document.getElementById('newSchedSelectedDaysHiddenInput').value = newSchedSelectedCheckboxValues.length > 0 ?
+                        newSchedSelectedCheckboxValues.join(',') : '';
+                });
+            });
+        }
+
+        function loadViewScheduleScript() {
+            var viewSchedSelectBtn = document.getElementById('viewSchedSelectBtn');
+            var viewSchedDaysCheckboxes = document.querySelectorAll('#viewSchedDaysList input[type="checkbox"]');
+            var viewSchedSelectedDaysHiddenInputValue = document.getElementById('viewSchedSelectedDaysHiddenInput').value;
+            var viewSchedSelectedCheckboxValues = [];
+
+            if (viewSchedSelectedDaysHiddenInputValue != '') {
+                viewSchedSelectedCheckboxValues = viewSchedSelectedDaysHiddenInputValue.split(',');
+            }
+
+            viewSchedSelectBtn.innerText = viewSchedSelectedCheckboxValues.length > 0 ?
+                viewSchedSelectedCheckboxValues.join(',') : '-- Select Days --';
+
+            viewSchedDaysCheckboxes.forEach((checkbox) => {
+
+                if (viewSchedSelectedDaysHiddenInputValue.includes(checkbox.value)) {
+                    checkbox.checked = true;
+                }
+
+                checkbox.addEventListener('change', (event) => {
+                    if (checkbox.checked) {
+                        viewSchedSelectedCheckboxValues.push(checkbox.value);
+                    } else {
+                        viewSchedSelectedCheckboxValues = viewSchedSelectedCheckboxValues.filter(x => x != checkbox.value);
+                    }
+
+                    viewSchedSelectBtn.innerText = viewSchedSelectedCheckboxValues.length > 0 ?
+                        viewSchedSelectedCheckboxValues.join(',') : '-- Select Days --';
+
+                    document.getElementById('viewSchedSelectedDaysHiddenInput').value = viewSchedSelectedCheckboxValues.length > 0 ?
+                        viewSchedSelectedCheckboxValues.join(',') : '';
+                });
+            });
+        }
+
+        // Using this for form dirty checking
+        var viewScheduleObj = {};
+
+        var viewScheduleModal;
+        function viewSchedule(id) {
+            if (isLoading) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Page Loading'
+                });
+
+                return;
+            }
+
+            isLoading = true;
+
+            $.ajax({
+                url: `/Schedules/${id}`,
+                type: 'GET',
+                success: function (data) {
+                    $('#viewScheduleModalPlaceholder').html(data);
+
+                    viewScheduleModal = new bootstrap.Modal(document.getElementById('viewScheduleModal'), {
+                        keyboard: false,
+                        backdrop: 'static'
+                    });
+                    viewScheduleModal.show();
+
+                    viewScheduleObj = {
+                        SubjectId: document.getElementById('schedSubject').value,
+                        InstructorId: document.getElementById('schedInstructor').value,
+                        Room: document.getElementById('schedRoom').value,
+                        Day: document.getElementById('viewSchedSelectedDaysHiddenInput').value,
+                        TimeStartHour: document.getElementById('timeStartHour').value,
+                        TimeStartMin: document.getElementById('timeStartMin').value,
+                        TimeStartAMPM: document.getElementById('timeStartAMPM').value,
+                        TimeEndHour: document.getElementById('timeEndHour').value,
+                        TimeEndMin: document.getElementById('timeEndMin').value,
+                        TimeEndAMPM: document.getElementById('timeEndAMPM').value,
+                        Remarks: document.getElementById('schedRemarks').value
+                    }
+                },
+                error: () => {
+                    Toast.fire({
+                        icon: "warning",
+                        title: 'Error viewing Schedule.'
+                    });
+                },
+                complete: () => { 
+                    loadViewScheduleScript();
+                    isLoading = false
+                }
+            });
+        }
+
+        function updateSchedule() {
+            if (isLoading) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Page Loading'
+                });
+
+                return;
+            }
+
+            // Validate form inputs
+            let schedSubject = document.getElementById('schedSubject').value;
+            if (schedSubject == '') {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please Select a Subject'
+                });
+
+                return;
+            }
+            let schedInstructor = document.getElementById('schedInstructor').value;
+            if (schedInstructor == '') {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please Select an Instructor'
+                });
+
+                return;
+            }
+            let schedRoom = document.getElementById('schedRoom').value;
+            if (schedRoom == '') {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please provide a Room'
+                });
+
+                return;
+            }
+            let viewSchedSelectedDaysHiddenInput = document.getElementById('viewSchedSelectedDaysHiddenInput').value;
+            if (viewSchedSelectedDaysHiddenInput == '') {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please select a Schedule day'
+                });
+
+                return;
+            }
+            let timeStartHour = document.getElementById('timeStartHour').value;
+            if (timeStartHour == '' || timeStartHour <= 0 || timeStartHour > 12) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time Start (Hour) invalid'
+                });
+
+                return;
+            }
+            let timeStartMin = document.getElementById('timeStartMin').value;
+            if (timeStartMin == '' || timeStartMin > 60) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time Start (Minute) invalid'
+                });
+
+                return;
+            }
+            let timeEndHour = document.getElementById('timeEndHour').value;
+            if (timeEndHour == '' || timeEndHour <= 0 || timeEndHour > 12) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time End (Hour) invalid'
+                });
+
+                return;
+            }
+            let timeEndMin = document.getElementById('timeEndMin').value;
+            if (timeEndMin == '' || timeEndMin > 60) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time End (Minute) invalid'
+                });
+
+                return;
+            }
+
+            let timeStart = new Date(2001, 1, 20, timeStartHour, timeStartMin, 0);
+            let timeEnd = new Date(2001, 1, 20, timeEndHour, timeEndMin, 0);
+
+            if (timeStart >= timeEnd) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Time Start cannot be on or after Time End'
+                });
+
+                return;
+            }
+
+            var updatedScheduleObj = {
+                Id: document.getElementById('viewSchedIdHiddenInput').value,
+                SubjectId: schedSubject,
+                InstructorId: schedInstructor,
+                Room: schedRoom,
+                Day: document.getElementById('viewSchedSelectedDaysHiddenInput').value,
+                TimeStartHour: timeStartHour,
+                TimeStartMin: timeStartMin,
+                TimeStartAMPM: document.getElementById('timeStartAMPM').value,
+                TimeEndHour: timeEndHour,
+                TimeEndMin: timeEndMin,
+                TimeEndAMPM: document.getElementById('timeEndAMPM').value,
+                Remarks: document.getElementById('schedRemarks').value
+            }
+
+            if(viewScheduleObj && JSON.stringify(viewScheduleObj) == JSON.stringify(updatedScheduleObj)) {
+                console.log('No changes made');
+
+                viewScheduleModal.hide();
+
+                Toast.fire({
+                    icon: "success",
+                    title: "Schedule Saved"
+                });
+
+                setTimeout(() => {
+                    window.location = window.location.href;
+                }, 3000)
+            }
+            else {
+                isLoading = true;
+                let isSuccess = false;
+                let errorMssg = '';
+
+                $.ajax({
+                    url: `/Schedules/${updatedScheduleObj.Id}`,
+                    type: 'PUT',
+                    data: updatedScheduleObj,
+                    success: function (data) {
+                        isSuccess = data.IsSuccess;
+                        if (!isSuccess) errorMssg = data.Message;
+                    },
+                    error: () => {
+                        errorMssg = "An error occurred while updating the Schedule.";
+                    },
+                    complete: () => {
+                        isLoading = false;
+
+                        if (isSuccess) {
+
+                            viewScheduleModal.hide();
+
+                            Toast.fire({
+                                icon: "success",
+                                title: "Schedule Updated"
+                            }); 
+
+                            setTimeout(() => {
+                                window.location = window.location.href;
+                            }, 3000)
+                        } else {
+                            Toast.fire({
+                                icon: "warning",
+                                title: errorMssg
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        switch ('@(ViewBag.Track)') {
+            case 'academic':
+                setAcademicTrackStrands();
+                break;
+            case 'artsanddesign':
+                setArtsAndDesignTrackStrands();
+                break;
+            case 'sports':
+                setSportsTrackStrands();
+                break;
+            case 'technicalvocational':
+                setTechnicalVocationalTrackStrands();
+                break;
+        }
+    </script>
+}
