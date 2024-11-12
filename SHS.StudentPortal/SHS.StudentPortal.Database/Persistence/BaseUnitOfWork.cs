@@ -1,4 +1,5 @@
-﻿using SHS.StudentPortal.App.Abstractions.Persistence;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using SHS.StudentPortal.App.Abstractions.Persistence;
 
 namespace SHS.StudentPortal.Database.Persistence;
 
@@ -9,6 +10,11 @@ public class BaseUnitOfWork : IBaseUnitOfWork
     public BaseUnitOfWork(AppDbContext appDbContext)
     {
         _appDbContext = appDbContext;
+    }
+
+    public IDbContextTransaction BeginTransaction()
+    {
+        return _appDbContext.Database.BeginTransaction();
     }
 
     public void SaveChanges()

@@ -68,9 +68,51 @@
                 <tr>
                     <td>@dept.Name</td>
                     <td>@dept.EmployeeCount</td>
-                    <td><button class="btn btn-sm btn-primary" id="viewDepartment" onclick="">View</button></td>
+                    <td><button class="btn btn-sm btn-primary" onclick="viewDepartment(@dept.Id)">View</button></td>
                 </tr>
             }
         }
     </tbody>
 </table>
+<div id="modalPlaceholder"></div>
+@section Scripts {
+    <script type="text/javascript">
+        var detailsModal;
+        var isLoading = false;
+
+        function viewDepartment(deptId) {
+            if(isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page Loading"
+                });
+
+                return;
+            } else {
+                isLoading = true;
+
+                $.ajax({
+                    url: `/Departments/${deptId}`,
+                    type: 'GET',
+                    success: function(data) {
+                        $('#modalPlaceholder').html(data);
+                        detailsModal = new bootstrap.Modal(document.getElementById('departmentDetailsModal'), {
+                            keyboard: false,
+                            backdrop: 'static'
+                        });
+                        detailsModal.show();
+                    },
+                    error: function(err) {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Error retrieving Department Info"
+                        });
+                    },
+                    complete: function() {
+                        isLoading = false;
+                    }
+                })
+            }
+        }
+    </script>
+}

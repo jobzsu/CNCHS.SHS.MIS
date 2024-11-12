@@ -1,7 +1,7 @@
 # BEFORE COMPOSING MUST PLACE THIS FILE IN THE ROOT FOLDER WHERE 
 # FRONTEND AND BACKEND FOLDERS ARE LOCATED
 
-version: '3.9'
+#version: '3.9'
 
 networks:
   shs_studentportal_network:

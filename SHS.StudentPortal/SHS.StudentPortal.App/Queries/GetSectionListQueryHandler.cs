@@ -27,7 +27,7 @@ internal sealed class GetSectionListQueryHandler :
         {
             var sectionList = new List<KeyValuePair<string, string>>();
 
-            var sections = await _sectionRepository.GetAllSections(cancellationToken: cancellationToken);
+            var sections = await _sectionRepository.GetAllSections(includeNotApplicable: true, cancellationToken: cancellationToken);
 
             if(sections is null || sections.Count == 0)
             {

@@ -1,6 +1,6 @@
 ﻿namespace SHS.StudentPortal.Common.Models;
 
-public class InstructorViewModel
+public class BaseInstructorViewModel
 {
     public Guid Id { get; set; }
 
@@ -20,9 +20,9 @@ public class InstructorViewModel
 
     public int DepartmentId { get; set; }
 
-    public string AdvisorySection { get; set; }
+    public Guid AdvisorySectionId { get; set; }
 
-    public List<Schedules> Schedules { get; set; }
+    public List<KeyValuePair<Guid, string>> SectionList { get; set; }
 }
 
 public class Schedules
@@ -37,3 +37,20 @@ public class Schedules
 
     public string GradesSubmitted { get; set; }
 }
+
+public class InstructorViewModel : BaseInstructorViewModel
+{
+    public List<Schedules> Schedules { get; set; }
+}
+
+public class ForCreateInstructorViewModel : BaseInstructorViewModel 
+{
+    // Login Info
+    public string Username { get; set; }
+
+    public string Password { get; set; }
+
+    public string ConfirmPassword { get; set; }
+
+    public string EmailAddress { get; set; }
+};

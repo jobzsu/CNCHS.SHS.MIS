@@ -2,10 +2,10 @@
 @model InstructorViewModel
 
 <div class="modal fade" id="instructorInfoDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="detailsModalLabel">INSTRUCTOR 1000</h5>
+                <h5 class="modal-title" id="detailsModalLabel">INSTRUCTOR @Model.EmployeeId</h5>
             </div>
             <div class="modal-body">
                 <form class="mt-2" asp-controller="Account" asp-action="Register" method="post">
@@ -14,7 +14,7 @@
                     <div class="row gx-3 gy-3">
                         <div class="col-lg-3 col-12">
                             <label>Employee Id</label>
-                            <input type="text" class="form-control" asp-for="@Model.EmployeeId" disabled/>
+                            <input type="text" class="form-control" asp-for="@Model.EmployeeId" disabled />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Major</label>
@@ -23,11 +23,14 @@
                         <div class="col-lg-3 col-12">
                             <label>Department</label>
                             <select class="form-select" asp-for="@Model.DepartmentId" asp-items="@(new SelectList(Model.DepartmentList, "Key", "Value"))" disabled>
+                                <option value="0" selected>Select Department</option>
                             </select>
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Advisory</label>
-                            <input type="text" class="form-control" asp-for="@Model.AdvisorySection" disabled />
+                            <select class="form-select" asp-for="@Model.AdvisorySectionId" asp-items="@(new SelectList(Model.SectionList, "Key", "Value"))" disabled>
+                                <option value="@Guid.Empty.ToString()" selected>N/A</option>
+                            </select>
                         </div>
                     </div>
                     <h5 class="card-title mt-3">Personal Information</h5>
@@ -39,15 +42,15 @@
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Middle Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.MiddleName"  disabled  />
+                            <input type="text" class="form-control" asp-for="@Model.MiddleName" disabled />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Last Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.LastName" disabled   />
+                            <input type="text" class="form-control" asp-for="@Model.LastName" disabled />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Contact Information</label>
-                            <input type="text" class="form-control" asp-for="@Model.ContactInfo" disabled  />
+                            <input type="text" class="form-control" asp-for="@Model.ContactInfo" disabled />
                         </div>
                     </div>
                     <h5 class="card-title mt-3">Assigned Schedules</h5>
@@ -71,7 +74,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if(Model.Schedules.Count() == 0)
+                                    @if (Model.Schedules.Count() == 0)
                                     {
                                         <tr>
                                             <th colspan="5"><h3>No Schedules Found</h3></th>

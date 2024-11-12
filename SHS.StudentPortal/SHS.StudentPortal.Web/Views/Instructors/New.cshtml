@@ -1,0 +1,84 @@
+﻿@using SHS.StudentPortal.Common.Models
+@model ForCreateInstructorViewModel
+
+<div class="modal fade" id="createInstructorModal" tabindex="-1">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">CREATE INSTRUCTOR</h5>
+            </div>
+            <div class="modal-body">
+                <form class="mt-2" id="createInstructorForm">
+                    <h5 class="card-title">Employee Information</h5>
+                    <hr />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-3 col-12">
+                            <label>Employee Id</label>
+                            <input id="createInstrEmployeeId" type="text" class="form-control" asp-for="@Model.EmployeeId" />
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Major</label>
+                            <input id="createInstrMajor" type="text" class="form-control" asp-for="@Model.Major" />
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Department</label>
+                            <select id="createInstrDept" class="form-select" asp-for="@Model.DepartmentId" asp-items="@(new SelectList(Model.DepartmentList, "Key", "Value"))">
+                                <option value="0" selected>Select Department</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Advisory</label>
+                            <select id="createInstrAdvisorySection" class="form-select" asp-for="@Model.AdvisorySectionId" asp-items="@(new SelectList(Model.SectionList, "Key", "Value"))">
+                                <option value="@Guid.Empty.ToString()" selected>Select Section</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h5 class="card-title mt-3">Personal Information</h5>
+                    <hr />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-3 col-12">
+                            <label>First Name</label>
+                            <input id="createInstrFirstName" type="text" class="form-control" asp-for="@Model.FirstName" />
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Middle Name</label>
+                            <input id="createInstrMiddleName" type="text" class="form-control" asp-for="@Model.MiddleName" />
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Last Name</label>
+                            <input id="createInstrLastName" type="text" class="form-control" asp-for="@Model.LastName" />
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Contact Information</label>
+                            <input id="createInstrContactInfo" type="text" class="form-control" asp-for="@Model.ContactInfo" />
+                        </div>
+                    </div>
+                    <h5 class="card-title mt-3">Login Information</h5>
+                    <hr />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-3 col-12">
+                            <label>Username</label>
+                            <input id="createInstrUsername" type="text" class="form-control" asp-for="@Model.Username" />
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Password</label>
+                            <input id="createInstrPassword" type="password" class="form-control" asp-for="@Model.Password" />
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Confirm Password</label>
+                            <input id="createInstrConfirmPassword" type="password" class="form-control" asp-for="@Model.ConfirmPassword" />
+                        </div>
+                        <div class="col-lg-3 col-12">
+                            <label>Email Address</label>
+                            <input id="createInstrEmailAdd" type="email" class="form-control" asp-for="@Model.EmailAddress" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" tabindex="-1" onclick="createInstructor()">Create</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="-1">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

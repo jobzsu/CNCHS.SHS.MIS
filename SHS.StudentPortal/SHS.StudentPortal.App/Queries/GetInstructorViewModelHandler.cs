@@ -14,18 +14,21 @@ internal sealed class GetInstructorViewModelHandler
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ISettingRepository _settingRepository;
     private readonly IScheduleRepository _scheduleRepository;
+    private readonly ISectionRepository _sectionRepository;
 
     public GetInstructorViewModelHandler(ILogger<GetInstructorViewModelHandler> logger,
         IInstructorInfoRepository instructorInfoRepository,
         IDepartmentRepository departmentRepository,
         ISettingRepository settingRepository,
-        IScheduleRepository scheduleRepository)
+        IScheduleRepository scheduleRepository,
+        ISectionRepository sectionRepository)
     {
         _logger = logger;
         _instructorInfoRepository = instructorInfoRepository;
         _departmentRepository = departmentRepository;
         _settingRepository = settingRepository;
         _scheduleRepository = scheduleRepository;
+        _sectionRepository = sectionRepository;
     }
 
     public async Task<ResultModel<InstructorViewModel>> Handle(GetInstructorViewModel request, CancellationToken cancellationToken)
@@ -45,9 +48,7 @@ internal sealed class GetInstructorViewModelHandler
             }
 
             var instructorInfo = await _instructorInfoRepository
-                .GetInstructorInfoById(request.instructorId, 
-                    currentSemester.Value,
-                    currentAcademicYear.Value,
+                .GetInstructorInfoById(request.instructorId,
                     cancellationToken: cancellationToken);
 
             if (instructorInfo is null)
@@ -68,7 +69,8 @@ internal sealed class GetInstructorViewModelHandler
                 ContactInfo = instructorInfo.ContactInformation,
                 DepartmentId = instructorInfo.DepartmentId,
                 DepartmentList = new(),
-                AdvisorySection = instructorInfo.Section.Name,
+                AdvisorySectionId = instructorInfo.Section?.Id ?? Guid.Empty,
+                SectionList = new(),
                 Schedules = new()
             };
 
@@ -78,6 +80,14 @@ internal sealed class GetInstructorViewModelHandler
             {
                 instructorViewModel.DepartmentList.AddRange(departmentList
                     .Select(x => new KeyValuePair<int, string>(x.Id, x.Name)));
+            }
+
+            var sectionList = await _sectionRepository.GetAllSections(cancellationToken: cancellationToken);
+
+            if(sectionList is not null && sectionList.Count() > 0)
+            {
+                instructorViewModel.SectionList.AddRange(sectionList
+                    .Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)));
             }
 
             var instructorSchedules = await _scheduleRepository
@@ -90,13 +100,17 @@ internal sealed class GetInstructorViewModelHandler
             {
                 foreach(var sched in instructorSchedules)
                 {
+                    var timeStartMin = sched.TimeStart.Minute.ToString().PadLeft(2, '0');
+
                     var timeStartStr = sched.TimeStart.Hour < 12 ?
-                        $"{sched.TimeStart.Hour}:{sched.TimeStart.Minute} AM" :
-                        (sched.TimeStart.Hour == 12 ? $"{sched.TimeStart.Hour}:{sched.TimeStart.Minute} PM" : $"{sched.TimeStart.Hour - 12}:{sched.TimeStart.Minute} PM");
+                        $"{sched.TimeStart.Hour}:{timeStartMin} AM" :
+                        (sched.TimeStart.Hour == 12 ? $"{sched.TimeStart.Hour}:{timeStartMin} PM" : $"{sched.TimeStart.Hour - 12}:{timeStartMin} PM");
+
+                    var timeEndMin = sched.TimeEnd.Minute.ToString().PadLeft(2, '0');
 
                     var timeEndStr = sched.TimeEnd.Hour < 12 ?
-                        $"{sched.TimeEnd.Hour}:{sched.TimeEnd.Minute} AM" :
-                        (sched.TimeEnd.Hour == 12 ? $"{sched.TimeEnd.Hour}:{sched.TimeEnd.Minute} PM" : $"{sched.TimeEnd.Hour - 12}:{sched.TimeEnd.Minute} PM");
+                        $"{sched.TimeEnd.Hour}:{timeEndMin} AM" :
+                        (sched.TimeEnd.Hour == 12 ? $"{sched.TimeEnd.Hour}:{timeEndMin} PM" : $"{sched.TimeEnd.Hour - 12}:{timeEndMin} PM");
 
                     var daysArr = sched.Day.Split(',').ToList();
                     var days = new List<string>();
@@ -107,7 +121,7 @@ internal sealed class GetInstructorViewModelHandler
                     }
 
                     // Check if all students for this schedule has grades
-                    var gradesSubmitted = sched.StudentSchedules.All(x =>
+                    var gradesSubmitted = sched.StudentSchedules.Any() && sched.StudentSchedules.All(x =>
                         x.Student.AcademicRecords
                             .Any(ar => ar.Semester == currentSemester.Value &&
                                                   ar.AcademicYear == currentAcademicYear.Value &&

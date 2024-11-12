@@ -9,4 +9,6 @@ public interface IDepartmentRepository
     Task<List<Department>?> GetListViaFilter(string? searchKeyword,
         bool shouldTrack = false,
         CancellationToken cancellationToken = default);
+
+    Task<Department?> GetDepartmentById(int id, bool shouldTrack = false, CancellationToken cancellationToken = default);
 }

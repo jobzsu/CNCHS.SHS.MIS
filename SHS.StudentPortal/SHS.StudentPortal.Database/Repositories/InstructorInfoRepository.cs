@@ -9,9 +9,22 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
 {
     public InstructorInfoRepository(AppDbContext appDbContext) : base(appDbContext) { }
 
-    public async Task<InstructorInfo?> GetInstructorInfoById(Guid instructorId, 
-        string semester,
-        string academicYear,
+    public async Task<InstructorInfo> CreateInstructorInfo(InstructorInfo instructorInfo, CancellationToken cancellationToken = default)
+    {
+        return await InsertAsync(instructorInfo, cancellationToken);
+    }
+
+    public async Task<InstructorInfo?> GetInstructorInfoByEmployeeId(string employeeId, bool shouldTrack = false, CancellationToken cancellation = default)
+    {
+        return await (shouldTrack ?
+            GetAll()
+              .FirstOrDefaultAsync(i => i.EmployeeId.ToLower() == employeeId, cancellation) :
+            GetAll()
+              .AsNoTracking()
+              .FirstOrDefaultAsync(i => i.EmployeeId.ToLower() == employeeId, cancellation));
+    }
+
+    public async Task<InstructorInfo?> GetInstructorInfoById(Guid instructorId,
         bool shouldTrack = false, 
         CancellationToken cancellationToken = default)
     {
@@ -29,6 +42,20 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
             .AsSplitQuery()
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == instructorId, cancellationToken));
+    }
+
+    public async Task<List<InstructorInfo>?> GetInstructorsByDepartment(int departmentId, bool shouldTrack = false, CancellationToken cancellationToken = default)
+    {
+        return shouldTrack ?
+            await GetAll()
+            .Include(x => x.User)
+            .Where(x => x.DepartmentId == departmentId)
+            .ToListAsync(cancellationToken) :
+            await GetAll()
+            .AsNoTracking()
+            .Include(x => x.User)
+            .Where(x => x.DepartmentId == departmentId)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<List<InstructorInfo>?> GetList(bool includePlaceholder, 
@@ -54,14 +81,14 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Department)
-                .Where(x => (departmentId == 0 ? true : x.DepartmentId == departmentId))
+                .Where(x => (departmentId == 0 ? x.EmployeeId != "4000": x.DepartmentId == departmentId && x.EmployeeId != "4000"))
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken) :
             GetAll()
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Department)
-                .Where(x => (departmentId == 0 ? true : x.DepartmentId == departmentId) &&
+                .Where(x => (departmentId == 0 ? x.EmployeeId != "4000" : x.DepartmentId == departmentId && x.EmployeeId != "4000") &&
                             ((x.Department.Name.ToLower().Contains(keyword)) ||
                             (x.User.FirstName.ToLower().Contains(keyword)) ||
                             (x.User.MiddleName != null && x.User.MiddleName.ToLower().Contains(keyword))))

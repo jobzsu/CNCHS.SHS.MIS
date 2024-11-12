@@ -13,8 +13,14 @@ public interface IInstructorInfoRepository
         CancellationToken cancellationToken = default);
 
     Task<InstructorInfo?> GetInstructorInfoById(Guid instructorId,
-        string semester,
-        string academicYear,
         bool shouldTrack = false,
         CancellationToken cancellationToken = default);
+
+    Task<InstructorInfo?> GetInstructorInfoByEmployeeId(string employeeId,
+        bool shouldTrack = false,
+        CancellationToken cancellation = default);
+
+    Task<List<InstructorInfo>?> GetInstructorsByDepartment(int departmentId, bool shouldTrack = false, CancellationToken cancellationToken = default);
+
+    Task<InstructorInfo> CreateInstructorInfo(InstructorInfo instructorInfo, CancellationToken cancellationToken = default);
 }
