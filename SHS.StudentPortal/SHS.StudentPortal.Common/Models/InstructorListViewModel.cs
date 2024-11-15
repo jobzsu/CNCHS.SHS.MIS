@@ -9,4 +9,6 @@ public class InstructorListViewModel
     public string Name { get; set; }
 
     public string Department { get; set; }
+
+    public string AdvisorySection { get; set; }
 }

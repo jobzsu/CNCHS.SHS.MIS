@@ -8,7 +8,7 @@
                 <h5 class="modal-title" id="detailsModalLabel">INSTRUCTOR @Model.EmployeeId</h5>
             </div>
             <div class="modal-body">
-                <form class="mt-2" asp-controller="Account" asp-action="Register" method="post">
+                <form class="mt-2">
                     <h5 class="card-title">Employee Information</h5>
                     <hr />
                     <div class="row gx-3 gy-3">
@@ -18,19 +18,35 @@
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Major</label>
-                            <input type="text" class="form-control" asp-for="@Model.Major" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.Major" />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Department</label>
-                            <select class="form-select" asp-for="@Model.DepartmentId" asp-items="@(new SelectList(Model.DepartmentList, "Key", "Value"))" disabled>
-                                <option value="0" selected>Select Department</option>
+                            <select class="form-select" asp-for="@Model.DepartmentId" asp-items="@(new SelectList(Model.DepartmentList, "Key", "Value"))" >
                             </select>
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Advisory</label>
-                            <select class="form-select" asp-for="@Model.AdvisorySectionId" asp-items="@(new SelectList(Model.SectionList, "Key", "Value"))" disabled>
-                                <option value="@Guid.Empty.ToString()" selected>N/A</option>
+                            <select class="form-select" asp-for="@Model.AdvisorySectionId" asp-items="@(new SelectList(Model.SectionList, "Key", "Value"))" >
                             </select>
+                        </div>
+                    </div>
+                    <h5 class="card-title mt-3">Login Information</h5>
+                    <hr />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-4 col-12">
+                            <label>Username</label>
+                            <input type="text" class="form-control" asp-for="@Model.Username" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.Username"></span>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <label>Last Login</label>
+                            <input type="text" class="form-control" asp-for="@Model.LastLogin" disabled />
+                            <span class="text-danger" asp-validation-for="@Model.LastLogin"></span>
+                        </div>
+                        <div class="col-lg-2 col-12">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-primary form-control" type="button" onclick="openUpdatePasswordModal()">Update Password</button>
                         </div>
                     </div>
                     <h5 class="card-title mt-3">Personal Information</h5>
@@ -38,29 +54,29 @@
                     <div class="row gx-3 gy-3">
                         <div class="col-lg-3 col-12">
                             <label>First Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.FirstName" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.FirstName" />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Middle Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.MiddleName" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.MiddleName" />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Last Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.LastName" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.LastName" />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Contact Information</label>
-                            <input type="text" class="form-control" asp-for="@Model.ContactInfo" disabled />
+                            <input type="text" class="form-control" asp-for="@Model.ContactInfo" />
                         </div>
                     </div>
                     <h5 class="card-title mt-3">Assigned Schedules</h5>
                     <hr />
                     <div class="row gx-3 gy-3">
                         <div class="col-lg-4">
-                            <h4>Semester: 2nd</h4>
+                            <h4>Semester: @Model.CurrentSemester</h4>
                         </div>
                         <div class="col-lg-6">
-                            <h4>Academic Year: 2022 - 2023</h4>
+                            <h4>Academic Year: @Model.CurrentAcademicYear</h4>
                         </div>
                         <div class="col-12">
                             <table class="table table-striped table-hover text-center">
@@ -100,7 +116,37 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-primary"  tabindex="-1">Save</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="-1">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update PW Modal -->
+<div class="modal fade" id="updatePasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-color: brown; border-width: 3px">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Instructor Password</h5>
+            </div>
+            <div class="modal-body">
+                <form id="updatePasswordForm">
+                    <div class="row gx-3 gy-3">
+                        <div class="col-12">
+                            <label>New Password</label>
+                            <input id="updatePasswordNewPassword" type="password" class="form-control" required minlength="6" />
+                        </div>
+                        <div class="col-12">
+                            <label>Confirm New Password</label>
+                            <input id="updatePasswordConfirmNewPassword" type="password" class="form-control" required minlength="6" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="updatePasswordBtn" class="btn btn-primary float-end" tabindex="-1" onclick="updateInstructorPassword('@Model.Id')">Update</button>
+                <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal" tabindex="-1">Cancel</button>
             </div>
         </div>
     </div>

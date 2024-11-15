@@ -40,6 +40,29 @@ public class InstructorsController : Controller
         }
     }
 
+    [HttpPost]
+    [Route("/Instructors/UpdatePassword/{id}")]
+    public IActionResult UpdatePassword(string newPassword, Guid id)
+    {
+        try
+        {
+            var passwordUpdatedBy = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "UserId")!.Value;
+
+
+            var command = new UpdateInstructorPasswordCommand(newPassword, id, Guid.Parse(passwordUpdatedBy));
+
+            var result = Task.Run(() => _sender.Send(command)).Result;
+
+            return result.IsSuccess ?
+                new JsonResult(JsonResponseModel.Success(null, null)) :
+                new JsonResult(JsonResponseModel.Error(result.Error!.Message));
+        }
+        catch(Exception)
+        {
+            return BadRequest();
+        }
+    }
+
     [HttpGet]
     [Route("/Instructors/New")]
     public IActionResult New()

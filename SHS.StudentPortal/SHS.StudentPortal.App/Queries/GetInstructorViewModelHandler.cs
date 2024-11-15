@@ -70,8 +70,12 @@ internal sealed class GetInstructorViewModelHandler
                 DepartmentId = instructorInfo.DepartmentId,
                 DepartmentList = new(),
                 AdvisorySectionId = instructorInfo.Section?.Id ?? Guid.Empty,
+                Username = instructorInfo.User.UserAccount.Username,
+                LastLogin = instructorInfo.User.UserAccount.LastLogin?.ToLocalTime().ToString() ?? "Never Logged In",
                 SectionList = new(),
-                Schedules = new()
+                Schedules = new(),
+                CurrentSemester = currentSemester.Value,
+                CurrentAcademicYear = currentAcademicYear.Value
             };
 
             var departmentList = await _departmentRepository.GetAllDepartments(cancellationToken: cancellationToken);
@@ -82,7 +86,7 @@ internal sealed class GetInstructorViewModelHandler
                     .Select(x => new KeyValuePair<int, string>(x.Id, x.Name)));
             }
 
-            var sectionList = await _sectionRepository.GetAllSections(cancellationToken: cancellationToken);
+            var sectionList = await _sectionRepository.GetAllSections(includeNotApplicable: true, cancellationToken: cancellationToken);
 
             if(sectionList is not null && sectionList.Count() > 0)
             {

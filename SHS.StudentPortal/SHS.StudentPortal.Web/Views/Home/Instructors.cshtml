@@ -59,6 +59,7 @@
             <th scope="col">Instructor Id</th>
             <th scope="col">Name</th>
             <th scope="col">Department</th>
+            <th scope="col">Advisory Section</th>
             <th scope="col"></th>
         </tr>
     </thead>
@@ -77,7 +78,8 @@
                     <td>@instr.EmployeeId</td>
                     <td>@instr.Name</td>
                     <td>@instr.Department</td>
-                    <td><button class="btn btn-sm btn-primary" id="viewInstructorInfo" onclick="viewInstructorInfo('@instr.Id')">View</button></td>
+                    <td>@instr.AdvisorySection</td>
+                    <td><button class="btn btn-sm btn-primary" id="viewInstructorInfoBtn_@instr.EmployeeId" onclick="viewInstructorInfo('@instr.Id', '@instr.EmployeeId')">View</button></td>
                 </tr>
             }
         }
@@ -91,14 +93,22 @@
         var createInstructorModal;
         var isLoading = false;
 
-        function viewInstructorInfo(id) {
+        function toggleViewInstrBtnOnLoad(isLoading, empId) {
+            let viewInstructorInfoBtn = document.getElementById(`viewInstructorInfoBtn_${empId}`);
+            viewInstructorInfoBtn.disabled = isLoading;
+        }
+
+        function viewInstructorInfo(id, empId) {
             if(isLoading) {
                 Toast.fire({
                     icon: "warning",
                     title: "Page Loading"
                 });
+
+                return;
             } else {
                 isLoading = true;
+                toggleViewInstrBtnOnLoad(true, empId);
 
                 $.ajax({
                     url: `/Instructors/${id}`,
@@ -120,6 +130,7 @@
                     },
                     complete: () => {
                         isLoading = false;
+                        toggleViewInstrBtnOnLoad(false, empId);
                     }
                 });
             }
@@ -327,6 +338,97 @@
                         }
                     });
                 }
+            }
+        }
+
+        var updatePasswordModal;
+        function openUpdatePasswordModal() {
+            updatePasswordModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('updatePasswordModal'), {
+                keyboard: false,
+                backdrop: 'static'
+            });
+
+            updatePasswordModal.show();
+        }
+
+        function updateInstructorPassword(id) {
+
+            if (isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page is Loading"
+                });
+
+                return;
+            } else {
+                if ($('#updatePasswordNewPassword').val() == '' || $('#updatePasswordConfirmNewPassword').val() == '') {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Please fill in all fields'
+                    });
+
+                    return;
+                }
+
+                if ($('#updatePasswordNewPassword').val().length < 6 || $('#updatePasswordConfirmNewPassword').val().length < 6) {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Password must be at least 6 characters'
+                    });
+
+                    return;
+                }
+
+                if ($('#updatePasswordNewPassword').val() != $('#updatePasswordConfirmNewPassword').val()) {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Passwords do not match'
+                    });
+
+                    return;
+                }
+
+                let isSuccess = false;
+                let errorMssg = '';
+
+                isLoading = true;
+                let updatePasswordBtn = document.getElementById('updatePasswordBtn');
+                updatePasswordBtn.disabled = true;
+
+                $.ajax({
+                    url: `/Instructors/UpdatePassword/${id}`,
+                    type: 'POST',
+                    data: {
+                        newPassword: $('#updatePasswordNewPassword').val().toString()
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        isSuccess = data.IsSuccess;
+                        if (!isSuccess) errorMssg = data.Message;
+                    },
+                    error: function (data) {
+                        errorMssg = "An error occurred while updating Instructor password.";
+                    },
+                    complete: function () {
+                        isLoading = false;
+                        updatePasswordBtn.disabled = false;
+
+                        if (isSuccess) {
+
+                            updatePasswordModal.hide();
+
+                            Toast.fire({
+                                icon: "success",
+                                title: "Password Updated"
+                            });
+                        } else {
+                            Toast.fire({
+                                icon: "warning",
+                                title: errorMssg
+                            });
+                        }
+                    }
+                });
             }
         }
     </script>

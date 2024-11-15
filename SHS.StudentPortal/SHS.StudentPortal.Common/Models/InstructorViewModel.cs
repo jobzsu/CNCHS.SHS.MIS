@@ -40,6 +40,14 @@ public class Schedules
 
 public class InstructorViewModel : BaseInstructorViewModel
 {
+    public string Username { get; set; }
+
+    public string LastLogin { get; set; }
+
+    public string CurrentSemester { get; set; }
+
+    public string CurrentAcademicYear { get; set; }
+
     public List<Schedules> Schedules { get; set; }
 }
 

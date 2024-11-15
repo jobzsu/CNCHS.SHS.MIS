@@ -31,12 +31,14 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
         return await (shouldTrack ?
             GetAll()
             .Include(x => x.User)
+            .ThenInclude(u => u.UserAccount)
             .Include(x => x.Department)
             .Include(x => x.Section)
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Id == instructorId, cancellationToken) :
             GetAll()
             .Include(x => x.User)
+            .ThenInclude(u => u.UserAccount)
             .Include(x => x.Department)
             .Include(x => x.Section)
             .AsSplitQuery()
@@ -81,6 +83,7 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Department)
+                .Include(x => x.Section)
                 .Where(x => (departmentId == 0 ? x.EmployeeId != "4000": x.DepartmentId == departmentId && x.EmployeeId != "4000"))
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken) :
@@ -88,6 +91,7 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Department)
+                .Include(x => x.Section)
                 .Where(x => (departmentId == 0 ? x.EmployeeId != "4000" : x.DepartmentId == departmentId && x.EmployeeId != "4000") &&
                             ((x.Department.Name.ToLower().Contains(keyword)) ||
                             (x.User.FirstName.ToLower().Contains(keyword)) ||

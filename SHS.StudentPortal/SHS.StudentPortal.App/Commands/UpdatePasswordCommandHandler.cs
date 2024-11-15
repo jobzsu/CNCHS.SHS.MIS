@@ -33,25 +33,39 @@ internal sealed class UpdatePasswordCommandHandler
 
         try
         {
-            var userAccount = await _userAccountRepository.GetUserAccountById(request.userId, cancellationToken, true);
-
-            if(userAccount is null)
+            using (var txn = _baseUnitOfWork.BeginTransaction())
             {
-                error = new(nameof(KeyNotFoundException), "User not found.");
+                try
+                {
+                    var userAccount = await _userAccountRepository.GetUserAccountById(request.userId, cancellationToken, true);
 
-                return ResultModel.Fail(error);
+                    if (userAccount is null)
+                    {
+                        error = new(nameof(KeyNotFoundException), "User not found.");
+
+                        return ResultModel.Fail(error);
+                    }
+
+                    var newHashedPassword = _bCryptAuthProvider.EncryptPassword(request.newPassword);
+
+                    var updatedUserAccountPassword =
+                        userAccount.UpdatePassword(newHashedPassword, request.userId);
+
+                    await _userAccountRepository.UpdateUserAccount(updatedUserAccountPassword, cancellationToken);
+
+                    await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+
+                    await txn.CommitAsync(cancellationToken);
+
+                    return ResultModel.Success();
+                }
+                catch (Exception)
+                {
+                    await txn.RollbackAsync(cancellationToken);
+
+                    throw;
+                }
             }
-
-            var newHashedPassword = _bCryptAuthProvider.EncryptPassword(request.newPassword);
-
-            var updatedUserAccountPassword =
-                userAccount.UpdatePassword(newHashedPassword, request.userId);
-
-            await _userAccountRepository.UpdateUserAccount(updatedUserAccountPassword, cancellationToken);
-
-            await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
-
-            return ResultModel.Success();
         }
         catch (Exception ex)
         {

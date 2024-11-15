@@ -57,7 +57,8 @@ internal sealed class GetPaginatedInstructorListQueryHandler
                     Id = x.Id.ToString(),
                     EmployeeId = x.EmployeeId.PadLeft(7, '0'),
                     Name = string.IsNullOrWhiteSpace(x.User.MiddleName) ? $"{x.User.FirstName} {x.User.LastName}" : $"{x.User.FirstName} {x.User.MiddleName} {x.User.LastName}",
-                    Department = x.Department.Name.ToUpper()
+                    Department = x.Department.Name.ToUpper(),
+                    AdvisorySection = x.Section?.Name ?? "N/A"
                 }));
 
                 var paginatedList = PaginatedList<InstructorListViewModel>
