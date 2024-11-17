@@ -6,6 +6,8 @@ public interface IDepartmentRepository
 {
     Task<Department> CreateDepartment(Department department, CancellationToken cancellationToken = default);
 
+    Task<Department> UpdateDepartment(Department department, CancellationToken cancellationToken = default);
+
     Task<List<Department>?> GetAllDepartments(bool shouldTrack = false, CancellationToken cancellationToken = default);
 
     Task<List<Department>?> GetListViaFilter(string? searchKeyword,

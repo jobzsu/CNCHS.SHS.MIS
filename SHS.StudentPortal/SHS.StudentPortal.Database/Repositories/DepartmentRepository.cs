@@ -39,19 +39,24 @@ public class DepartmentRepository : BaseRepository<Department>, IDepartmentRepos
         bool shouldTrack = false, 
         CancellationToken cancellationToken = default)
     {
-        return await (shouldTrack ?
-            GetAll()
-            .Include(x => x.Instructors)
-            .AsSplitQuery()
-            .Where(x => string.IsNullOrWhiteSpace(searchKeyword) ?
-                true : x.Name.ToLower().Contains(searchKeyword))
-            .ToListAsync(cancellationToken) :
-            GetAll()
-            .Include(x => x.Instructors)
-            .AsSplitQuery()
-            .AsNoTracking()
-            .Where(x => string.IsNullOrWhiteSpace(searchKeyword) ?
-                true : x.Name.ToLower().Contains(searchKeyword))
-            .ToListAsync(cancellationToken));
+        return shouldTrack ?
+            await GetAll()
+                .Include(x => x.Instructors)
+                .AsSplitQuery()
+                .Where(x => x.Name.ToLower() != Constants.NotApplicable.ToLower() &&
+                            (string.IsNullOrWhiteSpace(searchKeyword) ? true : x.Name.ToLower().Contains(searchKeyword)))
+                .ToListAsync(cancellationToken) :
+            await GetAll()
+                .Include(x => x.Instructors)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .Where(x => x.Name.ToLower() != Constants.NotApplicable.ToLower() &&
+                            (string.IsNullOrWhiteSpace(searchKeyword) ? true : x.Name.ToLower().Contains(searchKeyword)))
+                .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Department> UpdateDepartment(Department department, CancellationToken cancellationToken = default)
+    {
+        return await UpdateAsync(department, cancellationToken);
     }
 }

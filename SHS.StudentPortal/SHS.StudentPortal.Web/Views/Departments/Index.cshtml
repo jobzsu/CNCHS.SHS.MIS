@@ -8,17 +8,17 @@
                 <h5 class="modal-title" id="detailsModalLabel">Department @Model.Id</h5>
             </div>
             <div class="modal-body">
-                <form class="mt-2" asp-controller="Account" asp-action="Register" method="post">
+                <form class="mt-2" id="departmentForm">
                     <h5 class="card-title">Department Information</h5>
                     <hr />
                     <div class="row gx-3 gy-3">
                         <div class="col-12">
                             <label>Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.Name" />
+                            <input id="deptName" type="text" class="form-control" asp-for="@Model.Name" />
                         </div>
                         <div class="col-12">
                             <label>Description</label>
-                            <textarea rows="5" cols="555" class="form-control" asp-for="@Model.Description"></textarea>
+                            <textarea id="deptDesc" rows="5" cols="555" class="form-control" asp-for="@Model.Description"></textarea>
                         </div>
                     </div>
                     <h5 class="card-title mt-3">Instructors</h5>
@@ -54,7 +54,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" tabindex="-1">Save</button>
+                <button type="button" class="btn btn-primary" onclick="updateDepartment(@Model.Id)" tabindex="-1">Save</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="-1">Close</button>
             </div>
         </div>

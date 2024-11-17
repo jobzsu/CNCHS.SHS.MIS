@@ -71,4 +71,26 @@ public class DepartmentsController : Controller
             return BadRequest();
         }
     }
+
+    [HttpPut]
+    [Route("/Departments/Update/{id}")]
+    public IActionResult Update(DepartmentViewModel view, int id)
+    {
+        try
+        {
+            var updatedById = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "UserId")!.Value;
+
+            var command = new UpdateDepartmentCommand(view, Guid.Parse(updatedById));
+
+            var result = Task.Run(() => _sender.Send(command)).Result;
+
+            return result.IsSuccess ?
+                new JsonResult(JsonResponseModel.Success(null, null)) :
+                new JsonResult(JsonResponseModel.Error(result.Error!.Message));
+        }
+        catch (Exception)
+        {
+            return BadRequest();
+        }
+    }
 }

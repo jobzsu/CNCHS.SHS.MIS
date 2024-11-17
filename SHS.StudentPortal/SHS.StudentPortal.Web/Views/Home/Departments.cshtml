@@ -81,8 +81,9 @@
     <script type="text/javascript">
         var detailsModal;
         var isLoading = false;
-
         var createDepartmentModal;
+        var loadDepartmentFormData;
+
         function viewDepartment(deptId) {
             if(isLoading) {
                 Toast.fire({
@@ -103,6 +104,10 @@
                             keyboard: false,
                             backdrop: 'static'
                         });
+
+                        // Serialize loaded data to determine isDirty form
+                        loadDepartmentFormData = $('#departmentForm').serialize();
+
                         detailsModal.show();
                     },
                     error: function(err) {
@@ -138,6 +143,9 @@
                             keyboard: false,
                             backdrop: 'static'
                         });
+
+                        loadDepartmentFormData = $('#departmentForm').serialize();
+
                         createDepartmentModal.show();
                     },
                     error: () => {
@@ -220,6 +228,83 @@
                     });
                 }
             }
+        }
+
+        function updateDepartment(departmentId) {
+            if (isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page Loading"
+                });
+
+                return;
+            } else {
+                if(loadDepartmentFormData === $('#departmentForm').serialize()) {
+                    detailsModal.hide();
+                    $('#modalPlaceholder').html('');
+
+                    return;
+                } else {
+
+                    let deptName = $('#deptName').val();
+                    let deptDesc = $('#deptDesc').val();
+
+                    if (deptName == '' || deptName.length == 0) {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter a valid Department Name"
+                        });
+
+                        return;
+                    } else {
+                        isLoading = true;
+                        let isSuccess = false;
+                        let errorMssg = '';
+
+                        let updatedDeptObj = {
+                            Id: departmentId,
+                            Name: deptName,
+                            Description: deptDesc
+                        }
+
+                        $.ajax({
+                            url: `/Departments/Update/${departmentId}`,
+                            type: 'PUT',
+                            data: updatedDeptObj,
+                            success: function (data) {
+                                isSuccess = data.IsSuccess;
+                                if (!isSuccess) errorMssg = data.Message;
+                            },
+                            error: () => {
+                                errorMssg = 'An error occurred while updating the Department';
+                            },
+                            complete: () => {
+                                isLoading = false;
+
+                                if (isSuccess) {
+                                    detailsModal.hide();
+                                    $('#modalPlaceholder').html('');
+
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Department Updated"
+                                    });
+
+                                    setTimeout(() => {
+                                        window.location = window.location.href;
+                                    }, 3000);
+                                } else {
+                                    Toast.fire({
+                                        icon: "warning",
+                                        title: errorMssg
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
         }
     </script>
 }
