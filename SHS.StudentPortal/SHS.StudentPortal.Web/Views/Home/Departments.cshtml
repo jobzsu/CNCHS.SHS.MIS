@@ -153,5 +153,73 @@
                 });
             }
         }
+
+        function createDepartment() {
+            if (isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page Loading"
+                });
+
+                return;
+            } else { 
+                let deptName = $('#createDeptName').val();
+                let deptDesc = $('#createDeptDesc').val();
+
+                if (deptName == '' || deptName.length == 0) {
+                    Toast.fire({
+                        icon: "warning",
+                        title: "Please enter a valid Department Name"
+                    });
+
+                    return;
+                } else {
+                    isLoading = true;
+                    let isSuccess = false;
+                    let errorMssg = '';
+
+                    let newDeptObj = {
+                        Name: deptName,
+                        Description: deptDesc
+                    }
+
+                    $.ajax({
+                        url: `/Departments/New`,
+                        type: 'POST',
+                        data: newDeptObj,
+                        success: function (data) {
+                            isSuccess = data.IsSuccess;
+                            if (!isSuccess) errorMssg = data.Message;
+                        },
+                        error: () => {
+                            errorMssg = 'An error occurred while creating a new Department';
+                        },
+                        complete: () => {
+                            isLoading = false;
+
+                            if(isSuccess) {
+
+                                createDepartmentModal.hide();
+                                $('#createDepartmentModalPlaceholder').html('');
+
+                                Toast.fire({
+                                    icon: "success",
+                                    title: "Department Created"
+                                });
+
+                                setTimeout(() => {
+                                    window.location = window.location.href;
+                                }, 3000);
+                            } else {
+                                Toast.fire({
+                                    icon: "warning",
+                                    title: errorMssg
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        }
     </script>
 }

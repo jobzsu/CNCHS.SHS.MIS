@@ -9,6 +9,11 @@ public class DepartmentRepository : BaseRepository<Department>, IDepartmentRepos
 {
     public DepartmentRepository(AppDbContext appDbContext) : base(appDbContext) { }
 
+    public async Task<Department> CreateDepartment(Department department, CancellationToken cancellationToken = default)
+    {
+        return await InsertAsync(department, cancellationToken);
+    }
+
     public async Task<List<Department>?> GetAllDepartments(bool shouldTrack = false, CancellationToken cancellationToken = default)
     {
         return shouldTrack ?
@@ -21,6 +26,13 @@ public class DepartmentRepository : BaseRepository<Department>, IDepartmentRepos
         return shouldTrack ?
             GetAll().FirstOrDefaultAsync(x => x.Id == id, cancellationToken) :
             GetAll().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    public Task<Department?> GetDepartmentByName(string name, bool shouldTrack = false, CancellationToken cancellationToken = default)
+    {
+        return shouldTrack ?
+            GetAll().FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower(), cancellationToken) :
+            GetAll().AsNoTracking().FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower(), cancellationToken);
     }
 
     public async Task<List<Department>?> GetListViaFilter(string? searchKeyword, 

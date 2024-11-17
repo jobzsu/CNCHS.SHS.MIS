@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SHS.StudentPortal.App.Commands;
 using SHS.StudentPortal.App.Queries;
+using SHS.StudentPortal.Common.Models;
 
 namespace SHS.StudentPortal.Web.Controllers;
 
@@ -45,6 +47,28 @@ public class DepartmentsController : Controller
         catch (Exception)
         {
             return RedirectToAction("Error", "Home");
+        }
+    }
+
+    [HttpPost]
+    [Route("/Departments/New")]
+    public IActionResult New(CreateDepartmentViewModel model)
+    {
+        try
+        {
+            var createdById = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "UserId")!.Value;
+
+            var command = new CreateDepartmentCommand(model, Guid.Parse(createdById));
+
+            var result = Task.Run(() => _sender.Send(command)).Result;
+
+            return result.IsSuccess ?
+                new JsonResult(JsonResponseModel.Success(null, null)) :
+                new JsonResult(JsonResponseModel.Error(result.Error!.Message));
+        }
+        catch (Exception)
+        {
+            return BadRequest();
         }
     }
 }

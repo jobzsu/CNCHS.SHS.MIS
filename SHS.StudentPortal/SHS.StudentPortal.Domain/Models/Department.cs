@@ -23,4 +23,15 @@ public class Department : BaseModel<int>, IAuditable
 
     public DateTime? ModifiedDate { get; set; }
     #endregion
+
+    public Department Create(string name, string? description, Guid createdById)
+    {
+        Name = name;
+        Description = description;
+
+        CreatedById = createdById;
+        CreatedDate = DateTime.UtcNow;
+
+        return this;
+    }
 }
