@@ -401,4 +401,4 @@ FodyWeavers.xsd
 /SHS.StudentPortal/DockerVolume
 
 # ASP.NET Core web app publish output
-**/wwwroot/lib/
+#**/wwwroot/lib/
