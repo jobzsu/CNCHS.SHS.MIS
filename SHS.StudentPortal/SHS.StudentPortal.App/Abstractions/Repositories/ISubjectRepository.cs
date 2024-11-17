@@ -7,4 +7,9 @@ public interface ISubjectRepository
     Task<List<Subject>?> GetAllSubjectBySemester(string semester, bool shouldTrack = false, CancellationToken cancellationToken = default);
 
     Task<Subject?> GetSubjectById(int id, bool shouldTrack = false, CancellationToken cancellationToken = default);
+
+    Task<List<Subject>?> GetListViaFilter(string? keyword,
+        string? track,
+        string? strand,
+        CancellationToken cancellationToken = default);
 }

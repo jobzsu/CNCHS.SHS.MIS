@@ -55,7 +55,7 @@ public class HomeController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "admin,instructor")]
+    [Authorize(Roles = "admin")]
     public IActionResult Students(string? searchKeyword,
         int yearLevel,
         string? sectionId,
@@ -160,13 +160,42 @@ public class HomeController : Controller
         }
     }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    [HttpGet]
+    [Authorize(Roles = "admin,instructor")]
+    public IActionResult Subjects(string? searchKeyword,
+        string? track,
+        string? strand,
+        int pageNumber = 1)
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        ViewData["ActiveMenu"] = "subjectsMenu";
+
+        ViewData["SearchKeyword"] = searchKeyword;
+        ViewData["Track"] = track;
+        ViewData["Strand"] = strand;
+
+        ViewData["Tracks"] = Track.GetAllTracks;
+        ViewData["AcademicTrackStrands"] = Strand.GetAllAcademicTrackStrands;
+        ViewData["ArtsAndDesignTrackStrands"] = Strand.GetAllArtsAndDesignTrackStrands;
+        ViewData["SportsTrackStrands"] = Strand.GetAllSportsTrackStrands;
+        ViewData["TVLTrackStrands"] = Strand.GetAllTVLTrackStrands;
+
+        var filter = SubjectsPaginationFilter.NewSubjectsListSearch(searchKeyword, track, strand, pageNumber);
+
+        var query = new GetPaginatedSubjectListQuery(filter);
+
+        var result = Task.Run(() => _sender.Send(query)).Result;
+
+        if (result.IsSuccess)
+            return View(result.Data);
+        else
+        {
+            ViewData["ErrorMessage"] = result.Error!.Message;
+            return RedirectToAction("Error");
+        }
     }
 
     [HttpGet]
+    [Authorize(Roles = "admin")]
     public IActionResult Schedules(string? selectedDays,
             string? track,
             string? strand,
@@ -197,5 +226,11 @@ public class HomeController : Controller
 
             return RedirectToAction("Error");
         }    
+    }
+
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
