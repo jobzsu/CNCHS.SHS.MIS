@@ -33,4 +33,18 @@ public class DepartmentsController : Controller
             return RedirectToAction("Error", "Home");
         }
     }
+
+    [HttpGet]
+    [Route("/Departments/New")]
+    public IActionResult New()
+    {
+        try
+        {
+            return PartialView();
+        }
+        catch (Exception)
+        {
+            return RedirectToAction("Error", "Home");
+        }
+    }
 }

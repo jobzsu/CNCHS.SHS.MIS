@@ -12,14 +12,17 @@ internal sealed class GetPaginatedInstructorListQueryHandler
 	private readonly ILogger<GetPaginatedInstructorListQueryHandler> _logger;
     private readonly IInstructorInfoRepository _instructorInfoRepository;
     private readonly IDepartmentRepository _departmentRepository;
+    private readonly ISectionRepository _sectionRepository;
 
     public GetPaginatedInstructorListQueryHandler(ILogger<GetPaginatedInstructorListQueryHandler> logger,
         IInstructorInfoRepository instructorInfoRepository,
-        IDepartmentRepository departmentRepository)
+        IDepartmentRepository departmentRepository,
+        ISectionRepository sectionRepository)
     {
         _logger = logger;
         _instructorInfoRepository = instructorInfoRepository;
         _departmentRepository = departmentRepository;
+        _sectionRepository = sectionRepository;
     }
 
     public async Task<ResultModel<InstructorPaginatedList>> Handle(GetPaginatedInstructorListQuery request, CancellationToken cancellationToken)
@@ -35,6 +38,15 @@ internal sealed class GetPaginatedInstructorListQueryHandler
             var departmentList = await _departmentRepository.GetAllDepartments(cancellationToken: cancellationToken);
             var departmentListKeyValuePair = departmentList is null || departmentList.Count() == 0 ?
                 [] : departmentList.Select(x => new KeyValuePair<int, string>(x.Id, x.Name.ToUpper())).ToList();
+
+            var sectionList = await _sectionRepository.GetAllSections(true, cancellationToken: cancellationToken);
+
+            if(sectionList is null || sectionList.Count() == 0)
+            {
+                error = new(nameof(Exception), "No Sections Found");
+
+                return ResultModel<InstructorPaginatedList>.Fail(error);
+            }
 
             if(instructorList is null || instructorList.Count() == 0)
             {
@@ -58,7 +70,7 @@ internal sealed class GetPaginatedInstructorListQueryHandler
                     EmployeeId = x.EmployeeId.PadLeft(7, '0'),
                     Name = string.IsNullOrWhiteSpace(x.User.MiddleName) ? $"{x.User.FirstName} {x.User.LastName}" : $"{x.User.FirstName} {x.User.MiddleName} {x.User.LastName}",
                     Department = x.Department.Name.ToUpper(),
-                    AdvisorySection = x.Section?.Name ?? "N/A"
+                    AdvisorySection = sectionList.FirstOrDefault(s => s.AdviserId == x.Id)?.Name ?? "N/A"
                 }));
 
                 var paginatedList = PaginatedList<InstructorListViewModel>

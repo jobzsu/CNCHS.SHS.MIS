@@ -9,9 +9,6 @@ public class Section : BaseModel<Guid>, IAuditable
     public Guid AdviserId { get; set; }
 
     [NotMapped]
-    public InstructorInfo Adviser { get; set; }
-
-    [NotMapped]
     public ICollection<StudentInfo> Students { get; set; }
 
     #region > IAuditable Properties

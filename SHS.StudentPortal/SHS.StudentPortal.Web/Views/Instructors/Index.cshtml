@@ -8,7 +8,7 @@
                 <h5 class="modal-title" id="detailsModalLabel">INSTRUCTOR @Model.EmployeeId</h5>
             </div>
             <div class="modal-body">
-                <form class="mt-2">
+                <form id="instructorInfoForm" class="mt-2">
                     <h5 class="card-title">Employee Information</h5>
                     <hr />
                     <div class="row gx-3 gy-3">
@@ -18,16 +18,16 @@
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Major</label>
-                            <input type="text" class="form-control" asp-for="@Model.Major" />
+                            <input id="instrMajor" type="text" class="form-control" asp-for="@Model.Major" />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Department</label>
-                            <select class="form-select" asp-for="@Model.DepartmentId" asp-items="@(new SelectList(Model.DepartmentList, "Key", "Value"))" >
+                            <select id="instrDept" class="form-select" asp-for="@Model.DepartmentId" asp-items="@(new SelectList(Model.DepartmentList, "Key", "Value"))" >
                             </select>
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Advisory</label>
-                            <select class="form-select" asp-for="@Model.AdvisorySectionId" asp-items="@(new SelectList(Model.SectionList, "Key", "Value"))" >
+                            <select id="instrAdvisorySection" class="form-select" asp-for="@Model.AdvisorySectionId" asp-items="@(new SelectList(Model.SectionList, "Key", "Value"))" >
                             </select>
                         </div>
                     </div>
@@ -54,19 +54,19 @@
                     <div class="row gx-3 gy-3">
                         <div class="col-lg-3 col-12">
                             <label>First Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.FirstName" />
+                            <input id="instrFirstName" type="text" class="form-control" asp-for="@Model.FirstName" />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Middle Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.MiddleName" />
+                            <input id="instrMiddleName" type="text" class="form-control" asp-for="@Model.MiddleName" />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Last Name</label>
-                            <input type="text" class="form-control" asp-for="@Model.LastName" />
+                            <input id="instrLastName" type="text" class="form-control" asp-for="@Model.LastName" />
                         </div>
                         <div class="col-lg-3 col-12">
                             <label>Contact Information</label>
-                            <input type="text" class="form-control" asp-for="@Model.ContactInfo" />
+                            <input id="instrContactInfo" type="text" class="form-control" asp-for="@Model.ContactInfo" />
                         </div>
                     </div>
                     <h5 class="card-title mt-3">Assigned Schedules</h5>
@@ -116,7 +116,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary"  tabindex="-1">Save</button>
+                <button id="updateInstructorBtn" type="button" class="btn btn-primary" onclick="updateInstructor('@Model.Id')" tabindex="-1">Save</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="-1">Close</button>
             </div>
         </div>

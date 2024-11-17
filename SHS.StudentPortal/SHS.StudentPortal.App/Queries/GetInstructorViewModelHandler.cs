@@ -58,6 +58,9 @@ internal sealed class GetInstructorViewModelHandler
                 return ResultModel<InstructorViewModel>.Fail(error);
             }
 
+            var advisorySection = await _sectionRepository.GetByAdviserId(instructorInfo.Id, cancellationToken: cancellationToken);
+            var notApplicableSection = await _sectionRepository.GetSectionByName(Constants.NotApplicable, cancellationToken: cancellationToken);
+
             InstructorViewModel instructorViewModel = new()
             {
                 Id = instructorInfo.Id,
@@ -69,7 +72,7 @@ internal sealed class GetInstructorViewModelHandler
                 ContactInfo = instructorInfo.ContactInformation,
                 DepartmentId = instructorInfo.DepartmentId,
                 DepartmentList = new(),
-                AdvisorySectionId = instructorInfo.Section?.Id ?? Guid.Empty,
+                AdvisorySectionId = advisorySection?.Id ?? notApplicableSection!.Id,
                 Username = instructorInfo.User.UserAccount.Username,
                 LastLogin = instructorInfo.User.UserAccount.LastLogin?.ToLocalTime().ToString() ?? "Never Logged In",
                 SectionList = new(),
@@ -86,7 +89,8 @@ internal sealed class GetInstructorViewModelHandler
                     .Select(x => new KeyValuePair<int, string>(x.Id, x.Name)));
             }
 
-            var sectionList = await _sectionRepository.GetAllSections(includeNotApplicable: true, cancellationToken: cancellationToken);
+            var sectionList = await _sectionRepository
+                    .GetAvailableSections(instructorInfo.Id, cancellationToken: cancellationToken);
 
             if(sectionList is not null && sectionList.Count() > 0)
             {

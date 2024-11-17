@@ -11,4 +11,6 @@ public interface IUserRepository
     Task<User> UpdateUser(User user, CancellationToken cancellationToken = default);
 
     Task<User?> GetUserById(Guid userId, bool shouldTrack = false, CancellationToken cancellationToken = default);
+
+    Task<User?> GetUserByFirstAndLastName(string firstName, string lastName, bool shouldTrack = false, CancellationToken cancellationToken = default);
 }

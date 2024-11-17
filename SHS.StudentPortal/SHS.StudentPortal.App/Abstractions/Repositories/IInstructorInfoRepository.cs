@@ -23,4 +23,8 @@ public interface IInstructorInfoRepository
     Task<List<InstructorInfo>?> GetInstructorsByDepartment(int departmentId, bool shouldTrack = false, CancellationToken cancellationToken = default);
 
     Task<InstructorInfo> CreateInstructorInfo(InstructorInfo instructorInfo, CancellationToken cancellationToken = default);
+
+    Task<InstructorInfo> UpdateInstructorInfo(InstructorInfo instructorInfo, CancellationToken cancellationToken = default);
+
+    Task<InstructorInfo?> GetByUserId(Guid userId, bool shouldTrack = false, CancellationToken cancellationToken = default);
 }

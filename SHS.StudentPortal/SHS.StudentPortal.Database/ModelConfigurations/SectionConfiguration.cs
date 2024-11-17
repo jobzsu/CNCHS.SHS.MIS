@@ -28,9 +28,5 @@ public class SectionConfiguration : IEntityTypeConfiguration<Section>
 
         builder.Property(x => x.AdviserId)
             .IsRequired();
-        builder.HasOne(x => x.Adviser)
-            .WithOne(x => x.Section)
-            .HasForeignKey(typeof(Section), "AdviserId")
-            .OnDelete(DeleteBehavior.NoAction);
     }
 }

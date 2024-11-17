@@ -16,7 +16,8 @@
                        name="searchKeyword"
                        asp-for="@ViewData["SearchKeyword"]" />
                 <button class="btn btn-outline-primary float-end me-2" type="submit">Search</button>
-                <a href="@Url.Action("Departments", "Home")" class="btn btn-outline-success float-end">Reset</a>
+                <a href="@Url.Action("Departments", "Home")" class="btn btn-outline-success float-end me-2">Reset</a>
+                <button class="btn btn-outline-primary form-control float-end" type="button" onclick="openCreateDepartmentModal()">Add Department</button>
             </form>
         </div>
     </nav>
@@ -75,11 +76,13 @@
     </tbody>
 </table>
 <div id="modalPlaceholder"></div>
+<div id="createDepartmentModalPlaceholder"></div>
 @section Scripts {
     <script type="text/javascript">
         var detailsModal;
         var isLoading = false;
 
+        var createDepartmentModal;
         function viewDepartment(deptId) {
             if(isLoading) {
                 Toast.fire({
@@ -112,6 +115,42 @@
                         isLoading = false;
                     }
                 })
+            }
+        }
+
+        function openCreateDepartmentModal() {
+            if(isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page Loading"
+                });
+
+                return;
+            } else {
+                isLoading = true;
+
+                $.ajax({
+                    url: `/Departments/New`,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#createDepartmentModalPlaceholder').html(data);
+                        createDepartmentModal = new bootstrap.Modal(document.getElementById('createDepartmentModal'), {
+                            keyboard: false,
+                            backdrop: 'static'
+                        });
+                        createDepartmentModal.show();
+                    },
+                    error: () => {
+                        isLoading = false;
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Error preparing New Department view"
+                        });
+                    },
+                    complete: () => {
+                        isLoading = false;
+                    }
+                });
             }
         }
     </script>

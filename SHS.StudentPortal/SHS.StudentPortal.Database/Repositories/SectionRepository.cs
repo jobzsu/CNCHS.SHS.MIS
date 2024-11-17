@@ -21,6 +21,34 @@ public class SectionRepository : BaseRepository<Section>, ISectionRepository
             await GetAll().Where(s => includeNotApplicable ? true : s.Name != Constants.NotApplicable).AsNoTracking().ToListAsync(cancellationToken);
     }
 
+    public async Task<List<Section>?> GetAvailableSections(Guid instructorId, 
+        bool shouldTrack = false, 
+        CancellationToken cancellationToken = default)
+    {
+        var notApplicableInstructorInfoId = await GetAll()
+            .FirstOrDefaultAsync(x => x.Name.ToLower() == Constants.NotApplicable.ToLower(), cancellationToken);
+
+        return shouldTrack ?
+            await GetAll()
+                .Where(s => s.Name == Constants.NotApplicable || 
+                            s.AdviserId == notApplicableInstructorInfoId!.AdviserId ||
+                            s.AdviserId == instructorId)
+                .ToListAsync(cancellationToken) :
+            await GetAll()
+                .Where(s => s.Name == Constants.NotApplicable ||
+                            s.AdviserId == notApplicableInstructorInfoId!.AdviserId ||
+                            s.AdviserId == instructorId)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Section?> GetByAdviserId(Guid adviserId, bool shouldTrack = false, CancellationToken cancellationToken = default)
+    {
+        return shouldTrack ?
+            await GetAll().FirstOrDefaultAsync(s => s.AdviserId == adviserId, cancellationToken) :
+            await GetAll().AsNoTracking().FirstOrDefaultAsync(s => s.AdviserId == adviserId, cancellationToken);
+    }
+
     public Task<Section?> GetById(Guid id, bool shouldTrack = false, CancellationToken cancellationToken = default)
     {
         return shouldTrack ?

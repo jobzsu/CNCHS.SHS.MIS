@@ -109,4 +109,26 @@ public class InstructorsController : Controller
             return RedirectToAction("Error", "Home");
         }
     }
+
+    [HttpPut]
+    [Route("/Instructors/Update/{id}")]
+    public IActionResult Update(UpdateInstructorViewModel model, Guid id)
+    {
+        try
+        {
+            var updatedById = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "UserId")!.Value;
+
+            var command = new UpdateInstructorInfoCommand(id, model, Guid.Parse(updatedById));
+
+            var result = Task.Run(() => _sender.Send(command)).Result;
+
+            return result.IsSuccess ?
+                new JsonResult(JsonResponseModel.Success(null, null)) :
+                new JsonResult(JsonResponseModel.Error(result.Error!.Message));
+        }
+        catch (Exception)
+        {
+            return BadRequest();
+        }
+    }
 }

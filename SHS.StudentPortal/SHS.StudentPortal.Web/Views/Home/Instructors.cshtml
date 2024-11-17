@@ -91,6 +91,7 @@
     <script type="text/javascript">
         var detailsModal;
         var createInstructorModal;
+        var instructorInfoFormDataOnLoad;
         var isLoading = false;
 
         function toggleViewInstrBtnOnLoad(isLoading, empId) {
@@ -119,6 +120,10 @@
                             keyboard: false,
                             backdrop: 'static'
                         });
+
+                        // Set form data on load to determine dirty
+                        instructorInfoFormDataOnLoad = $('#instructorInfoForm').serialize();
+
                         detailsModal.show();
                     },
                     error: () => {
@@ -429,6 +434,136 @@
                         }
                     }
                 });
+            }
+        }
+
+        function updateInstructor(id) {
+            if(isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page Loading"
+                });
+
+                return;
+            } else {
+                
+                // Check formData if dirty
+                if (instructorInfoFormDataOnLoad === $('#instructorInfoForm').serialize()) {
+                    detailsModal.hide();
+                    $('#modalPlaceholder').html('');
+
+                    Toast.fire({
+                        icon: "success",
+                        title: "Instructor Info Updated"
+                    });
+                } else {
+
+                    let major = $('#instrMajor').val();
+                    let department = $('#instrDept :selected').val();
+                    let advisorySection = $('#instrAdvisorySection :selected').val();
+                    let firstName = $('#instrFirstName').val();
+                    let middleName = $('#instrMiddleName').val();
+                    let lastName = $('#instrLastName').val();
+                    let contactInfo = $('#instrContactInfo').val();
+
+                    if(major.length == 0 || major == '') {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter a major"
+                        });
+
+                        return
+                    } else if(department.length == 0 || department == '') {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please select a department"
+                        });
+
+                        return;
+                    } else if(advisorySection.length == 0 || advisorySection == '') {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please select an advisory section"
+                        });
+
+                        return;
+                    } else if(firstName.length == 0 || firstName == '') {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter a first name"
+                        });
+
+                        return;
+                    } else if(lastName.length == 0 || lastName == '') {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter a last name"
+                        });
+
+                        return;
+                    } else if(contactInfo.length == 0 || contactInfo == '') {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter a contact info"
+                        });
+
+                        return;
+                    } else {
+                        isLoading = true;
+                        let updateInstructorBtn = document.getElementById('updateInstructorBtn');
+                        updateInstructorBtn.disabled = true;
+
+                        let updatedInstructorInfoObj = {
+                            Major: major,
+                            DepartmentId: department,
+                            AdvisorySectionId: advisorySection,
+                            FirstName: firstName,
+                            MiddleName: middleName,
+                            LastName: lastName,
+                            ContactInfo: contactInfo
+                        };
+
+                        let isSuccess = false;
+                        let errorMssg = '';
+
+                        $.ajax({
+                            url: `/Instructors/Update/${id}`,
+                            type: 'PUT',
+                            data: updatedInstructorInfoObj,
+                            success: function (data) {
+                                isSuccess = data.IsSuccess;
+                                if (!isSuccess) errorMssg = data.Message;
+                            },
+                            error: function (data) {
+                                errorMssg = "An error occurred while updating Instructor.";
+                            },
+                            complete: function () {
+                                isLoading = false;
+                                updateInstructorBtn.disabled = false;
+
+                                if (isSuccess) {
+
+                                    detailsModal.hide();
+                                    $('#modalPlaceholder').html('');
+
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Instructor Info Updated"
+                                    });
+
+                                    setTimeout(() => {
+                                        window.location = window.location.href;
+                                    }, 3000);
+                                } else {
+                                    Toast.fire({
+                                        icon: "warning",
+                                        title: errorMssg
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
             }
         }
     </script>

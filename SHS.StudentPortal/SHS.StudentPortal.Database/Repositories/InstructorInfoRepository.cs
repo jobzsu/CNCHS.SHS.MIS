@@ -14,6 +14,13 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
         return await InsertAsync(instructorInfo, cancellationToken);
     }
 
+    public async Task<InstructorInfo?> GetByUserId(Guid userId, bool shouldTrack = false, CancellationToken cancellationToken = default)
+    {
+        return shouldTrack ?
+            await GetAll().FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken) :
+            await GetAll().AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+    }
+
     public async Task<InstructorInfo?> GetInstructorInfoByEmployeeId(string employeeId, bool shouldTrack = false, CancellationToken cancellation = default)
     {
         return await (shouldTrack ?
@@ -33,14 +40,12 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
             .Include(x => x.User)
             .ThenInclude(u => u.UserAccount)
             .Include(x => x.Department)
-            .Include(x => x.Section)
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Id == instructorId, cancellationToken) :
             GetAll()
             .Include(x => x.User)
             .ThenInclude(u => u.UserAccount)
             .Include(x => x.Department)
-            .Include(x => x.Section)
             .AsSplitQuery()
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == instructorId, cancellationToken));
@@ -83,7 +88,6 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Department)
-                .Include(x => x.Section)
                 .Where(x => (departmentId == 0 ? x.EmployeeId != "4000": x.DepartmentId == departmentId && x.EmployeeId != "4000"))
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken) :
@@ -91,12 +95,16 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Department)
-                .Include(x => x.Section)
                 .Where(x => (departmentId == 0 ? x.EmployeeId != "4000" : x.DepartmentId == departmentId && x.EmployeeId != "4000") &&
                             ((x.Department.Name.ToLower().Contains(keyword)) ||
                             (x.User.FirstName.ToLower().Contains(keyword)) ||
                             (x.User.MiddleName != null && x.User.MiddleName.ToLower().Contains(keyword))))
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken));
+    }
+
+    public async Task<InstructorInfo> UpdateInstructorInfo(InstructorInfo instructorInfo, CancellationToken cancellationToken = default)
+    {
+        return await UpdateAsync(instructorInfo, cancellationToken);
     }
 }
