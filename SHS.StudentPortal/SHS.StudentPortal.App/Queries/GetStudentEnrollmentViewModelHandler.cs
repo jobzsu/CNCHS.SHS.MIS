@@ -60,7 +60,7 @@ internal sealed class GetStudentEnrollmentViewModelHandler
             var track = Track.GetTrack(studentInfo.TrackAndStrand.Split('-')[0]);
             var strand = Strand.GetStrand(studentInfo.TrackAndStrand.Split('-')[1]);
 
-            var sectionList = await _sectionRepository.GetAllSections(cancellationToken: cancellationToken);
+            var sectionList = await _sectionRepository.GetAllSections(includeNotApplicable: true, cancellationToken: cancellationToken);
 
             var scheduleList = await _scheduleRepository
                 .GetSchedulesForStudentEnrollment(track.Id,

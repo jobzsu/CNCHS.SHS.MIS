@@ -22,7 +22,7 @@
                 <option value="enrolled-regular">Pending</option>
                 <option value="enrolled-irregular">Irregular</option>
                 </select> *@
-                <select class="form-select me-2" name="yearLevel" asp-for="@ViewData["YearLevel"]">
+                <select class="form-select me-2" name="yearLevel" asp-for="@ViewData["YearLevel"]" style="min-width: 100px; max-width: 175px">
                     <option value="">-- Select Grade --</option>
                     <option value="11">Grade 11</option>
                     <option value="12">Grade 12</option>
@@ -30,7 +30,7 @@
                 <select class="form-select me-2" name="sectionId" asp-for="@ViewData["SectionId"]" asp-items="@(new SelectList(ViewData["SectionList"] as List<KeyValuePair<string, string>>, "Key", "Value"))">
                     <option value="">-- Select Section --</option>
                 </select>
-                <select id="trackSelectList" class="form-select me-2" name="track" asp-for="@ViewData["Track"]" asp-items="@(new SelectList(Track.GetAllTracks, "Id", "Name"))">
+                <select id="trackSelectList" class="form-select me-2" name="track" asp-for="@ViewData["Track"]" asp-items="@(new SelectList(Track.GetAllTracks, "Id", "Name"))" style="min-width: 250px; max-width: 250px">
                     <option value="">-- Select Track --</option>
                 </select>
                 <select id="strandSelectList" class="form-select me-2" name="strand" asp-for="@ViewData["Strand"]" asp-items="@(new SelectList(Strand.GetAllStrandsIncludePlaceholder, "Id", "Name"))">
@@ -408,6 +408,8 @@
                 });
 
                 return;
+            } else if(false) {
+                
             } else {
                 if (isLoading) {
                     Toast.fire({

@@ -44,7 +44,8 @@
                     <option value="">-- Select Strand --</option>
                 </select>
                 <button class="btn btn-outline-primary float-end me-2" type="submit">Search</button>
-                <a href="@Url.Action("Schedules", "Home")" class="btn btn-outline-success float-end">Reset</a>
+                <a href="@Url.Action("Schedules", "Home")" class="btn btn-outline-success float-end me-2">Reset</a>
+                <button class="btn btn-outline-primary float-end" type="button" onclick="getAddScheduleModel()">Add Schedule</button>
             </form>
         </div>
     </nav>
@@ -52,7 +53,7 @@
 <div class="mt-2 row gx-3 gy-3">
     <div class="col-6">
         <p class="card-title">Displaying data for <b>@(Model.CurrentSemester) Semester - A.Y @(Model.CurrentAcademicYear)</b></p>
-        <button class="btn btn-outline-primary" type="button" onclick="getAddScheduleModel()">Add Schedule</button>
+        
     </div>
     <div class="col-6">
         <nav aria-label="Page navigation example" class="mt-3">

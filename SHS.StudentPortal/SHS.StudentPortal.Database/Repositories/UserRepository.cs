@@ -44,6 +44,20 @@ public class UserRepository : BaseRepository<User>, IUserRepository
             .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken));
     }
 
+    public async Task<User?> GetUserByUserAccountId(Guid userAccountId, CancellationToken cancellationToken = default, bool shouldTrack = false)
+    {
+        return shouldTrack ?
+            await GetAll()
+                .Include(x => x.UserAccount)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(x => x.UserAccountId == userAccountId, cancellationToken) :
+            await GetAll()
+                .Include(x => x.UserAccount)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserAccountId == userAccountId, cancellationToken);
+    }
+
     public async Task<User> UpdateUser(User user, CancellationToken cancellationToken = default)
     {
         return await UpdateAsync(user, cancellationToken);

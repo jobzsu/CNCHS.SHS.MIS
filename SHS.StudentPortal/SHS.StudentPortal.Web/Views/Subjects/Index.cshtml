@@ -1,0 +1,48 @@
+﻿@using SHS.StudentPortal.Common.Models
+@model SubjectViewModel
+
+<div class="modal fade" id="subjectDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">SUBJECT | @Model.Code</h5>
+            </div>
+            <div class="modal-body">
+                <form id="subjectForm" class="mt-2">
+                    <h5 class="card-title">Subject Information</h5>
+                    <hr />
+                    <div class="row gx-3 gy-3">
+                        <div class="col-12">
+                            <label>Code</label>
+                            <input id="subjectCode" type="text" class="form-control" asp-for="@Model.Code" />
+                        </div>
+                        <div class="col-12">
+                            <label>Name</label>
+                            <input id="subjectName" type="text" class="form-control" asp-for="@Model.Name" />
+                        </div>
+                        <div class="col-12">
+                            <label>Hours</label>
+                            <input id="subjectHours" type="number" class="form-control" asp-for="@Model.Hours" />
+                        </div>
+                        <div class="col-12">
+                            <label>Days</label>
+                            <input id="subjectDays" type="number" class="form-control" asp-for="@Model.Days" />
+                        </div>
+                        <div class="col-12">
+                            <label>Units</label>
+                            <input id="subjectUnits" type="number" class="form-control" asp-for="@Model.Units" />
+                        </div>
+                        <div class="col-12">
+                            <label>Description</label>
+                            <textarea id="subjectDesc" rows="3" class="form-control" asp-for="@Model.Description"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="" tabindex="-1">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="-1">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

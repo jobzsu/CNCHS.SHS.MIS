@@ -37,7 +37,7 @@
                             </select>
                             <span class="text-danger" asp-validation-for="@Model.SectionId"></span>
                         </div>
-                        <div class="col-lg-4 col-12">
+                        <div class="col-lg-3 col-12">
                             <label>Track</label>
                             <select class="form-select" asp-for="@Model.Track" asp-items="@(new SelectList(Track.GetAllTracks, "Id", "Name"))" disabled>
                             </select>
@@ -49,11 +49,11 @@
                             </select>
                             <span class="text-danger" asp-validation-for="@Model.Track"></span>
                         </div>
-                        <div class="col-lg-2 col-12">
-                            @if(Model.Status == "ASSESSMENT" || Model.Status == "ENROLLMENT")
+                        <div class="col-lg-3 col-12">
+                            @if (Model.Status == "ASSESSMENT" || Model.Status == "ENROLLMENT")
                             {
                                 <label>&nbsp;</label>
-                                <button class="btn btn-primary form-control" type="button" onclick="openPrevAcademicRecordModal()">Assess Records</button>
+                                <button class="btn btn-primary form-control" type="button" onclick="openPrevAcademicRecordModal()">View Records</button>
                             }
                         </div>
                     </div>
@@ -70,13 +70,14 @@
                             <input type="text" class="form-control" asp-for="@Model.LastLogin" disabled />
                             <span class="text-danger" asp-validation-for="@Model.LastLogin"></span>
                         </div>
-                        @if(Model.Status != "PENDING")
-                        {
-                            <div class="col-lg-2 col-12" >
+                        <div class="col-lg-1 col-12"></div>
+                        <div class="col-lg-3 col-12">
+                            @if (Model.Status != "PENDING")
+                            {
                                 <label>&nbsp;</label>
                                 <button class="btn btn-primary form-control" type="button" onclick="openUpdatePasswordModal()">Update Password</button>
-                            </div>
-                        }
+                            }
+                        </div>
                     </div>
                     <h5 class="card-title mt-3">Personal Information</h5>
                     <hr />
@@ -225,6 +226,9 @@
                             <th scope="col">Rating</th>
                             <th scope="col">Semester</th>
                             <th scope="col">Academic Year</th>
+                            <th scope="col">Verified</th>
+                            <th scope="col">Verified Date</th>
+                            <th scope="col">Verified By</th>
                         </tr>
                     </thead>
                     <tbody id="prevAcadRecordListTableBody">
@@ -235,6 +239,9 @@
                                 <td>@par.Rating</td>
                                 <td>@par.Semester</td>
                                 <td>@par.AcademicYear</td>
+                                <td><input type="checkbox" value="@par.IsVerifiedForEnrollment"/></td>
+                                <td>@par.VerifiedDate</td>
+                                <td>@par.VerifiedByName</td>
                             </tr>
                         }
                     </tbody>

@@ -49,12 +49,23 @@ internal sealed class GetPaginatedStudentListQueryHandler :
 
                 studentListViewModel.AddRange(studentList.Select(x =>
                 {
-                    var strandStr = "";
+                    var trackStrandSplitStr = x.TrackAndStrand.Split('-');
 
-                    if (Strand.GetStrand(x.TrackAndStrand.Split('-')[1]).IsPlaceholder)
-                        strandStr = "N/A";
+                    var trackId = trackStrandSplitStr![0];
+
+                    var trackStr = string.Empty;
+                    if (trackId == Track.AcademicTrack.Id)
+                        trackStr = "Academic";
+                    else if (trackId == Track.ArtsAndDesignTrack.Id)
+                        trackStr = "Arts & Design";
+                    else if (trackId == Track.SportsTrack.Id)
+                        trackStr = "Sports";
                     else
-                        strandStr = Strand.GetStrand(x.TrackAndStrand.Split('-')[1]).Id.ToUpper();
+                        trackStr = "TVL";
+
+                    var strandStr = Strand.GetStrand(trackStrandSplitStr![1]).IsPlaceholder ?
+                        Strand.Placeholder.Name :
+                        Strand.GetStrand(trackStrandSplitStr![1]).Name;
 
                     return new StudentListViewModel()
                     {
@@ -63,7 +74,7 @@ internal sealed class GetPaginatedStudentListQueryHandler :
                         Name = x.User.MiddleName is null ? $"{x.User.FirstName} {x.User.LastName}" : $"{x.User.FirstName} {x.User.MiddleName} {x.User.LastName}",
                         Gender = x.Gender.ToUpper(),
                         YearLevel = $"Grade {x.YearLevel}",
-                        TrackAndStrand = $"{x.TrackAndStrand.Split('-')[0].ToUpper()} - {strandStr}",
+                        TrackAndStrand = $"{trackStr} - {strandStr}",
                         Status = StudentStatuses.Get(x.StudentStatus).Name.ToUpper()
                     };
                 }));

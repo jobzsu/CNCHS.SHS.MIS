@@ -166,7 +166,7 @@ namespace SHS.StudentPortal.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Course");
+                    b.ToTable("Course", (string)null);
                 });
 
             modelBuilder.Entity("SHS.StudentPortal.Domain.Models.Department", b =>

@@ -68,6 +68,6 @@ public class RegisterStudentViewModel
 
     public string? Strand { get; set; }
 
-    [MinLength(1, ErrorMessage = "Missing Academic Records")]
+    //[MinLength(1, ErrorMessage = "Missing Academic Records")]
     public List<ExternalAcademicRecordViewModel> ExternalAcademicRecords { get; set; } = new();
 }

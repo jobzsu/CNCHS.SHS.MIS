@@ -16,178 +16,177 @@
     <link rel="stylesheet" href="~/SHS.StudentPortal.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="container-fluid">
+    <div class="container-fluid vh-100">
         <div class="row justify-content-center align-items-center">
-            <div class="col-8 mt-2">
-                <div class="card">
-                    <div class="card-header">Pre-Registration Form</div>
-                    <div class="card-body">
-                        <form id="registerStudentForm" asp-action="Register" method="post"> 
-                            <h5 class="card-title">Login Information</h5>
-                            <hr />
-                            <div class="row gx-3 gy-3">
-                                <div class="col-lg-3 col-md-12 col-sm-12">
-                                    <label>Email Address</label>
-                                    <input asp-for="@Model.EmailAddress" type="email" class="form-control"  />
-                                    <span asp-validation-for="@Model.EmailAddress" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-3 col-md-12 col-sm-12">
-                                    <label>Username</label>
-                                    <input asp-for="@Model.Username" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.Username" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-3 col-md-12 col-sm-12">
-                                    <label>Password</label>
-                                    <input asp-for="@Model.Password" type="password" class="form-control" />
-                                    <span asp-validation-for="@Model.Password" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-3 col-md-12 col-sm-12">
-                                    <label>Confirm Password</label>
-                                    <input asp-for="@Model.ConfirmPassword" type="password" class="form-control" />
-                                    <span asp-validation-for="@Model.ConfirmPassword" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <h5 class="card-title mt-3">Personal Information</h5>
-                            <hr />
-                            <div class="row gx-3 gy-3">
-                                <div class="col-lg-4 col-md-12 col-sm-12">
-                                    <label>First Name</label>
-                                    <input asp-for="@Model.FirstName" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.FirstName" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-4 col-md-12 col-sm-12">
-                                    <label>Middle Name</label>
-                                    <input asp-for="@Model.MiddleName" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.MiddleName" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-4 col-md-12 col-sm-12">
-                                    <label>Last Name</label>
-                                    <input asp-for="@Model.LastName" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.LastName" class="text-danger"></span>
-                                </div>
-                                
-                                <div class="col-lg-2 col-md-12 col-sm-12">
-                                    <label>Gender</label>
-                                    <select class="form-select" asp-for="@Model.Gender">
-                                        <option value="" selected>Select Gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                    </select>
-                                    <span asp-validation-for="@Model.Gender" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-2 col-md-12 col-sm-12">
-                                    <label>Date Of Birth</label>
-                                    <input asp-for="@Model.DateOfBirth" type="date" class="form-control" />
-                                    <span asp-validation-for="@Model.DateOfBirth" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-4 col-md-12 col-sm-12">
-                                    <label>Place Of Birth</label>
-                                    <input asp-for="@Model.PlaceOfBirth" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.PlaceOfBirth" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-2 col-md-12 col-sm-12">
-                                    <label>Civil Status</label>
-                                    <select class="form-select" asp-for="@Model.CivilStatus">
-                                        <option value="" selected>Select Status</option>
-                                        <option value="single">Single</option>
-                                        <option value="married">Married</option>
-                                        <option value="widowed">Widowed</option>
-                                        <option value="legallySeparated">Legally Separated</option>
-                                    </select>
-                                    <span asp-validation-for="@Model.CivilStatus" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-2 col-md-12 col-sm-12">
-                                    <label>Nationality</label>
-                                    <input asp-for="@Model.Nationality" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.Nationality" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-2 col-md-12 col-sm-12">
-                                    <label>Religion</label>
-                                    <input asp-for="@Model.Religion" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.Religion" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-2 col-md-12 col-sm-12">
-                                    <label>Contact Info</label>
-                                    <input asp-for="@Model.ContactInfo" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.ContactInfo" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-6 col-md-12 col-sm-12">
-                                    <label>Address</label>
-                                    <input asp-for="@Model.Address" type="text" class="form-control" />
-                                    <span asp-validation-for="@Model.Address" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <h5 class="card-title mt-3">Academic Information</h5>
-                            <hr />
-                            <div class="row gx-3 gy-3">
-                                <div class="col-lg-2 col-md-12 col-sm-12">
-                                    <label>Grade</label>
-                                    <select class="form-select" asp-for="@Model.YearLevel">
-                                        <option value=11>Grade 11</option>
-                                        <option value=12>Grade 12</option>
-                                    </select>
-                                    <span asp-validation-for="@Model.YearLevel" class="text-danger"></span>
-                                </div>
-                                <div class="col-lg-4 col-md-12 col-sm-12">
-                                    <label>Track</label>
-                                    <select class="form-select" id="trackSelectList" asp-for="@Model.Track" asp-items="@(new SelectList(ViewBag.Tracks, "Id", "Name"))">
-                                    </select>
-                                    <span class="text-danger" asp-validation-for="@Model.Track"></span>
-                                </div>
-                                <div class="col-lg-5 col-md-12 col-sm-12">
-                                    <label>Strand</label>
-                                    <select class="form-select" id="strandSelectList" asp-for="@Model.Strand" >
-                                    </select>
-                                    <span asp-validation-for="@Model.Strand" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <h5 class="card-title mt-3">Previous Academic Records</h5>
-                            <hr />
-                            <div class="row gx-3 gy-3">
-                                <span asp-validation-for="@Model.ExternalAcademicRecords" class="text-danger"></span>
-                                <div class="col-12">
-                                    <button class="btn btn-sm btn-primary float-end" type="button" onclick="openPrevAcademicRecordModal()">Add Record</button>
-                                </div>
-                                <div class="col-12">
-                                    <table id="prevAcadRecordListTable" class="table table-striped table-hover text-center">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Subject Name</th>
-                                                <th scope="col">Rating</th>
-                                                <th scope="col">Semester</th>
-                                                <th scope="col">Academic Year</th>
-                                                <th scope="col"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="prevAcadRecordListTableBody">
-                                            @for (int i = 0; i < Model.ExternalAcademicRecords.Count; i++)
-                                            {
-                                                <tr>
-                                                    <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].TempId" />
-                                                    <td hidden>@Model.ExternalAcademicRecords[i].TempId</td>
-                                                    <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].SubjectName" />
-                                                    <td>@Model.ExternalAcademicRecords[i].SubjectName</td>
-                                                    <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].Rating" />
-                                                    <td>@Model.ExternalAcademicRecords[i].Rating</td>
-                                                    <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].Semester" />
-                                                    <td>@Model.ExternalAcademicRecords[i].Semester</td>
-                                                    <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].AcademicYear" />
-                                                    <td>@Model.ExternalAcademicRecords[i].AcademicYear</td>
-                                                    <td><button class="btn btn-sm btn-danger" type="button" onclick="removeExternalAcademicRecord(@Model.ExternalAcademicRecords[i].TempId)">Delete</button></td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <hr />
-                                <button type="submit" class="btn btn-primary float-end">Submit</button>
-                            </div>
-                        </form>
+            <form id="registerStudentForm" asp-action="Register" method="post" class="col-12">
+                <h2>Registration Form</h2>
+                <hr />
+                <h5 class="card-title mt-5">Login Information</h5>
+                <hr />
+                <div class="row gx-3 gy-3">
+                    <div class="col-lg-3 col-md-12 col-sm-12">
+                        <label>Email Address</label>
+                        <input asp-for="@Model.EmailAddress" type="email" class="form-control" />
+                        <span asp-validation-for="@Model.EmailAddress" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-3 col-md-12 col-sm-12">
+                        <label>Username</label>
+                        <input asp-for="@Model.Username" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.Username" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-3 col-md-12 col-sm-12">
+                        <label>Password</label>
+                        <input asp-for="@Model.Password" type="password" class="form-control" />
+                        <span asp-validation-for="@Model.Password" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-3 col-md-12 col-sm-12">
+                        <label>Confirm Password</label>
+                        <input asp-for="@Model.ConfirmPassword" type="password" class="form-control" />
+                        <span asp-validation-for="@Model.ConfirmPassword" class="text-danger"></span>
                     </div>
                 </div>
-            </div>
+                <h5 class="card-title mt-5">Personal Information</h5>
+                <hr />
+                <div class="row gx-3 gy-3">
+                    <div class="col-lg-4 col-md-12 col-sm-12">
+                        <label>First Name</label>
+                        <input asp-for="@Model.FirstName" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-4 col-md-12 col-sm-12">
+                        <label>Middle Name</label>
+                        <input asp-for="@Model.MiddleName" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.MiddleName" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-4 col-md-12 col-sm-12">
+                        <label>Last Name</label>
+                        <input asp-for="@Model.LastName" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.LastName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-lg-2 col-md-12 col-sm-12">
+                        <label>Gender</label>
+                        <select class="form-select" asp-for="@Model.Gender">
+                            <option value="" selected>Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                        <span asp-validation-for="@Model.Gender" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2 col-md-12 col-sm-12">
+                        <label>Date Of Birth</label>
+                        <input asp-for="@Model.DateOfBirth" type="date" class="form-control" />
+                        <span asp-validation-for="@Model.DateOfBirth" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-4 col-md-12 col-sm-12">
+                        <label>Place Of Birth</label>
+                        <input asp-for="@Model.PlaceOfBirth" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.PlaceOfBirth" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2 col-md-12 col-sm-12">
+                        <label>Civil Status</label>
+                        <select class="form-select" asp-for="@Model.CivilStatus">
+                            <option value="" selected>Select Status</option>
+                            <option value="single">Single</option>
+                            <option value="married">Married</option>
+                            <option value="widowed">Widowed</option>
+                            <option value="legallySeparated">Legally Separated</option>
+                        </select>
+                        <span asp-validation-for="@Model.CivilStatus" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2 col-md-12 col-sm-12">
+                        <label>Nationality</label>
+                        <input asp-for="@Model.Nationality" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.Nationality" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2 col-md-12 col-sm-12">
+                        <label>Religion</label>
+                        <input asp-for="@Model.Religion" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.Religion" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2 col-md-12 col-sm-12">
+                        <label>Contact Info</label>
+                        <input asp-for="@Model.ContactInfo" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.ContactInfo" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-6 col-md-12 col-sm-12">
+                        <label>Address</label>
+                        <input asp-for="@Model.Address" type="text" class="form-control" />
+                        <span asp-validation-for="@Model.Address" class="text-danger"></span>
+                    </div>
+                </div>
+                <h5 class="card-title mt-5">Academic Information</h5>
+                <hr />
+                <div class="row gx-3 gy-3">
+                    <div class="col-lg-2 col-md-12 col-sm-12">
+                        <label>Grade</label>
+                        <select class="form-select" asp-for="@Model.YearLevel">
+                            <option value=11>Grade 11</option>
+                            <option value=12>Grade 12</option>
+                        </select>
+                        <span asp-validation-for="@Model.YearLevel" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-4 col-md-12 col-sm-12">
+                        <label>Track</label>
+                        <select class="form-select" id="trackSelectList" asp-for="@Model.Track" asp-items="@(new SelectList(ViewBag.Tracks, "Id", "Name"))">
+                        </select>
+                        <span class="text-danger" asp-validation-for="@Model.Track"></span>
+                    </div>
+                    <div class="col-lg-5 col-md-12 col-sm-12">
+                        <label>Strand</label>
+                        <select class="form-select" id="strandSelectList" asp-for="@Model.Strand">
+                        </select>
+                        <span asp-validation-for="@Model.Strand" class="text-danger"></span>
+                    </div>
+                </div>
+                <hr class="mt-5"/>
+                <!-- <h5 class="card-title mt-3">Previous Academic Records</h5>
+                <hr />
+                <div class="row gx-3 gy-3">
+                    <span asp-validation-for="@Model.ExternalAcademicRecords" class="text-danger"></span>
+                    <div class="col-12">
+                        <button class="btn btn-sm btn-primary float-end" type="button" onclick="openPrevAcademicRecordModal()">Add Record</button>
+                    </div>
+                    <div class="col-12">
+                        <table id="prevAcadRecordListTable" class="table table-striped table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Subject Name</th>
+                                    <th scope="col">Rating</th>
+                                    <th scope="col">Semester</th>
+                                    <th scope="col">Academic Year</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="prevAcadRecordListTableBody">
+                                @for (int i = 0; i < Model.ExternalAcademicRecords.Count; i++)
+                                {
+                                    <tr>
+                                        <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].TempId" />
+                                        <td hidden>@Model.ExternalAcademicRecords[i].TempId</td>
+                                        <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].SubjectName" />
+                                        <td>@Model.ExternalAcademicRecords[i].SubjectName</td>
+                                        <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].Rating" />
+                                        <td>@Model.ExternalAcademicRecords[i].Rating</td>
+                                        <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].Semester" />
+                                        <td>@Model.ExternalAcademicRecords[i].Semester</td>
+                                        <input type="hidden" asp-for="@Model.ExternalAcademicRecords[i].AcademicYear" />
+                                        <td>@Model.ExternalAcademicRecords[i].AcademicYear</td>
+                                        <td><button class="btn btn-sm btn-danger" type="button" onclick="removeExternalAcademicRecord(@Model.ExternalAcademicRecords[i].TempId)">Delete</button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div> -->
+                <div class="row gx-3 gy-3">
+                    <div class="col-12" style="">
+                        <button type="submit" class="btn btn-primary form-button float-end">Submit</button>
+                        <button type="button" class="btn btn-secondary form-button float-end me-2" onclick="returnToLogin()">Cancel</button>
+                    </div>
+                </div>
+                <hr />
+            </form>
         </div>
 
         <!-- Modal -->
@@ -325,154 +324,158 @@
                 break;
         }
 
-        function openPrevAcademicRecordModal() {
-            var prevAcadRecordModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('prevAcademicRecordModal'), {
-                keyboard: false,
-                backdrop: 'static'
-            });
-            prevAcadRecordModal.show();
-        }
+        // function openPrevAcademicRecordModal() {
+        //     var prevAcadRecordModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('prevAcademicRecordModal'), {
+        //         keyboard: false,
+        //         backdrop: 'static'
+        //     });
+        //     prevAcadRecordModal.show();
+        // }
 
-        function hidePrevAcademicRecordModal() {
-            var prevAcadRecordModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('prevAcademicRecordModal'), {
-                keyboard: false,
-                backdrop: 'static'
-            });
-            prevAcadRecordModal.hide();
-        }
+        // function hidePrevAcademicRecordModal() {
+        //     var prevAcadRecordModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('prevAcademicRecordModal'), {
+        //         keyboard: false,
+        //         backdrop: 'static'
+        //     });
+        //     prevAcadRecordModal.hide();
+        // }
 
-        // Initialize record list variable
-        var prevAcadRecordList = [];
-        // Check if we have any records in the razor view model list
-        const tableBodyRows = document.getElementById("prevAcadRecordListTableBody").getElementsByTagName("tr");
-        if (Array.from(tableBodyRows).length > 0) { 
-            // Parse the row as object
-            Array.from(tableBodyRows).forEach(row => {
-                const rowData = {
-                    TempId: row.cells[0].textContent,
-                    SubjectName: row.cells[1].textContent,
-                    Rating: row.cells[2].textContent,
-                    Semester: row.cells[3].textContent,
-                    AcademicYear: row.cells[4].textContent
-                }
+        // // Initialize record list variable
+        // var prevAcadRecordList = [];
+        // // Check if we have any records in the razor view model list
+        // const tableBodyRows = document.getElementById("prevAcadRecordListTableBody").getElementsByTagName("tr");
+        // if (Array.from(tableBodyRows).length > 0) { 
+        //     // Parse the row as object
+        //     Array.from(tableBodyRows).forEach(row => {
+        //         const rowData = {
+        //             TempId: row.cells[0].textContent,
+        //             SubjectName: row.cells[1].textContent,
+        //             Rating: row.cells[2].textContent,
+        //             Semester: row.cells[3].textContent,
+        //             AcademicYear: row.cells[4].textContent
+        //         }
 
-                // Store in javascript object
-                prevAcadRecordList.push(rowData);
-            });
-        }
+        //         // Store in javascript object
+        //         prevAcadRecordList.push(rowData);
+        //     });
+        // }
 
-        var prevAcadRecordListTableBody = $('#prevAcadRecordListTableBody');
-        var tempIdHolder = prevAcadRecordList.length == 0 ? 0 : prevAcadRecordList[prevAcadRecordList.length - 1].TempId;
+        // var prevAcadRecordListTableBody = $('#prevAcadRecordListTableBody');
+        // var tempIdHolder = prevAcadRecordList.length == 0 ? 0 : prevAcadRecordList[prevAcadRecordList.length - 1].TempId;
 
-        function addExternalAcademicRecord() {
-            let par = {
-                TempId: tempIdHolder + 1,
-                SubjectName: document.getElementById('parSubjectName').value,
-                Rating: document.getElementById('parRating').value,
-                Semester: document.getElementById('parSemester').value,
-                AcademicYear: document.getElementById('parAcademicYear').value
-            };
+        // function addExternalAcademicRecord() {
+        //     let par = {
+        //         TempId: tempIdHolder + 1,
+        //         SubjectName: document.getElementById('parSubjectName').value,
+        //         Rating: document.getElementById('parRating').value,
+        //         Semester: document.getElementById('parSemester').value,
+        //         AcademicYear: document.getElementById('parAcademicYear').value
+        //     };
 
-            var hitObj = prevAcadRecordList.find(obj =>
-                obj.SubjectName.toLowerCase() === par.SubjectName.toLowerCase() &&
-                obj.Semester.toLowerCase() === par.Semester.toLowerCase() &&
-                obj.AcademicYear.toLowerCase() === par.AcademicYear.toLowerCase());
+        //     var hitObj = prevAcadRecordList.find(obj =>
+        //         obj.SubjectName.toLowerCase() === par.SubjectName.toLowerCase() &&
+        //         obj.Semester.toLowerCase() === par.Semester.toLowerCase() &&
+        //         obj.AcademicYear.toLowerCase() === par.AcademicYear.toLowerCase());
 
-            if (hitObj) {
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Record is already in the List'
-                });
+        //     if (hitObj) {
+        //         Toast.fire({
+        //             icon: 'warning',
+        //             title: 'Record is already in the List'
+        //         });
 
-                return;
-            } else {
-                let currentIndex = prevAcadRecordList.length;
+        //         return;
+        //     } else {
+        //         let currentIndex = prevAcadRecordList.length;
 
-                let newRow = $('<tr></tr>');
-                newRow.append($(`<input type="hidden" data-val="true" data-val-required="The TempId field is required." id="ExternalAcademicRecords_${currentIndex}__TempId" name="ExternalAcademicRecords[${currentIndex}].TempId" value="${par.TempId}">`));
-                newRow.append($(`<td hidden="">${par.TempId}</td>`))
-                newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a subject name" id="ExternalAcademicRecords_${currentIndex}__SubjectName" name="ExternalAcademicRecords[${currentIndex}].SubjectName" value="${par.SubjectName}">`));
-                newRow.append($(`<td>${par.SubjectName}</td>`));
-                newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a rating for this subject" id="ExternalAcademicRecords_${currentIndex}__Rating" name="ExternalAcademicRecords[${currentIndex}].Rating" value="${par.Rating}">`));
-                newRow.append($(`<td>${par.Rating}</td>`));
-                newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a semester" id="ExternalAcademicRecords_${currentIndex}__Semester" name="ExternalAcademicRecords[${currentIndex}].Semester" value="${par.Semester}">`));
-                newRow.append($(`<td>${par.Semester}</td>`));
-                newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter an academic year" id="ExternalAcademicRecords_${currentIndex}__AcademicYear" name="ExternalAcademicRecords[${currentIndex}].AcademicYear" value="${par.AcademicYear}">`));
-                newRow.append($(`<td>${par.AcademicYear}</td>`));
-                newRow.append($(`<td><button class="btn btn-sm btn-danger" type="button" onclick="removeExternalAcademicRecord(${par.TempId})">Delete</button></td>`));
+        //         let newRow = $('<tr></tr>');
+        //         newRow.append($(`<input type="hidden" data-val="true" data-val-required="The TempId field is required." id="ExternalAcademicRecords_${currentIndex}__TempId" name="ExternalAcademicRecords[${currentIndex}].TempId" value="${par.TempId}">`));
+        //         newRow.append($(`<td hidden="">${par.TempId}</td>`))
+        //         newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a subject name" id="ExternalAcademicRecords_${currentIndex}__SubjectName" name="ExternalAcademicRecords[${currentIndex}].SubjectName" value="${par.SubjectName}">`));
+        //         newRow.append($(`<td>${par.SubjectName}</td>`));
+        //         newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a rating for this subject" id="ExternalAcademicRecords_${currentIndex}__Rating" name="ExternalAcademicRecords[${currentIndex}].Rating" value="${par.Rating}">`));
+        //         newRow.append($(`<td>${par.Rating}</td>`));
+        //         newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a semester" id="ExternalAcademicRecords_${currentIndex}__Semester" name="ExternalAcademicRecords[${currentIndex}].Semester" value="${par.Semester}">`));
+        //         newRow.append($(`<td>${par.Semester}</td>`));
+        //         newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter an academic year" id="ExternalAcademicRecords_${currentIndex}__AcademicYear" name="ExternalAcademicRecords[${currentIndex}].AcademicYear" value="${par.AcademicYear}">`));
+        //         newRow.append($(`<td>${par.AcademicYear}</td>`));
+        //         newRow.append($(`<td><button class="btn btn-sm btn-danger" type="button" onclick="removeExternalAcademicRecord(${par.TempId})">Delete</button></td>`));
 
-                prevAcadRecordListTableBody.append(newRow);
+        //         prevAcadRecordListTableBody.append(newRow);
 
-                hidePrevAcademicRecordModal();
+        //         hidePrevAcademicRecordModal();
 
-                cleanUpAddPrevRecordModalFields();
+        //         cleanUpAddPrevRecordModalFields();
 
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Record Added'
-                });
+        //         Toast.fire({
+        //             icon: 'success',
+        //             title: 'Record Added'
+        //         });
 
-                tempIdHolder += 1;
-                prevAcadRecordList.push(par);
-            }
-        }
+        //         tempIdHolder += 1;
+        //         prevAcadRecordList.push(par);
+        //     }
+        // }
 
-        function removeExternalAcademicRecord(tempId) {
+        // function removeExternalAcademicRecord(tempId) {
 
-            Swal.fire({
-                title: "Delete Academic Record",
-                text: "This action cannot be undone",
-                showCancelButton: true,
-                confirmButtonText: "Confirm",
-                confirmButtonColor: "#3085d6",
-                icon: "question",
-            }).then((result) => { 
-                if (result.isConfirmed) { 
+        //     Swal.fire({
+        //         title: "Delete Academic Record",
+        //         text: "This action cannot be undone",
+        //         showCancelButton: true,
+        //         confirmButtonText: "Confirm",
+        //         confirmButtonColor: "#3085d6",
+        //         icon: "question",
+        //     }).then((result) => { 
+        //         if (result.isConfirmed) { 
 
-                    console.log('Before filter', prevAcadRecordList);
+        //             console.log('Before filter', prevAcadRecordList);
 
-                    prevAcadRecordList = prevAcadRecordList.filter(x => x.TempId != tempId);
+        //             prevAcadRecordList = prevAcadRecordList.filter(x => x.TempId != tempId);
 
-                    console.log('After filter', prevAcadRecordList);
+        //             console.log('After filter', prevAcadRecordList);
 
-                    // Empty the table
-                    prevAcadRecordListTableBody.empty();
+        //             // Empty the table
+        //             prevAcadRecordListTableBody.empty();
 
-                    // Loop through each prevAcadRecordList
-                    for (let i = 0; i < prevAcadRecordList.length; i++) {
-                        let newRow = $('<tr></tr>');
-                        newRow.append($(`<input type="hidden" data-val="true" data-val-required="The TempId field is required." id="ExternalAcademicRecords_${i}__TempId" name="ExternalAcademicRecords[${i}].TempId" value="${prevAcadRecordList[i].TempId}">`));
-                        newRow.append($(`<td hidden="">${prevAcadRecordList[i].TempId}</td>`))
-                        newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a subject name" id="ExternalAcademicRecords_${i}__SubjectName" name="ExternalAcademicRecords[${i}].SubjectName" value="${prevAcadRecordList[i].SubjectName}">`));
-                        newRow.append($(`<td>${prevAcadRecordList[i].SubjectName}</td>`));
-                        newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a rating for this subject" id="ExternalAcademicRecords_${i}__Rating" name="ExternalAcademicRecords[${i}].Rating" value="${prevAcadRecordList[i].Rating}">`));
-                        newRow.append($(`<td>${prevAcadRecordList[i].Rating}</td>`));
-                        newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a semester" id="ExternalAcademicRecords_${i}__Semester" name="ExternalAcademicRecords[${i}].Semester" value="${prevAcadRecordList[i].Semester}">`));
-                        newRow.append($(`<td>${prevAcadRecordList[i].Semester}</td>`));
-                        newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter an academic year" id="ExternalAcademicRecords_${i}__AcademicYear" name="ExternalAcademicRecords[${i}].AcademicYear" value="${prevAcadRecordList[i].AcademicYear}">`));
-                        newRow.append($(`<td>${prevAcadRecordList[i].AcademicYear}</td>`));
-                        newRow.append($(`<td><button class="btn btn-sm btn-danger" type="button" onclick="removeExternalAcademicRecord(${prevAcadRecordList[i].TempId})">Delete</button></td>`));
+        //             // Loop through each prevAcadRecordList
+        //             for (let i = 0; i < prevAcadRecordList.length; i++) {
+        //                 let newRow = $('<tr></tr>');
+        //                 newRow.append($(`<input type="hidden" data-val="true" data-val-required="The TempId field is required." id="ExternalAcademicRecords_${i}__TempId" name="ExternalAcademicRecords[${i}].TempId" value="${prevAcadRecordList[i].TempId}">`));
+        //                 newRow.append($(`<td hidden="">${prevAcadRecordList[i].TempId}</td>`))
+        //                 newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a subject name" id="ExternalAcademicRecords_${i}__SubjectName" name="ExternalAcademicRecords[${i}].SubjectName" value="${prevAcadRecordList[i].SubjectName}">`));
+        //                 newRow.append($(`<td>${prevAcadRecordList[i].SubjectName}</td>`));
+        //                 newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a rating for this subject" id="ExternalAcademicRecords_${i}__Rating" name="ExternalAcademicRecords[${i}].Rating" value="${prevAcadRecordList[i].Rating}">`));
+        //                 newRow.append($(`<td>${prevAcadRecordList[i].Rating}</td>`));
+        //                 newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter a semester" id="ExternalAcademicRecords_${i}__Semester" name="ExternalAcademicRecords[${i}].Semester" value="${prevAcadRecordList[i].Semester}">`));
+        //                 newRow.append($(`<td>${prevAcadRecordList[i].Semester}</td>`));
+        //                 newRow.append($(`<input type="hidden" data-val="true" data-val-required="Please enter an academic year" id="ExternalAcademicRecords_${i}__AcademicYear" name="ExternalAcademicRecords[${i}].AcademicYear" value="${prevAcadRecordList[i].AcademicYear}">`));
+        //                 newRow.append($(`<td>${prevAcadRecordList[i].AcademicYear}</td>`));
+        //                 newRow.append($(`<td><button class="btn btn-sm btn-danger" type="button" onclick="removeExternalAcademicRecord(${prevAcadRecordList[i].TempId})">Delete</button></td>`));
                     
-                        prevAcadRecordListTableBody.append(newRow);
-                    }
+        //                 prevAcadRecordListTableBody.append(newRow);
+        //             }
 
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Record Deleted'
-                    });
-                }
-            });
-        }
+        //             Toast.fire({
+        //                 icon: 'success',
+        //                 title: 'Record Deleted'
+        //             });
+        //         }
+        //     });
+        // }
 
-        $('#addPrevAcadRecordForm').submit(function (e) {
-            e.preventDefault();
-        });
+        // $('#addPrevAcadRecordForm').submit(function (e) {
+        //     e.preventDefault();
+        // });
 
-        function cleanUpAddPrevRecordModalFields() {
-            document.getElementById('parSubjectName').value = '';
-            document.getElementById('parRating').value = '';
-            document.getElementById('parSemester').value = '';
-            document.getElementById('parAcademicYear').value = '';
+        // function cleanUpAddPrevRecordModalFields() {
+        //     document.getElementById('parSubjectName').value = '';
+        //     document.getElementById('parRating').value = '';
+        //     document.getElementById('parSemester').value = '';
+        //     document.getElementById('parAcademicYear').value = '';
+        // }
+
+        function returnToLogin() {
+            window.location.href = '/Account/Login';
         }
 
     </script>

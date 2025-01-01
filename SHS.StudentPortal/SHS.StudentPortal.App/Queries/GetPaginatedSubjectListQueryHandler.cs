@@ -44,12 +44,28 @@ internal sealed class GetPaginatedSubjectListQueryHandler
 
                 subjectListViewModel.AddRange(subjectList.Select(x => {
 
-                    var strandStr = "";
+                    var trackStrandSplitStr = x.TrackAndStrand.Split('-');
 
-                    if (Strand.GetStrand(x.TrackAndStrand.Split('-')[1]).IsPlaceholder)
-                        strandStr = "N/A";
+                    var trackId = trackStrandSplitStr![0];
+
+                    var trackStr = string.Empty;
+                    if (trackId == Track.AcademicTrack.Id)
+                        trackStr = "Academic";
+                    else if (trackId == Track.ArtsAndDesignTrack.Id)
+                        trackStr = "Arts & Design";
+                    else if (trackId == Track.SportsTrack.Id)
+                        trackStr = "Sports";
                     else
-                        strandStr = Strand.GetStrand(x.TrackAndStrand.Split('-')[1]).Id.ToUpper();
+                        trackStr = "TVL";
+
+                    var strandStr = Strand.GetStrand(trackStrandSplitStr![1]).IsPlaceholder ?
+                        Strand.Placeholder.Name :
+                        Strand.GetStrand(trackStrandSplitStr![1]).Name;
+
+                    //if (Strand.GetStrand(x.TrackAndStrand.Split('-')[1]).IsPlaceholder)
+                    //    strandStr = "N/A";
+                    //else
+                    //    strandStr = Strand.GetStrand(x.TrackAndStrand.Split('-')[1]).Id.ToUpper();
 
                     return new SubjectListViewModel
                     {
@@ -57,7 +73,7 @@ internal sealed class GetPaginatedSubjectListQueryHandler
                         Name = x.Name,
                         Code = x.Code,
                         Units = x.Units.ToString(),
-                        TrackAndStrand = $"{x.TrackAndStrand.Split('-')[0].ToUpper()} - {strandStr}"
+                        TrackAndStrand = $"{trackStr} - {strandStr}"
                     };
                 }));
 

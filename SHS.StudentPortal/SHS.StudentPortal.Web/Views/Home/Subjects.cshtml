@@ -99,3 +99,130 @@
         }
     </tbody>
 </table>
+<div id="modalPlaceholder"></div>
+@section Scripts {
+    <script type="text/javascript">
+        var isLoading = false;
+        var detailsModal;
+
+        function viewSubject(subjectId) {
+            if(isLoading) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Page is Loading'
+                });
+
+                return;
+            } else {
+                isLoading = true;
+
+                $.ajax({
+                    url: `/Subjects/${subjectId}`,
+                    type: 'GET',
+                    success: function (result) {
+                        $('#modalPlaceholder').html(result);
+
+                        detailsModal = new bootstrap.Modal(document.getElementById('subjectDetailsModal'), {
+                            keyboard: false,
+                            backdrop: 'static'
+                        });
+
+                        detailsModal.show();
+                    },
+                    error: () => {
+                        isLoading = false;
+
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Error retrieving Subject details"
+                        });
+                    },
+                    complete: () => {
+                        isLoading = false;
+                    }
+                });
+            }
+        }
+
+        document.getElementById('trackSelectList')
+            .addEventListener('change', (event) => {
+                switch (event.target.value) {
+                    case 'academic':
+                        setAcademicTrackStrands();
+                        break;
+                    case 'artsanddesign':
+                        setArtsAndDesignTrackStrands();
+                        break;
+                    case 'sports':
+                        setSportsTrackStrands();
+                        break;
+                    case 'technicalvocational':
+                        setTechnicalVocationalTrackStrands();
+                        break;
+                    default:
+                        defaultList();
+                        break;
+                }
+            });
+
+        function setAcademicTrackStrands() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            var academicTrackStrands = @Html.Raw(Json.Serialize(ViewBag.AcademicTrackStrands));
+
+            academicTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
+        function setArtsAndDesignTrackStrands() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            var artsAndDesignTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.ArtsAndDesignTrackStrands)));
+
+            artsAndDesignTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
+        function setSportsTrackStrands() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            var sportsTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.SportsTrackStrands)));
+
+            sportsTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
+        function setTechnicalVocationalTrackStrands() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            var technicalVocationalTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.TVLTrackStrands)));
+
+            technicalVocationalTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`;
+            });
+        }
+
+        function defaultList() {
+            document.getElementById('strandSelectList').innerHTML = "";
+
+            document.getElementById('strandSelectList').innerHTML += `<option value="">-- Select Strand --</option>`;
+
+            var academicTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.AcademicTrackStrands)));
+
+            academicTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+
+            var technicalVocationalTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.TVLTrackStrands)));
+
+            technicalVocationalTrackStrands.forEach((strand) => {
+                document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`;
+            });
+
+            document.getElementById('strandSelectList').innerHTML += `<option value="">N/A</option>`;
+        }
+    </script>
+}

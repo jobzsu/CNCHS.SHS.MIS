@@ -67,12 +67,12 @@ internal sealed class RegisterStudentCommandHandler : ICommandHandler<RegisterSt
                 return ResultModel.Fail(error);
             }
 
-            if(request.model.ExternalAcademicRecords is null || request.model.ExternalAcademicRecords.Count == 0)
-            {
-                error = new(nameof(ArgumentNullException), "External Academic Records cannot be null or empty");
+            //if(request.model.ExternalAcademicRecords is null || request.model.ExternalAcademicRecords.Count == 0)
+            //{
+            //    error = new(nameof(ArgumentNullException), "External Academic Records cannot be null or empty");
 
-                return ResultModel.Fail(error);
-            }
+            //    return ResultModel.Fail(error);
+            //}
 
             var usernameHit = await _userAccountRepository.GetUserAccountByUsername(request.model.Username, cancellationToken);
 
@@ -144,18 +144,18 @@ internal sealed class RegisterStudentCommandHandler : ICommandHandler<RegisterSt
                 studentInfoInserted = true;
                 studentInfo = insertedStudentInfo;
 
-                foreach(var externalAcademicRecord in request.model.ExternalAcademicRecords)
-                {
-                    var newExternalAcademicRecord = new ExternalAcademicRecord().Create(
-                        externalAcademicRecord.Rating,
-                        externalAcademicRecord.SubjectName,
-                        externalAcademicRecord.Semester,
-                        externalAcademicRecord.AcademicYear,
-                        insertedStudentInfo.Id,
-                        Constants.SystemGuid);
+                //foreach(var externalAcademicRecord in request.model.ExternalAcademicRecords)
+                //{
+                //    var newExternalAcademicRecord = new ExternalAcademicRecord().Create(
+                //        externalAcademicRecord.Rating,
+                //        externalAcademicRecord.SubjectName,
+                //        externalAcademicRecord.Semester,
+                //        externalAcademicRecord.AcademicYear,
+                //        insertedStudentInfo.Id,
+                //        Constants.SystemGuid);
 
-                    await _externalAcademicRecordRepository.CreateExternalAcademicRecord(newExternalAcademicRecord, cancellationToken);
-                }
+                //    await _externalAcademicRecordRepository.CreateExternalAcademicRecord(newExternalAcademicRecord, cancellationToken);
+                //}
 
                 await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
 
