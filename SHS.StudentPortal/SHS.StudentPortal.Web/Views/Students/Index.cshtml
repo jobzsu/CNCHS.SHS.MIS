@@ -213,10 +213,10 @@
 
 <!-- Modal -->
 <div class="modal fade" id="prevAcademicRecordModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-        <div class="modal-content"  style="border-color: brown; border-width: 3px">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content" style="box-shadow: 2px 3px 5px #999;">
             <div class="modal-header">
-                <h5 class="modal-title" id="prevAcademicRecordModalLabel">Previous Academic Records</h5>
+                <h5 class="modal-title" id="prevAcademicRecordModalLabel">Academic Records</h5>
             </div>
             <div class="modal-body">
                 <table id="prevAcadRecordListTable" class="table table-striped table-hover text-center">
@@ -226,24 +226,36 @@
                             <th scope="col">Rating</th>
                             <th scope="col">Semester</th>
                             <th scope="col">Academic Year</th>
+                            <th scope="col">Encoded By</th>
+                            <th scope="col">Encoded Date</th>
+                            <th scope="col">Verified By</th>
+                            <th scope="col">Verified Date</th>
                         </tr>
                     </thead>
                     <tbody id="prevAcadRecordListTableBody">
-                        @foreach (var par in Model.PreviousAcademicRecords)
+                        @foreach (var par in Model.AcademicRecords)
                         {
                             <tr>
                                 <td>@par.SubjectName</td>
                                 <td>@par.Rating</td>
                                 <td>@par.Semester</td>
                                 <td>@par.AcademicYear</td>
+                                <td>@par.EncodedBy</td>
+                                <td>@par.EncodedDate</td>
+                                <td>@par.VerifiedBy</td>
+                                <td>@par.VerifiedDate</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary float-end" tabindex="-1" onclick="markStudentForEnrollment('@Model.Id', '@Model.Status')">Mark as Verified</button>
-                <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal" tabindex="-1">Close</button>
+                @if(Model.AcademicRecords.Count > 0) 
+                {
+                    <button type="button" class="btn btn-primary" onclick="markStudentForEnrollment('@Model.Id', '@Model.Status')">Mark as Verified</button>
+                }
+                <button type="button" class="btn btn-primary" onclick="">Encode Grades</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -252,7 +264,7 @@
 <!-- Update PW Modal -->
 <div class="modal fade" id="updatePasswordModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content"  style="border-color: brown; border-width: 3px">
+        <div class="modal-content" style="box-shadow: 2px 3px 5px #999;">
             <div class="modal-header">
                 <h5 class="modal-title">Update Student Password</h5>
             </div>

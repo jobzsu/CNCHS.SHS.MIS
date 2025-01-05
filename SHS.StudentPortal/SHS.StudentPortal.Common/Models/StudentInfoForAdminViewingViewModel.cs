@@ -56,7 +56,7 @@ public class StudentInfoForAdminViewingViewModel
     #endregion
 
     #region > Prev Academic Records
-    public List<ExternalAcademicRecordViewModel> PreviousAcademicRecords { get; set; }
+    public List<AcademicRecordViewModel> AcademicRecords { get; set; }
     #endregion
 
     #region > Schedules

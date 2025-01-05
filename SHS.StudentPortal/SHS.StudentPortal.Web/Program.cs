@@ -61,6 +61,7 @@ public class Program
         builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
         builder.Services.AddScoped<IPreRequisiteRepository, PreRequisiteRepository>();
         builder.Services.AddScoped<IStudentScheduleRepository, StudentScheduleRepository>();
+        builder.Services.AddScoped<IAcademicRecordRepository, AcademicRecordRepository>();
         // UnitOfWork
         builder.Services.AddScoped<IBaseUnitOfWork, BaseUnitOfWork>();
 

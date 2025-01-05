@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SHS.StudentPortal.Database;
 
@@ -11,9 +12,11 @@ using SHS.StudentPortal.Database;
 namespace SHS.StudentPortal.Database.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250105171208_Update-AcademicRecord-Triggers-20250106-pt2")]
+    partial class UpdateAcademicRecordTriggers20250106pt2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,6 +102,8 @@ namespace SHS.StudentPortal.Database.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("SubjectId");
 
                     b.ToTable("AcademicRecords", null, t =>
                         {
@@ -931,7 +936,15 @@ namespace SHS.StudentPortal.Database.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("SHS.StudentPortal.Domain.Models.Subject", "Subject")
+                        .WithMany("AcademicRecords")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Student");
+
+                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("SHS.StudentPortal.Domain.Models.ExternalAcademicRecord", b =>
@@ -1074,6 +1087,8 @@ namespace SHS.StudentPortal.Database.Migrations
 
             modelBuilder.Entity("SHS.StudentPortal.Domain.Models.Subject", b =>
                 {
+                    b.Navigation("AcademicRecords");
+
                     b.Navigation("PreRequisites");
 
                     b.Navigation("Schedules");

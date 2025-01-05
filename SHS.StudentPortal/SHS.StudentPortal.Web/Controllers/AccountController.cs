@@ -103,7 +103,7 @@ public class AccountController : Controller
             Track = Track.AcademicTrack.Id,
             Strand = Track.AcademicTrack.Strands.First().Id,
             //ExternalAcademicRecords = new() { new() { SubjectName = "Test", Rating = "99.12", AcademicYear = "2022-2023", Semester = "1st", TempId = 1 } }
-            ExternalAcademicRecords = new List<ExternalAcademicRecordViewModel>()
+            ExternalAcademicRecords = new List<AcademicRecordViewModel>()
         };
 
         ViewData["Tracks"] = Track.GetAllTracks;

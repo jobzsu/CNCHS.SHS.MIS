@@ -3,6 +3,7 @@ using SHS.StudentPortal.App.Abstractions.Messaging;
 using SHS.StudentPortal.App.Abstractions.Repositories;
 using SHS.StudentPortal.Common;
 using SHS.StudentPortal.Common.Models;
+using SHS.StudentPortal.Domain.Models;
 
 namespace SHS.StudentPortal.App.Queries;
 
@@ -16,6 +17,9 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
     private readonly IExternalAcademicRecordRepository _externalAcademicRecordRepository;
     private readonly ISettingRepository _settingRepository;
     private readonly IStudentScheduleRepository _studentScheduleRepository;
+    private readonly IAcademicRecordRepository _academicRecordRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly ISubjectRepository _subjectRepository;
 
     public GetStudentForAdminApprovalQueryHandler(ILogger<GetStudentForAdminApprovalQueryHandler> logger,
         IStudentInfoRepository studentInfoRepository,
@@ -23,7 +27,10 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
         ISectionRepository sectionRepository,
         IExternalAcademicRecordRepository externalAcademicRecordRepository,
         ISettingRepository settingRepository,
-        IStudentScheduleRepository studentScheduleRepository)
+        IStudentScheduleRepository studentScheduleRepository,
+        IAcademicRecordRepository academicRecordRepository,
+        IUserRepository userRepository,
+        ISubjectRepository subjectRepository)
     {
         _logger = logger;
         _studentInfoRepository = studentInfoRepository;
@@ -32,6 +39,9 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
         _externalAcademicRecordRepository = externalAcademicRecordRepository;
         _settingRepository = settingRepository;
         _studentScheduleRepository = studentScheduleRepository;
+        _academicRecordRepository = academicRecordRepository;
+        _userRepository = userRepository;
+        _subjectRepository = subjectRepository;
     }
 
     public async Task<ResultModel<StudentInfoForAdminViewingViewModel>> Handle(GetStudentForAdminApprovalQuery request, CancellationToken cancellationToken)
@@ -62,8 +72,7 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
                 var kvpSectionList = new List<KeyValuePair<Guid, string>>();
                 kvpSectionList.AddRange(sections.Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)));
 
-                var externalAcademicRecords =  await _externalAcademicRecordRepository
-                    .GetExternalAcademicRecordsByStudentId(request.studentId, cancellationToken: cancellationToken);
+                var academicRecords = await _academicRecordRepository.GetAcademicRecordsByStudentId(request.studentId, cancellationToken);
 
                 StudentInfoForAdminViewingViewModel viewModel = new()
                 {
@@ -88,18 +97,52 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
                     Religion = studentInfo.Religion,
                     ContactInfo = studentInfo.ContactInformation,
                     Address = studentInfo.Address,
-                    PreviousAcademicRecords = new(),
+                    AcademicRecords = new(),
                     CurrentSchedules = null
                 };
 
-                viewModel.PreviousAcademicRecords.AddRange(externalAcademicRecords!.Select(x => new ExternalAcademicRecordViewModel()
+                if(academicRecords is not null && academicRecords.Any())
                 {
-                    SubjectName = x.SubjectName,
-                    Rating = x.Rating,
-                    Semester = x.Semester,
-                    AcademicYear = x.AcademicYear,
-                    TempId = 0
-                }));
+                    foreach(var record in academicRecords)
+                    {
+                        var academicRecordToDisplay = new AcademicRecordViewModel()
+                        {
+                            Rating = record.Rating,
+                            Semester = record.Semester,
+                            AcademicYear = record.AcademicYear,
+                            EncodedDate = record.EncodedDate is null ? "N/A" : record.EncodedDate.Value.ToString("MM/dd/yyyy"),
+                            VerifiedDate = record.VerifiedDate is null ? "N/A" : record.VerifiedDate.Value.ToString("MM/dd/yyyy"),
+                            TempId = 0
+                        };
+
+                        if(record.SubjectId > 0)
+                        {
+                            var subject = await _subjectRepository.GetSubjectById(record.SubjectId, cancellationToken: cancellationToken);
+
+                            academicRecordToDisplay.SubjectName = subject is null ? record.OtherSubjectName : subject.Name;
+                        }
+
+                        if (record.EncodedById is not null)
+                        {
+                            var encodedByProf = await _userRepository.GetUserByUserAccountId(record.EncodedById.Value, cancellationToken);
+
+                            academicRecordToDisplay.EncodedBy = encodedByProf is null ?
+                                "N/A" :
+                                $"Prof. {encodedByProf.LastName}, {encodedByProf.FirstName.First().ToString().ToUpper()}.";
+                        }
+
+                        if (record.VerifiedById is not null)
+                        {
+                            var verifiedByProf = await _userRepository.GetUserByUserAccountId(record.VerifiedById.Value, cancellationToken);
+
+                            academicRecordToDisplay.VerifiedBy = verifiedByProf is null ?
+                                "N/A" :
+                                $"Prof. {verifiedByProf.LastName}, {verifiedByProf.FirstName.First().ToString().ToUpper()}.";
+                        }
+
+                        viewModel.AcademicRecords.Add(academicRecordToDisplay);
+                    }
+                }
 
                 if(studentInfo.StudentStatus == StudentStatuses.Regular.Id || studentInfo.StudentStatus == StudentStatuses.Irregular.Id)
                 {

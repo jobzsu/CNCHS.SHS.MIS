@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SHS.StudentPortal.Database;
 
@@ -11,9 +12,11 @@ using SHS.StudentPortal.Database;
 namespace SHS.StudentPortal.Database.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250105162400_Added-encoding-and-verifying-details-20250106")]
+    partial class Addedencodingandverifyingdetails20250106
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,8 +41,7 @@ namespace SHS.StudentPortal.Database.Migrations
 
             modelBuilder.HasSequence("StudentScheduleIdSequence");
 
-            modelBuilder.HasSequence("SubjectIdSequence")
-                .StartsAt(0L);
+            modelBuilder.HasSequence("SubjectIdSequence");
 
             modelBuilder.Entity("SHS.StudentPortal.Domain.Models.AcademicRecord", b =>
                 {
@@ -72,10 +74,6 @@ namespace SHS.StudentPortal.Database.Migrations
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("OtherSubjectName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Rating")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -99,6 +97,8 @@ namespace SHS.StudentPortal.Database.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("SubjectId");
 
                     b.ToTable("AcademicRecords", null, t =>
                         {
@@ -931,7 +931,15 @@ namespace SHS.StudentPortal.Database.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("SHS.StudentPortal.Domain.Models.Subject", "Subject")
+                        .WithMany("AcademicRecords")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Student");
+
+                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("SHS.StudentPortal.Domain.Models.ExternalAcademicRecord", b =>
@@ -1074,6 +1082,8 @@ namespace SHS.StudentPortal.Database.Migrations
 
             modelBuilder.Entity("SHS.StudentPortal.Domain.Models.Subject", b =>
                 {
+                    b.Navigation("AcademicRecords");
+
                     b.Navigation("PreRequisites");
 
                     b.Navigation("Schedules");

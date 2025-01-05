@@ -51,7 +51,7 @@ public class AppDbContext : DbContext
             .IncrementsBy(1000);
 
         modelBuilder.HasSequence("SubjectIdSequence")
-            .StartsAt(1)
+            .StartsAt(0)
             .IncrementsBy(1);
 
         modelBuilder.HasSequence("ScheduleIdSequence")

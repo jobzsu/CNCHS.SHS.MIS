@@ -211,6 +211,7 @@ public class Seeder
                 {
                     var subjectList = new List<Subject>()
             {
+                new Subject().Create("000000", "Other", 999, 999, "Test Description", 999, "1st", "9998-9999", $"{Track.Placeholder.Id}-{Track.Placeholder.Strands[0].Id}", Constants.SystemGuid),
                 new Subject().Create("ABC123", "Basic Subject 101", 600, 80, "Test Description 1", 3, "1st", "2022-2023", $"{Track.AcademicTrack.Id}-{Track.AcademicTrack.Strands[0].Id}", Constants.SystemGuid),
                 new Subject().Create("DEF456", "Basic Subject 102", 600, 80, "Test Description 2", 3, "1st", "2022-2023",  $"{Track.AcademicTrack.Id}-{Track.AcademicTrack.Strands[1].Id}", Constants.SystemGuid),
                 new Subject().Create("GHI789", "Basic Education 201", 600, 80, "Test Description 3", 3, "2nd", "2022-2023",  $"{Track.TechnicalVocationalTrack.Id}-{Track.TechnicalVocationalTrack.Strands[0].Id}", Constants.SystemGuid),
