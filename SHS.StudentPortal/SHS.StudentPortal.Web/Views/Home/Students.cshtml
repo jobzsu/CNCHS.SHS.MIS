@@ -408,8 +408,6 @@
                 });
 
                 return;
-            } else if(false) {
-                
             } else {
                 if (isLoading) {
                     Toast.fire({
@@ -655,6 +653,186 @@
                             }
                         }
                     });
+                }
+            }
+        }
+
+        var encodeStudentGradesModal;
+        function openEncodeStudentGradesModal() {
+            encodeStudentGradesModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('encodeStudentGradesModal'), {
+                keyboard: false,
+                backdrop: 'static'
+            });
+
+            encodeStudentGradesModal.show();
+        }
+
+        function onSubjectSelectChange() {
+            let selectedSubject = document.getElementById('academicRecordSubject').value;
+            console.log('SelectedSubject', selectedSubject);
+
+            if(selectedSubject == 0) {
+                document.getElementById('academicRecordOtherSubjName').removeAttribute('disabled')
+                document.getElementById('academicRecordOtherSubjName').setAttribute('required', true)
+            } else {
+                document.getElementById('academicRecordOtherSubjName').value = '';
+                document.getElementById('academicRecordOtherSubjName').setAttribute('disabled', true)
+                document.getElementById('academicRecordOtherSubjName').removeAttribute('required')
+            }
+        }
+
+        var academicRecordLocalList = [];
+        var academicRecordLocalListLatestTempId = 0;
+        function addAcademicRecordToLocalList(event) {
+            event.preventDefault();
+
+            // Declare obj to add into list
+            let academicRecordObj = {
+                academicYear: document.getElementById('academicRecordAcademicYear').value,
+                semester: document.getElementById('academicRecordSemester').value,
+                subjectId: document.getElementById('academicRecordSubject').value,
+                otherSubjName: document.getElementById('academicRecordOtherSubjName').value,
+                rating: document.getElementById('academicRecordRating').value,
+                tempId: academicRecordLocalListLatestTempId + 1
+            };
+
+            var hitObj = academicRecordLocalList.find(obj => 
+                obj.academicYear.toLowerCase() === academicRecordObj.academicYear.toLowerCase() &&
+                obj.semester.toLowerCase() === academicRecordObj.semester.toLowerCase() &&
+                obj.subjectId === academicRecordObj.subjectId &&
+                obj.otherSubjName.toLowerCase() === academicRecordObj.otherSubjName.toLowerCase()
+            );
+
+            // Check for duplicate in local list
+            if (hitObj) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Record already in list'
+                });
+
+                return;
+            } else {
+
+                let newRow = $('<tr></tr>');
+                newRow.append(`<td>${academicRecordObj.academicYear}</td>`)
+                newRow.append(`<td>${academicRecordObj.semester}</td>`)
+                newRow.append(`<td hidden>${academicRecordObj.tempId}</td>`)
+                newRow.append(`<td hidden>${academicRecordObj.subjectId}</td>`)
+
+                let academicRecordSubjectNameToDisplay = academicRecordObj.subjectId == '0' ?
+                    academicRecordObj.otherSubjName : $("#academicRecordSubject option:selected").text();
+
+                newRow.append(`<td>${academicRecordSubjectNameToDisplay}</td>`)
+
+                newRow.append(`<td>${academicRecordObj.rating}</td>`)
+                newRow.append(`<td><button class="btn btn-sm btn-danger" onclick="removeAcademicRecordFromLocalList(${academicRecordObj.tempId})">Remove</button></td>`)
+
+                // Table body
+                let academicRecordTableBody = $('#encodeStudentGradesTableBody');
+
+                // Append row to table body
+                academicRecordTableBody.append(newRow);
+
+                academicRecordLocalListLatestTempId += 1;
+
+                // console.log('Latest Temp Id', academicRecordLocalListLatestTempId);
+
+                academicRecordLocalList.push(academicRecordObj);
+
+                // console.log('academicRecordLocalList', academicRecordLocalList);
+
+                document.getElementById('academicRecordOtherSubjName').value = '';
+                document.getElementById('academicRecordRating').value = '';
+            }
+        }
+
+        function removeAcademicRecordFromLocalList(tempId) {
+            academicRecordLocalList = academicRecordLocalList.filter(items => items.tempId != tempId);
+
+            // console.log(academicRecordLocalList);
+
+            // Table body
+            let academicRecordTableBody = $('#encodeStudentGradesTableBody tr');
+            // console.log('Table rows', academicRecordTableBody);
+
+            academicRecordTableBody.each(function () {
+                var hiddenCellValue = $(this).find('td:nth-child(3)').text();
+                // console.log('hiddenCellValue', hiddenCellValue);
+                if (hiddenCellValue == tempId) {
+                    $(this).remove();
+                }
+            });
+        }
+
+        function saveEncodedStudentGrades(studentId) {
+            if(isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page is Loading"
+                });
+
+                return;
+            } else {
+                if(academicRecordLocalList.length == 0) {
+                    Toast.fire({
+                        icon: "warning",
+                        title: "No Academic Records to save"
+                    });
+
+                    return;
+                } else {
+
+                    let academicRecordsToSave = [];
+                    academicRecordLocalList.forEach(ar => {
+                        academicRecordsToSave.push({
+                            AcademicYear: ar.academicYear,
+                            Semester: ar.semester,
+                            SubjectId: ar.subjectId,
+                            OtherSubjName: ar.otherSubjName,
+                            Rating: ar.rating
+                        });
+                    });
+
+                    console.log('academicRecordsToSave', academicRecordsToSave);
+
+                    isLoading = true;
+                    let isSuccess = false;
+                    let errorMssg = '';
+
+                    $.ajax({
+                        url: `/Students/EncodeGrades/${studentId}`,
+                        type: 'POST',
+                        data: JSON.stringify(academicRecordsToSave),
+                        contentType: 'application/json',
+                        success: (data) => {
+                            isSuccess = data.IsSuccess;
+                            if (!isSuccess) errorMssg = data.Message;
+                        },
+                        error: (error) => {
+                            errorMssg = 'An error occurred while trying to save Academic Records'
+                        },
+                        complete: () => {
+                            isLoading = false;
+                            if (isSuccess) {
+
+                                encodeStudentGradesModal.hide();
+
+                                Toast.fire({
+                                    icon: "success",
+                                    title: "Academic Records Saved!"
+                                });
+
+                                setTimeout(() => {
+                                    window.location = window.location.href;
+                                }, 3000)
+                            } else {
+                                Toast.fire({
+                                    icon: "warning",
+                                    title: errorMssg
+                                });
+                            }
+                        }
+                    })
                 }
             }
         }

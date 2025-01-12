@@ -12,11 +12,23 @@ public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
     {
         return await (shouldTrack ?
             GetAll()
-            .Where(x => x.Semester.ToLower() == semester)
+            .Where(x => x.Semester.ToLower() == semester && x.Code != "000000")
             .ToListAsync(cancellationToken) :
             GetAll()
             .AsNoTracking()
-            .Where(x => x.Semester.ToLower() == semester)
+            .Where(x => x.Semester.ToLower() == semester && x.Code != "000000")
+            .ToListAsync(cancellationToken));
+    }
+
+    public async Task<List<Subject>?> GetAllSubjects(CancellationToken cancellationToken = default, bool shouldTrack = false)
+    {
+        return await (shouldTrack ?
+            GetAll()
+            .Where(x => x.Code != "000000")
+            .ToListAsync(cancellationToken) :
+            GetAll()
+            .AsNoTracking()
+            .Where(x => x.Code != "000000")
             .ToListAsync(cancellationToken));
     }
 
@@ -26,14 +38,14 @@ public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
             await GetAll()
             .AsNoTracking()
             .Where(x => (!string.IsNullOrWhiteSpace(track) ? x.TrackAndStrand.Contains(track) : true) && 
-                        (!string.IsNullOrWhiteSpace(strand) ? x.TrackAndStrand.Contains(strand) : true))
+                        (!string.IsNullOrWhiteSpace(strand) ? x.TrackAndStrand.Contains(strand) : true) && x.Code != "000000")
             .ToListAsync(cancellationToken) :
             await GetAll()
             .AsNoTracking()
             .Where(x => (!string.IsNullOrWhiteSpace(track) ? x.TrackAndStrand.Contains(track) : true) &&
                         (!string.IsNullOrWhiteSpace(strand) ? x.TrackAndStrand.Contains(strand) : true) &&
                         (x.Name.ToLower().Contains(keyword)) ||
-                        (x.Code.ToLower().Contains(keyword)))
+                        (x.Code.ToLower().Contains(keyword)) && x.Code != "000000")
             .ToListAsync(cancellationToken);
     }
 

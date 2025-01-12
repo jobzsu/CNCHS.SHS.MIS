@@ -152,5 +152,27 @@ namespace SHS.StudentPortal.Web.Controllers
                 return BadRequest();
             }
         }
+
+        [HttpPost]
+        [Route("/Students/EncodeGrades/{id}")]
+        public IActionResult EncodeGrades([FromBody] List<EncodeStudentGradeViewModel> model, Guid id)
+        {
+            try
+            {
+                var encodedById = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "UserId")!.Value;
+
+                var command = new EncodeStudentGradesCommand(model, Guid.Parse(encodedById), id);
+
+                var result = Task.Run(() => _sender.Send(command)).Result;
+
+                return result.IsSuccess ?
+                    new JsonResult(JsonResponseModel.Success(null, null)) :
+                    new JsonResult(JsonResponseModel.Error(result.Error!.Message));
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
     }
 }

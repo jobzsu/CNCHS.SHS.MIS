@@ -60,6 +60,7 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
             }
             else
             {
+                // Get all sections
                 var sections = await _sectionRepository.GetAllSections(cancellationToken: cancellationToken);
 
                 if (sections is null || sections.Count == 0)
@@ -72,6 +73,18 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
                 var kvpSectionList = new List<KeyValuePair<Guid, string>>();
                 kvpSectionList.AddRange(sections.Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)));
 
+                // Get current semester and academic year
+                var currentSemester = await _settingRepository.GetSettingByName(Constants.CurrentSemester, cancellationToken: cancellationToken);
+                var currentAcademicYear = await _settingRepository.GetSettingByName(Constants.CurrentAcademicYear, cancellationToken: cancellationToken);
+
+                if (currentSemester is null || currentAcademicYear is null)
+                {
+                    error = new(nameof(KeyNotFoundException), "Current semester or academic year not found.");
+
+                    return ResultModel<StudentInfoForAdminViewingViewModel>.Fail(error);
+                }
+
+                // Get academic records
                 var academicRecords = await _academicRecordRepository.GetAcademicRecordsByStudentId(request.studentId, cancellationToken);
 
                 StudentInfoForAdminViewingViewModel viewModel = new()
@@ -98,47 +111,55 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
                     ContactInfo = studentInfo.ContactInformation,
                     Address = studentInfo.Address,
                     AcademicRecords = new(),
-                    CurrentSchedules = null
+                    CurrentSchedules = null,
+                    AcademicRecordsSubjectsDropdownList = new()
                 };
 
-                if(academicRecords is not null && academicRecords.Any())
+                var subjects = await _subjectRepository.GetAllSubjects(cancellationToken);
+                var otherSubject = await _subjectRepository.GetSubjectById(0, false, cancellationToken);
+
+                if (subjects is not null && subjects.Any())
                 {
-                    foreach(var record in academicRecords)
+                    subjects.Add(otherSubject!);
+
+                    viewModel.AcademicRecordsSubjectsDropdownList.AddRange(subjects
+                        .Select(x => new KeyValuePair<int, string>(x.Id, (x.Id == 0 ? x.Name : $"({x.Code}) {x.Name}"))));
+                }
+
+                if (academicRecords is not null && academicRecords.Any())
+                {
+                    foreach(var record in academicRecords.OrderBy(ar => ar.AcademicYear).ThenBy(ar => ar.Semester))
                     {
+                        string subjectNameToDisplay = record.SubjectId == 0 ?
+                            record.OtherSubjectName :
+                            ($"({subjects!.FirstOrDefault(s => s.Id == record.SubjectId)!.Code}) {subjects!.FirstOrDefault(s => s.Id == record.SubjectId)!.Name}");
+
                         var academicRecordToDisplay = new AcademicRecordViewModel()
                         {
                             Rating = record.Rating,
                             Semester = record.Semester,
+                            SubjectName = subjectNameToDisplay,
                             AcademicYear = record.AcademicYear,
                             EncodedDate = record.EncodedDate is null ? "N/A" : record.EncodedDate.Value.ToString("MM/dd/yyyy"),
                             VerifiedDate = record.VerifiedDate is null ? "N/A" : record.VerifiedDate.Value.ToString("MM/dd/yyyy"),
                             TempId = 0
                         };
 
-                        if(record.SubjectId > 0)
-                        {
-                            var subject = await _subjectRepository.GetSubjectById(record.SubjectId, cancellationToken: cancellationToken);
-
-                            academicRecordToDisplay.SubjectName = subject is null ? record.OtherSubjectName : subject.Name;
-                        }
-
                         if (record.EncodedById is not null)
                         {
                             var encodedByProf = await _userRepository.GetUserByUserAccountId(record.EncodedById.Value, cancellationToken);
 
-                            academicRecordToDisplay.EncodedBy = encodedByProf is null ?
-                                "N/A" :
-                                $"Prof. {encodedByProf.LastName}, {encodedByProf.FirstName.First().ToString().ToUpper()}.";
+                            academicRecordToDisplay.EncodedBy = $"Prof. {encodedByProf!.LastName}, {encodedByProf!.FirstName.First().ToString().ToUpper()}.";
                         }
+                        else academicRecordToDisplay.EncodedBy = "N/A";
 
                         if (record.VerifiedById is not null)
                         {
                             var verifiedByProf = await _userRepository.GetUserByUserAccountId(record.VerifiedById.Value, cancellationToken);
 
-                            academicRecordToDisplay.VerifiedBy = verifiedByProf is null ?
-                                "N/A" :
-                                $"Prof. {verifiedByProf.LastName}, {verifiedByProf.FirstName.First().ToString().ToUpper()}.";
+                            academicRecordToDisplay.VerifiedBy = $"Prof. {verifiedByProf!.LastName}, {verifiedByProf!.FirstName.First().ToString().ToUpper()}.";
                         }
+                        else academicRecordToDisplay.VerifiedBy = "N/A";
 
                         viewModel.AcademicRecords.Add(academicRecordToDisplay);
                     }
@@ -146,16 +167,6 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
 
                 if(studentInfo.StudentStatus == StudentStatuses.Regular.Id || studentInfo.StudentStatus == StudentStatuses.Irregular.Id)
                 {
-                    var currentSemester = await _settingRepository.GetSettingByName(Constants.CurrentSemester, cancellationToken: cancellationToken);
-                    var currentAcademicYear = await _settingRepository.GetSettingByName(Constants.CurrentAcademicYear, cancellationToken: cancellationToken);
-
-                    if (currentSemester is null || currentAcademicYear is null)
-                    {
-                        error = new(nameof(KeyNotFoundException), "Current semester or academic year not found.");
-
-                        return ResultModel<StudentInfoForAdminViewingViewModel>.Fail(error);
-                    }
-
                     viewModel.CurrentSchedules = new()
                     {
                         Semester = currentSemester.Value,

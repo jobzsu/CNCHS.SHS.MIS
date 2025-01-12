@@ -21,8 +21,8 @@ public class Seeder
             try
             {
                 var adminUserAccount = appDbContext.UserAccounts
-            .AsNoTracking()
-            .FirstOrDefault(x => x.Username == "admin");
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.Username == "admin");
 
                 if (adminUserAccount == null)
                 {
@@ -79,13 +79,13 @@ public class Seeder
                 if (departments == null || departments.Count == 0)
                 {
                     var newDepartments = new List<Department>()
-            {
-                new() { Name = "Science", Description = "Science Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-                new() { Name = "Math", Description = "Math Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-                new() { Name = "English", Description = "English Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-                new() { Name = "Filipino", Description = "Filipino Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-                new() { Name = Constants.NotApplicable, Description = "A Placeholder Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-            };
+                    {
+                        new() { Name = "Science", Description = "Science Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                        new() { Name = "Math", Description = "Math Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                        new() { Name = "English", Description = "English Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                        new() { Name = "Filipino", Description = "Filipino Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                        new() { Name = Constants.NotApplicable, Description = "A Placeholder Department", CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                    };
 
                     appDbContext.Departments.AddRange(newDepartments);
 
@@ -107,45 +107,45 @@ public class Seeder
                 {
                     instructorUserAccountList = new();
 
-                    for (int i = 1; i <= 4; i++)
+                    for (int i = 0; i <= 4; i++)
                     {
-                        var passwordHash = bCryptAuthProvider.EncryptPassword($"instructor{i}");
+                        var passwordHash = bCryptAuthProvider.EncryptPassword(i == 4 ? "instructorna" : $"instructor{i+1}");
 
                         var newInstructorUserAccount = new UserAccount()
-                        .CreateAdminOrInstr($"instructor{i}",
-                            passwordHash,
-                            $"instructor{1}@instructor{1}.com",
-                            Constants.SystemGuid);
+                            .CreateAdminOrInstr(i == 4 ? $"instructorna" : $"instructor{i + 1}",
+                                passwordHash,
+                                i == 4 ? "instructorna@instructorna.com" : $"instructor{i + 1}@instructor{i + 1}.com",
+                                Constants.SystemGuid);
 
                         appDbContext.UserAccounts.Add(newInstructorUserAccount);
 
                         appDbContext.SaveChanges();
 
                         var newInstructorUser = new User()
-                        .Create($"Instructor{i} FN",
-                            null,
-                            $"Instructor{i} LN",
-                            RoleTypes.Instructor.Id,
-                            newInstructorUserAccount.Id,
-                            Constants.SystemGuid);
+                            .Create(i == 4 ? Constants.NotApplicable : $"Instructor{i + 1} FN",
+                                null,
+                                i == 4 ? Constants.NotApplicable : $"Instructor{i + 1} LN",
+                                RoleTypes.Instructor.Id,
+                                newInstructorUserAccount.Id,
+                                Constants.SystemGuid);
 
                         appDbContext.Users.Add(newInstructorUser);
 
                         appDbContext.SaveChanges();
 
                         var instructorInfoModel = appDbContext.Instructors
-                        .AsNoTracking()
-                        .FirstOrDefault(x => x.UserId == newInstructorUser.Id);
+                            .AsNoTracking()
+                            .FirstOrDefault(x => x.UserId == newInstructorUser.Id);
 
                         if (instructorInfoModel is null)
                         {
                             var newInstructorInfo = new InstructorInfo()
-                                .Create($"{i}000",
-                                departments[i].Name,
-                                "+1234567890",
-                                newInstructorUser.Id,
-                                departments[i].Id,
-                                Constants.SystemGuid);
+                                .Create(i == 4 ? "9999" : $"{i + 1}000",
+                                    departments[i].Name,
+                                    "+1234567890",
+                                    newInstructorUser.Id,
+                                    departments[i].Id,
+                                    Constants.SystemGuid);
 
                             appDbContext.Instructors.Add(newInstructorInfo);
 
@@ -163,12 +163,13 @@ public class Seeder
                 if (sections is null || sections.Count == 0)
                 {
                     var sectionList = new List<Section>()
-            {
-                new Section() { Name = "Section 11-A", AdviserId = instructorInfoList[0].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-                new Section() { Name = "Section 11-B", AdviserId = instructorInfoList[1].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-                new Section() { Name = "Section 12-A", AdviserId = instructorInfoList[2].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-                new Section() { Name = Constants.NotApplicable, AdviserId = instructorInfoList[3].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
-            };
+                    {
+                        new Section() { Name = "Section 11-A", AdviserId = instructorInfoList[0].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                        new Section() { Name = "Section 11-B", AdviserId = instructorInfoList[1].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                        new Section() { Name = "Section 12-A", AdviserId = instructorInfoList[2].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                        new Section() { Name = "Section 12-B", AdviserId = instructorInfoList[3].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                        new Section() { Name = Constants.NotApplicable, AdviserId = instructorInfoList[4].Id, CreatedById = Constants.SystemGuid, CreatedDate = DateTime.UtcNow },
+                    };
 
                     appDbContext.Sections.AddRange(sectionList);
 
@@ -182,7 +183,7 @@ public class Seeder
                 if (currentSemesterSetting is null)
                 {
                     var newCurrentSemesterSetting = new Setting()
-                        .Create(Constants.CurrentSemester, "2nd", Constants.SystemGuid);
+                        .Create(Constants.CurrentSemester, "1st", Constants.SystemGuid);
 
                     appDbContext.Settings.Add(newCurrentSemesterSetting);
 
@@ -196,7 +197,7 @@ public class Seeder
                 if (currentAcademicYearSetting is null)
                 {
                     var newCurrentAcademicYearSetting = new Setting()
-                        .Create(Constants.CurrentAcademicYear, "2022-2023", Constants.SystemGuid);
+                        .Create(Constants.CurrentAcademicYear, "2025-2026", Constants.SystemGuid);
 
                     appDbContext.Settings.Add(newCurrentAcademicYearSetting);
 
@@ -210,13 +211,13 @@ public class Seeder
                 if (subjects is null || subjects.Count == 0)
                 {
                     var subjectList = new List<Subject>()
-            {
-                new Subject().Create("000000", "Other", 999, 999, "Test Description", 999, "1st", "9998-9999", $"{Track.Placeholder.Id}-{Track.Placeholder.Strands[0].Id}", Constants.SystemGuid),
-                new Subject().Create("ABC123", "Basic Subject 101", 600, 80, "Test Description 1", 3, "1st", "2022-2023", $"{Track.AcademicTrack.Id}-{Track.AcademicTrack.Strands[0].Id}", Constants.SystemGuid),
-                new Subject().Create("DEF456", "Basic Subject 102", 600, 80, "Test Description 2", 3, "1st", "2022-2023",  $"{Track.AcademicTrack.Id}-{Track.AcademicTrack.Strands[1].Id}", Constants.SystemGuid),
-                new Subject().Create("GHI789", "Basic Education 201", 600, 80, "Test Description 3", 3, "2nd", "2022-2023",  $"{Track.TechnicalVocationalTrack.Id}-{Track.TechnicalVocationalTrack.Strands[0].Id}", Constants.SystemGuid),
-                new Subject().Create("JKL012", "Basic Education 202", 600, 80, "Test Description 4", 3, "2nd", "2022-2023",  $"{Track.TechnicalVocationalTrack.Id}-{Track.TechnicalVocationalTrack.Strands[1].Id}", Constants.SystemGuid),
-            };
+                    {
+                        new Subject().Create("000000", "Other", 999, 999, "Test Description", 999, "1st", "9998-9999", $"{Track.Placeholder.Id}-{Track.Placeholder.Strands[0].Id}", Constants.SystemGuid),
+                        new Subject().Create("ABC123", "Basic Subject 101", 600, 80, "Test Description 1", 3, "1st", "2025-2026", $"{Track.AcademicTrack.Id}-{Track.AcademicTrack.Strands[0].Id}", Constants.SystemGuid),
+                        new Subject().Create("DEF456", "Basic Subject 102", 600, 80, "Test Description 2", 3, "1st", "2025-2026",  $"{Track.AcademicTrack.Id}-{Track.AcademicTrack.Strands[1].Id}", Constants.SystemGuid),
+                        new Subject().Create("GHI789", "Basic Education 201", 600, 80, "Test Description 3", 3, "2nd", "2025-2026",  $"{Track.TechnicalVocationalTrack.Id}-{Track.TechnicalVocationalTrack.Strands[0].Id}", Constants.SystemGuid),
+                        new Subject().Create("JKL012", "Basic Education 202", 600, 80, "Test Description 4", 3, "2nd", "2025-2026",  $"{Track.TechnicalVocationalTrack.Id}-{Track.TechnicalVocationalTrack.Strands[1].Id}", Constants.SystemGuid),
+                    };
 
                     appDbContext.Subjects.AddRange(subjectList);
 
@@ -232,12 +233,13 @@ public class Seeder
                 if (schedules is null || schedules.Count == 0)
                 {
                     var scheduleList = new List<Schedule>()
-            {
-                new Schedule().Create("monday", new(10, 30), new(11, 30), "Room 101", "Test Remark 1", instructorInfoList[0].Id, subjects[0].Id, Constants.SystemGuid),
-                new Schedule().Create("tuesday", new(7, 30), new(10, 30), "Room 102", "Test Remark 2", instructorInfoList[1].Id, subjects[1].Id, Constants.SystemGuid),
-                new Schedule().Create("wednesday", new(13, 00), new(14, 30), "Room 501", "Test Remark 3", instructorInfoList[2].Id, subjects[2].Id, Constants.SystemGuid),
-                new Schedule().Create("friday", new(16, 00), new(17, 00), "Room 502", "Test Remark 4", instructorInfoList[3].Id, subjects[3].Id, Constants.SystemGuid),
-            };
+                    {
+                        new Schedule().Create("monday", new(10, 30), new(11, 30), "Room 101", "Test Remark 1", instructorInfoList[0].Id, subjects[1].Id, Constants.SystemGuid),
+                        new Schedule().Create("tuesday", new(7, 30), new(10, 30), "Room 102", "Test Remark 2", instructorInfoList[1].Id, subjects[2].Id, Constants.SystemGuid),
+                        new Schedule().Create("wednesday", new(13, 00), new(14, 30), "Room 501", "Test Remark 3", instructorInfoList[2].Id, subjects[3].Id, Constants.SystemGuid),
+                        new Schedule().Create("thursday", new(16, 00), new(17, 00), "Room 502", "Test Remark 4", instructorInfoList[3].Id, subjects[4].Id, Constants.SystemGuid),
+                        new Schedule().Create("friday", new(16, 00), new(17, 00), "Room 502", "Test Remark 4", instructorInfoList[4].Id, subjects[0].Id, Constants.SystemGuid),
+                    };
 
                     appDbContext.Schedules.AddRange(scheduleList);
 

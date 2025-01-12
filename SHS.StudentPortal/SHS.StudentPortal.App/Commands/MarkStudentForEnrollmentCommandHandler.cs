@@ -12,14 +12,17 @@ internal sealed class MarkStudentForEnrollmentCommandHandler
     private readonly ILogger<MarkStudentForEnrollmentCommandHandler> _logger;
     private readonly IStudentInfoRepository _studentInfoRepository;
     private readonly IBaseUnitOfWork _baseUnitOfWork;
+    private readonly IAcademicRecordRepository _academicRecordRepository;
 
     public MarkStudentForEnrollmentCommandHandler(ILogger<MarkStudentForEnrollmentCommandHandler> logger,
         IStudentInfoRepository studentInfoRepository,
-        IBaseUnitOfWork baseUnitOfWork)
+        IBaseUnitOfWork baseUnitOfWork,
+        IAcademicRecordRepository academicRecordRepository)
     {
         _logger = logger;
         _studentInfoRepository = studentInfoRepository;
         _baseUnitOfWork = baseUnitOfWork;
+        _academicRecordRepository = academicRecordRepository;
     }
 
     public async Task<ResultModel> Handle(MarkStudentForEnrollmentCommand request, CancellationToken cancellationToken)
@@ -39,8 +42,38 @@ internal sealed class MarkStudentForEnrollmentCommandHandler
 
             studentInfo.UpdateStudentStatus(StudentStatuses.ForEnrollment.Id, request.verifiedBy);
 
-            await _studentInfoRepository.Update(studentInfo, cancellationToken);
-            await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+            using (var txn = _baseUnitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    await _studentInfoRepository.Update(studentInfo, cancellationToken);
+
+                    await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+
+                    var unverifiedAcademicRecords = await _academicRecordRepository.GetAllUnverifiedAcademicRecords(studentInfo.Id, cancellationToken, true);
+
+                    if (unverifiedAcademicRecords is not null && unverifiedAcademicRecords.Any())
+                    {
+                        foreach (var uar in unverifiedAcademicRecords)
+                        {
+                            uar.SetAsVerified(request.verifiedBy);
+
+                            await _academicRecordRepository.UpdateAcademicRecord(uar, cancellationToken);
+
+                            await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+                        }
+                    }
+
+                    await txn.CommitAsync(cancellationToken);
+                }
+                catch (Exception)
+                {
+                    await txn.RollbackAsync(cancellationToken);
+
+                    throw;
+                }
+            }
+                
 
             return ResultModel.Success();
         }

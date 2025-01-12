@@ -64,6 +64,8 @@ public class StudentInfoForAdminViewingViewModel
     public CurrentSchedulesAssignedViewModel CurrentSchedules { get; set; }
 
     #endregion
+
+    public List<KeyValuePair<int, string>> AcademicRecordsSubjectsDropdownList { get; set; }
 }
 
 public class CurrentSchedulesAssignedViewModel

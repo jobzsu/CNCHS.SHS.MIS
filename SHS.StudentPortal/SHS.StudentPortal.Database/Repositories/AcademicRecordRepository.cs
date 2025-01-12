@@ -36,4 +36,18 @@ public class AcademicRecordRepository : BaseRepository<AcademicRecord>, IAcademi
     {
         return await UpdateAsync(academicRecord, cancellationToken);
     }
+
+    public async Task<List<AcademicRecord>?> GetAllUnverifiedAcademicRecords(Guid studentId, CancellationToken cancellationToken = default, bool shouldTrack = false)
+    {
+        return await (shouldTrack ?
+            GetAll()
+                .AsSplitQuery()
+                .Where(x => x.StudentId == studentId && x.VerifiedById == null && x.VerifiedDate == null)
+                .ToListAsync(cancellationToken) :
+            GetAll()
+                .AsSplitQuery()
+                .AsNoTracking()
+                .Where(x => x.StudentId == studentId && x.VerifiedById == null && x.VerifiedDate == null)
+                .ToListAsync(cancellationToken));
+    }
 }
