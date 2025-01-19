@@ -63,10 +63,10 @@ internal sealed class GetScheduleByIdQueryHandler
                 Days = string.Join(',', daysStr),
                 TimeStartHour = (schedule.TimeStart.Hour > 12 ? schedule.TimeStart.Hour - 12 : schedule.TimeStart.Hour).ToString(),
                 TimeStartMinute = schedule.TimeStart.Minute < 10 ? $"0{schedule.TimeStart.Minute}" : schedule.TimeStart.Minute.ToString(),
-                TimeStartAMPM = schedule.TimeStart.Hour > 12 ? "PM" : "AM",
+                TimeStartAMPM = schedule.TimeStart.Hour >= 12 ? "PM" : "AM",
                 TimeEndHour = (schedule.TimeEnd.Hour > 12 ? schedule.TimeEnd.Hour - 12 : schedule.TimeEnd.Hour).ToString(),
                 TimeEndMinute = schedule.TimeEnd.Minute < 10 ? $"0{schedule.TimeEnd.Minute}" : schedule.TimeEnd.Minute.ToString(),
-                TimeEndAMPM = schedule.TimeEnd.Hour > 12 ? "PM" : "AM",
+                TimeEndAMPM = schedule.TimeEnd.Hour >= 12 ? "PM" : "AM",
                 Remarks = schedule.Remarks ?? string.Empty
             };
 
