@@ -4,6 +4,7 @@ using SHS.StudentPortal.App.Abstractions.Persistence;
 using SHS.StudentPortal.App.Abstractions.Repositories;
 using SHS.StudentPortal.Common.Models;
 using SHS.StudentPortal.Domain.Models;
+using System.Text;
 
 namespace SHS.StudentPortal.App.Commands;
 
@@ -48,21 +49,38 @@ internal sealed class CreateScheduleCommandHandler
             if (request.view.Day.Contains("S"))
                 days.Add(SchoolDays.Saturday.Id);
 
-            var allSchedulesByDay = await _scheduleRepository.GetListByDay(days, cancellationToken: cancellationToken);
-
-            var timeStartHour = int.Parse(request.view.TimeStartHour) + (request.view.TimeStartAMPM == "pm" ? 12 : 0);
+            var timeStartHour = request.view.TimeStartAMPM == "am" ?
+                int.Parse(request.view.TimeStartHour) : (int.Parse(request.view.TimeStartHour) < 12 ? int.Parse(request.view.TimeStartHour) + 12 : int.Parse(request.view.TimeStartHour));
             var newSchedTimeStart = new TimeOnly(timeStartHour, int.Parse(request.view.TimeStartMin));
 
-            var timeEndHour = int.Parse(request.view.TimeEndHour) + ((request.view.TimeEndAMPM == "pm" && int.Parse(request.view.TimeEndHour) < 12) ? 12 : 0);
+            var timeEndHour = request.view.TimeEndAMPM == "am" ?
+                int.Parse(request.view.TimeEndHour) : (int.Parse(request.view.TimeEndHour) < 12 ? int.Parse(request.view.TimeEndHour) + 12 : int.Parse(request.view.TimeEndHour));
             var newSchedTimeEnd = new TimeOnly(timeEndHour, int.Parse(request.view.TimeEndMin));
+
+            // Get all schedules with the same days
+            var allSchedulesByDay = await _scheduleRepository.GetListByDay(days, cancellationToken: cancellationToken);
 
             // Check for conflicts
             if (allSchedulesByDay is not null && allSchedulesByDay.Count > 0)
             {
-                if (allSchedulesByDay.Any(x => (x.TimeStart <= newSchedTimeEnd || x.TimeEnd >= newSchedTimeStart) &&
-                x.RoomNumber == request.view.Room))
+                // Check if any conflicts w/ Room & Time
+                var conflictScheds = allSchedulesByDay
+                    .Where(s => s.RoomNumber.ToLower() == request.view.Room.ToLower() &&
+                              ((s.TimeEnd > newSchedTimeStart) ||
+                               (s.TimeEnd > newSchedTimeEnd)) ||
+                               (s.TimeStart == newSchedTimeStart))
+                    .ToList();
+
+                if(conflictScheds.Any())
                 {
-                    error = new(nameof(ArgumentException), "Schedule conflicts with existing schedule.");
+                    StringBuilder sb = new StringBuilder();
+                    
+                    conflictScheds.ForEach(cs =>
+                    {
+                        sb.AppendLine($"[{cs.Subject.Code}] [{cs.RoomNumber}] [{cs.TimeStart}-{cs.TimeEnd}]");
+                    });
+
+                    error = new(nameof(ArgumentException), $"Conflicting Schedules found!\n{sb.ToString()}");
 
                     return ResultModel.Fail(error);
                 }

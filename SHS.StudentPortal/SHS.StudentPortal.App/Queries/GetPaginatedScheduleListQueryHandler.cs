@@ -102,14 +102,14 @@ internal sealed class GetPaginatedScheduleListQueryHandler
                     var timeStartMin = x.TimeStart.Minute.ToString().PadLeft(2, '0');
 
                     var timeStartStr = x.TimeStart.Hour < 12 ? 
-                        $"{x.TimeStart.Hour}:{x.TimeStart.Minute} AM" : 
-                        (x.TimeStart.Hour == 12 ? $"{x.TimeStart.Hour}:{x.TimeStart.Minute} PM" : $"{x.TimeStart.Hour - 12}:{timeStartMin} PM");
+                        $"{x.TimeStart.Hour}:{timeStartMin} AM" : 
+                        (x.TimeStart.Hour == 12 ? $"{x.TimeStart.Hour}:{timeStartMin} PM" : $"{x.TimeStart.Hour - 12}:{timeStartMin} PM");
 
                     var timeEndMin = x.TimeEnd.Minute.ToString().PadLeft(2, '0');
 
                     var timeEndStr = x.TimeEnd.Hour < 12 ?
-                        $"{x.TimeEnd.Hour}:{x.TimeEnd.Minute} AM" :
-                        (x.TimeEnd.Hour == 12 ? $"{x.TimeEnd.Hour}:{x.TimeEnd.Minute} PM" : $"{x.TimeEnd.Hour - 12}:{timeEndMin} PM");
+                        $"{x.TimeEnd.Hour}:{timeEndMin} AM" :
+                        (x.TimeEnd.Hour == 12 ? $"{x.TimeEnd.Hour}:{timeEndMin} PM" : $"{x.TimeEnd.Hour - 12}:{timeEndMin} PM");
 
                     var daysArr = x.Day.Split(',').ToList();
                     var days = new List<string>();

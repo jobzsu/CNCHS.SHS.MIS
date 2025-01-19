@@ -17,8 +17,13 @@ public class SectionRepository : BaseRepository<Section>, ISectionRepository
     public async Task<List<Section>?> GetAllSections(bool includeNotApplicable = false, bool shouldTrack = false, CancellationToken cancellationToken = default)
     {
         return shouldTrack ?
-            await GetAll().Where(s => includeNotApplicable ? true : s.Name != Constants.NotApplicable).ToListAsync(cancellationToken) :
-            await GetAll().Where(s => includeNotApplicable ? true : s.Name != Constants.NotApplicable).AsNoTracking().ToListAsync(cancellationToken);
+            await GetAll().Where(s => includeNotApplicable ? true : s.Name != Constants.NotApplicable)
+                .OrderBy(s => s.Name)
+                .ToListAsync(cancellationToken) :
+            await GetAll().Where(s => includeNotApplicable ? true : s.Name != Constants.NotApplicable)
+                .AsNoTracking()
+                .OrderBy(s => s.Name)
+                .ToListAsync(cancellationToken);
     }
 
     public async Task<List<Section>?> GetAvailableSections(Guid instructorId, 

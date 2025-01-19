@@ -102,7 +102,15 @@
                     <td>@student.Gender</td>
                     <td>@student.YearLevel</td>
                     <td style="">@student.TrackAndStrand</td>
-                    <td>@student.Status</td>
+                    @if(student.Status.ToLower() == StudentStatuses.Irregular.Id)
+                    {
+                        <td style="background-color: chocolate; color: white;">@student.Status</td>
+                    }
+                    else
+                    {
+                        <td>@student.Status</td>
+                    }
+                    
                     <td><button class="btn btn-sm btn-primary" id="viewStudentInfo" onclick="viewStudentInfo('@student.Id')">View</button></td>
                 </tr>
             }

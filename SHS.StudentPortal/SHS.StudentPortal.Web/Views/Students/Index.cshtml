@@ -50,7 +50,7 @@
                             <span class="text-danger" asp-validation-for="@Model.Track"></span>
                         </div>
                         <div class="col-lg-3 col-12">
-                            @if (Model.Status == "ASSESSMENT" || Model.Status == "ENROLLMENT")
+                            @if (Model.Status.ToLower() != StudentStatuses.Pending.Id)
                             {
                                 <label>&nbsp;</label>
                                 <button class="btn btn-primary form-control" type="button" onclick="openPrevAcademicRecordModal()">View Records</button>
@@ -72,7 +72,7 @@
                         </div>
                         <div class="col-lg-1 col-12"></div>
                         <div class="col-lg-3 col-12">
-                            @if (Model.Status != "PENDING")
+                            @if (Model.Status.ToLower() != StudentStatuses.Pending.Id)
                             {
                                 <label>&nbsp;</label>
                                 <button class="btn btn-primary form-control" type="button" onclick="openUpdatePasswordModal()">Update Password</button>
@@ -197,11 +197,11 @@
                 </form>
             </div>
             <div class="modal-footer">
-                @if(Model.Status == "PENDING")
+                @if(Model.Status.ToLower() == StudentStatuses.Pending.Id)
                 {
                     <button type="button" class="btn btn-primary" onclick="approveStudent('@Model.Id')" tabindex="-1">Approve</button>                    
                 }
-                @if(Model.Status == "ENROLLMENT")
+                @if(Model.Status.ToLower() == StudentStatuses.ForEnrollment.Id)
                 {
                     <button type="button" class="btn btn-primary" onclick="beginEnrollment('@Model.Id')" tabindex="-1">Enroll</button>
                 }
@@ -250,11 +250,11 @@
                 </table>
             </div>
             <div class="modal-footer">
-                @if(Model.AcademicRecords.Count > 0 && Model.Status == StudentStatuses.ForAssessment.Id) 
+                @if(Model.AcademicRecords.Count > 0 && Model.Status.ToLower() == StudentStatuses.ForAssessment.Id) 
                 {
                     <button type="button" class="btn btn-primary" onclick="markStudentForEnrollment('@Model.Id', '@Model.Status')">Mark as Verified</button>
                 }
-                @if(Model.Status == StudentStatuses.Pending.Id || Model.Status == StudentStatuses.ForAssessment.Id)
+                @if (Model.Status.ToLower() == StudentStatuses.Pending.Id || Model.Status.ToLower() == StudentStatuses.ForAssessment.Id)
                 {
                     <button type="button" class="btn btn-primary" onclick="openEncodeStudentGradesModal()">Encode Grades</button>
                 }

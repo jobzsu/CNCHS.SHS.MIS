@@ -373,8 +373,17 @@
                 return;
             }
 
-            let timeStart = new Date(2001, 1, 20, timeStartHour, timeStartMin, 0);
-            let timeEnd = new Date(2001, 1, 20, timeEndHour, timeEndMin, 0);
+            let timeStartAMPM = document.getElementById('timeStartAMPM').value;
+            let timeEndAMPM = document.getElementById('timeEndAMPM').value;
+
+            let timeStartHour24HourFormat = timeStartAMPM === 'am' ? 
+                timeStartHour : (timeStartHour < 12 ? timeStartHour + 12 : timeStartHour);
+
+            let timeEndHour24HourFormat = timeEndAMPM === 'am' ?
+                timeEndHour : (timeEndHour < 12 ? timeEndHour + 12 : timeEndHour);
+
+            let timeStart = new Date(2001, 1, 20, timeStartHour24HourFormat, timeStartMin, 0);
+            let timeEnd = new Date(2001, 1, 20, timeEndHour24HourFormat, timeEndMin, 0);
 
             if (timeStart >= timeEnd) {
                 Toast.fire({

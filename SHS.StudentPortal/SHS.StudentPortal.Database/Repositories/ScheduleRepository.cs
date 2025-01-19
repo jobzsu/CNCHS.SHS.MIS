@@ -20,6 +20,8 @@ public class ScheduleRepository : BaseRepository<Schedule>, IScheduleRepository
     {
         return await (shouldTrack ?
             GetAll()
+            .Include(s => s.Subject)
+            .AsSplitQuery()
             .Where(x => days.Count == 0 ? true :
                          ((days.Contains(SchoolDays.Monday.Id) ? x.Day.Contains(SchoolDays.Monday.Id) : false) ||
                          (days.Contains(SchoolDays.Tuesday.Id) ? x.Day.Contains(SchoolDays.Tuesday.Id) : false) ||
@@ -29,6 +31,8 @@ public class ScheduleRepository : BaseRepository<Schedule>, IScheduleRepository
                          (days.Contains(SchoolDays.Saturday.Id) ? x.Day.Contains(SchoolDays.Saturday.Id) : false)))
             .ToListAsync(cancellationToken) :
             GetAll()
+            .Include(s => s.Subject)
+            .AsSplitQuery()
             .AsNoTracking()
             .Where(x => days.Count == 0 ? true :
                          ((days.Contains(SchoolDays.Monday.Id) ? x.Day.Contains(SchoolDays.Monday.Id) : false) ||

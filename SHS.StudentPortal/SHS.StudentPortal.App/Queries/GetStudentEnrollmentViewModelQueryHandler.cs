@@ -6,10 +6,10 @@ using SHS.StudentPortal.Common.Models;
 
 namespace SHS.StudentPortal.App.Queries;
 
-internal sealed class GetStudentEnrollmentViewModelHandler
+internal sealed class GetStudentEnrollmentViewModelQueryHandler
     : IQueryHandler<GetStudentEnrollmentViewModelQuery, EnrollStudentViewModel>
 {
-    private readonly ILogger<GetStudentEnrollmentViewModelHandler> _logger;
+    private readonly ILogger<GetStudentEnrollmentViewModelQueryHandler> _logger;
     private readonly ISettingRepository _settingRepository;
     private readonly IScheduleRepository _scheduleRepository;
     private readonly IStudentInfoRepository _studentInfoRepository;
@@ -17,7 +17,7 @@ internal sealed class GetStudentEnrollmentViewModelHandler
     private readonly ISubjectRepository _subjectRepository;
     private readonly IPreRequisiteRepository _preRequisiteRepository;
 
-    public GetStudentEnrollmentViewModelHandler(ILogger<GetStudentEnrollmentViewModelHandler> logger,
+    public GetStudentEnrollmentViewModelQueryHandler(ILogger<GetStudentEnrollmentViewModelQueryHandler> logger,
         ISettingRepository settingRepository,
         IScheduleRepository scheduleRepository,
         IStudentInfoRepository studentInfoRepository,
@@ -60,7 +60,8 @@ internal sealed class GetStudentEnrollmentViewModelHandler
             var track = Track.GetTrack(studentInfo.TrackAndStrand.Split('-')[0]);
             var strand = Strand.GetStrand(studentInfo.TrackAndStrand.Split('-')[1]);
 
-            var sectionList = await _sectionRepository.GetAllSections(includeNotApplicable: true, cancellationToken: cancellationToken);
+            var sectionList = await _sectionRepository.GetAllSections(includeNotApplicable: false, cancellationToken: cancellationToken);
+            var notApplicableSection = await _sectionRepository.GetSectionByName(Constants.NotApplicable, false, cancellationToken);
 
             var scheduleList = await _scheduleRepository
                 .GetSchedulesForStudentEnrollment(track.Id,
@@ -83,6 +84,9 @@ internal sealed class GetStudentEnrollmentViewModelHandler
             {
                 retVal.SectionList.AddRange(sectionList
                     .Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)));
+
+                if (notApplicableSection is not null)
+                    retVal.SectionList.Add(new KeyValuePair<Guid, string>(notApplicableSection.Id, notApplicableSection.Name));
             }
 
             if(scheduleList is not null && scheduleList.Count > 0)
