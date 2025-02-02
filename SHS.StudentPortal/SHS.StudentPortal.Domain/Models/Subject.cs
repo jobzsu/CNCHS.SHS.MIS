@@ -67,4 +67,31 @@ public class Subject : BaseModel<int>, IAuditable
 
         return this;
     }
+
+    public Subject Update(string code,
+        string name,
+        int hours,
+        int days,
+        string description,
+        int units,
+        string semester,
+        string academicYear,
+        string trackAndStrand,
+        Guid updatedById)
+    {
+        Code = code;
+        Name = name;
+        Hours = hours;
+        Days = days;
+        Description = description;
+        Units = units;
+        Semester = semester;
+        AcademicYear = academicYear;
+        TrackAndStrand = trackAndStrand;
+
+        ModifiedById = updatedById;
+        ModifiedDate = DateTime.UtcNow;
+
+        return this;
+    }
 }

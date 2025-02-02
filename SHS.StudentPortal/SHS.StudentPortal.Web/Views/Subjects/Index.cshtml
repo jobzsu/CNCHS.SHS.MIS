@@ -2,10 +2,10 @@
 @model SubjectViewModel
 
 <div class="modal fade" id="subjectDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-sm modal-dialog-scrollable" role="document">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="detailsModalLabel">SUBJECT | @Model.Code</h5>
+                <h5 class="modal-title" id="detailsModalLabel">View Subject</h5>
             </div>
             <div class="modal-body">
                 <form id="subjectForm" class="mt-2">
@@ -19,6 +19,33 @@
                         <div class="col-12">
                             <label>Name</label>
                             <input id="subjectName" type="text" class="form-control" asp-for="@Model.Name" />
+                        </div>
+                        <div class="col-12">
+                            <label>Track</label>
+                            <select id="subjectTrackSelectList" class="form-select me-2" name="track" asp-for="@Model.TrackId" asp-items="@(new SelectList(Track.GetAllTracks, "Id", "Name"))">
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label>Strand</label>
+                            <select id="subjectStrandSelectList" class="form-select me-2" name="strand" asp-for="@Model.StrandId" asp-items="@(new SelectList(Strand.GetAllStrandsIncludePlaceholder, "Id", "Name"))">
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label>Semester</label>
+                            <select id="subjectSemester" class="form-select me-2" asp-for="@Model.Semester">
+                                <option value="1st">1st Semester</option>
+                                <option value="2nd">2nd Semester</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label>Academic Year</label>
+                            <select id="subjectAcademicYear" class="form-select me-2" asp-for="@Model.AcademicYear">
+                                <option value="2021-2022">2021-2022</option>
+                                <option value="2022-2023">2022-2023</option>
+                                <option value="2023-2024">2023-2024</option>
+                                <option value="2024-2025">2024-2025</option>
+                                <option value="2025-2026">2025-2026</option>
+                            </select>
                         </div>
                         <div class="col-12">
                             <label>Hours</label>
@@ -40,7 +67,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="" tabindex="-1">Save</button>
+                <button type="button" class="btn btn-primary" onclick="updateSubject('@Model.Id')" tabindex="-1">Save</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="-1">Close</button>
             </div>
         </div>

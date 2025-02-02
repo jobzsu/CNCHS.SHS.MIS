@@ -8,6 +8,11 @@ public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
 {
     public SubjectRepository(AppDbContext appDbContext) : base(appDbContext) { }
 
+    public async Task<Subject> UpdateSubject(Subject subject, CancellationToken cancellationToken = default)
+    {
+        return await UpdateAsync(subject, cancellationToken);
+    }
+
     public async Task<List<Subject>?> GetAllSubjectBySemester(string semester, bool shouldTrack = false, CancellationToken cancellationToken = default)
     {
         return await (shouldTrack ?
@@ -49,6 +54,16 @@ public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
             .ToListAsync(cancellationToken);
     }
 
+    public Task<Subject?> GetSubjectByCode(string code, bool shouldTrack = false, CancellationToken cancellationToken = default)
+    {
+        return shouldTrack ?
+            GetAll()
+            .FirstOrDefaultAsync(x => x.Code == code, cancellationToken) :
+            GetAll()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Code == code, cancellationToken);
+    }
+
     public async Task<Subject?> GetSubjectById(int id, bool shouldTrack = false, CancellationToken cancellationToken = default)
     {
         return await (shouldTrack ?
@@ -57,5 +72,15 @@ public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
             GetAll()
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken));
+    }
+
+    public Task<Subject?> GetSubjectByName(string name, bool shouldTrack = false, CancellationToken cancellationToken = default)
+    {
+        return shouldTrack ?
+            GetAll()
+            .FirstOrDefaultAsync(x => x.Name.ToLower() == name, cancellationToken) :
+            GetAll()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Name.ToLower() == name, cancellationToken);
     }
 }

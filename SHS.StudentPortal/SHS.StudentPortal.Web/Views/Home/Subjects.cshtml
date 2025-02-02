@@ -93,7 +93,7 @@
                     <td>@sched.Name</td>
                     <td>@sched.Units</td>
                     <td>@sched.TrackAndStrand</td>
-                    <td><button class="btn btn-sm btn-primary" id="viewSubjectInfoBtn" onclick="">View</button></td>
+                    <td><button class="btn btn-sm btn-primary" id="viewSubjectInfoBtn" onclick="viewSubject('@sched.Id')">View</button></td>
                 </tr>
             }
         }
@@ -104,6 +104,7 @@
     <script type="text/javascript">
         var isLoading = false;
         var detailsModal;
+        var loadSubjectFormData;
 
         function viewSubject(subjectId) {
             if(isLoading) {
@@ -127,7 +128,11 @@
                             backdrop: 'static'
                         });
 
+                        loadSubjectFormData = $('#subjectForm').serialize();
+
                         detailsModal.show();
+
+                        loadSubjectViewTrackAndStrandEventListener();
                     },
                     error: () => {
                         isLoading = false;
@@ -141,6 +146,172 @@
                         isLoading = false;
                     }
                 });
+            }
+        }
+
+        function loadSubjectViewTrackAndStrandEventListener() {
+            document.getElementById('subjectTrackSelectList')
+                .addEventListener('change', (event) => {
+                    switch (event.target.value) {
+                        case 'academic':
+                            setSubjectAcademicTrackStrands();
+                            break;
+                        case 'artsanddesign':
+                            setSubjectArtsAndDesignTrackStrands();
+                            break;
+                        case 'sports':
+                            setSubjectSportsTrackStrands();
+                            break;
+                        case 'technicalvocational':
+                            setSubjectTechnicalVocationalTrackStrands();
+                            break;
+                        default:
+                            subjectDefaultList();
+                            break;
+                    }
+                });
+        }
+
+        function updateSubject(subjectId) {
+            if (isLoading) {
+                Toast.fire({
+                    icon: "warning",
+                    title: "Page Loading"
+                });
+
+                return;
+            } else { 
+                if(loadSubjectFormData === $('#subjectForm').serialize()) {
+                    detailsModal.hide();
+                    $('#modalPlaceholder').html('');
+
+                    return;
+                } else {
+
+                    let subjectCode = $('#subjectCode').val();
+
+                    if(subjectCode === '' || subjectCode.length == 0) {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter a Subject Code"
+                        });
+
+                        return;
+                    }
+
+                    let subjectName = $('#subjectName').val();
+
+                    if(subjectName === '' || subjectName.length == 0) {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter a Subject Name"
+                        });
+
+                        return;
+                    }
+
+                    let subjectTrackId = $('#subjectTrackSelectList').val();
+                    let subjectStrandId = $('#subjectStrandSelectList').val();
+
+                    let subjectSemester = $('#subjectSemester').val();
+                    let subjectAcademicYear = $('#subjectAcademicYear').val();
+
+                    let subjectHours = $('#subjectHours').val();
+
+                    if(subjectHours === '' || subjectHours.length == 0 || parseFloat(subjectHours) <= 0) {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter the number of Hours"
+                        });
+
+                        return;
+                    }
+
+                    let subjectDays = $('#subjectDays').val();
+
+                    if(subjectDays === '' || subjectDays.length == 0 || parseFloat(subjectDays) <= 0) {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter the number of Days"
+                        });
+
+                        return;
+                    }
+
+                    let subjectUnits = $('#subjectUnits').val();
+
+                    if(subjectUnits === '' || subjectUnits.length == 0 || parseFloat(subjectUnits) <= 0) {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter the number of Units"
+                        });
+
+                        return;
+                    }
+
+                    let subjectDesc = $('#subjectDesc').val();
+
+                    if(subjectDesc === '' || subjectDesc.length == 0) {
+                        Toast.fire({
+                            icon: "warning",
+                            title: "Please enter a Description"
+                        });
+
+                        return;
+                    }
+
+                    let updatedSubject = {
+                        Id: subjectId,
+                        Code: subjectCode,
+                        Name: subjectName,
+                        TrackId: subjectTrackId,
+                        StrandId: subjectStrandId,
+                        Semester: subjectSemester,
+                        AcademicYear: subjectAcademicYear,
+                        Hours: subjectHours,
+                        Days: subjectDays,
+                        Units: subjectUnits,
+                        Description: subjectDesc
+                    };
+
+                    isLoading = true;
+                    let isSuccess = false;
+                    let errorMssg = '';
+
+                    $.ajax({
+                        url: `/Subjects/${subjectId}`,
+                        type: 'PUT',
+                        data: updatedSubject,
+                        success: function (data) {
+                            isSuccess = data.IsSuccess;
+                            if (!isSuccess) errorMssg = data.Message;
+                        },
+                        error: () => {
+                            errorMssg = 'An error occurred while trying to updated Subject'
+                        },
+                        complete: () => {
+                            isLoading = false;
+                            if (isSuccess) {
+
+                                detailsModal.hide();
+
+                                Toast.fire({
+                                    icon: "success",
+                                    title: "Subject Updated"
+                                });
+
+                                setTimeout(() => {
+                                    window.location = window.location.href;
+                                }, 3000)
+                            } else {
+                                Toast.fire({
+                                    icon: "warning",
+                                    title: errorMssg
+                                });
+                            }
+                        }
+                    });
+                }
             }
         }
 
@@ -175,6 +346,16 @@
             });
         }
 
+        function setSubjectAcademicTrackStrands() {
+            document.getElementById('subjectStrandSelectList').innerHTML = "";
+
+            var academicTrackStrands = @Html.Raw(Json.Serialize(ViewBag.AcademicTrackStrands));
+
+            academicTrackStrands.forEach((strand) => {
+                document.getElementById('subjectStrandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
         function setArtsAndDesignTrackStrands() {
             document.getElementById('strandSelectList').innerHTML = "";
 
@@ -182,6 +363,16 @@
 
             artsAndDesignTrackStrands.forEach((strand) => {
                 document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
+        function setSubjectArtsAndDesignTrackStrands() {
+            document.getElementById('subjectStrandSelectList').innerHTML = "";
+
+            var artsAndDesignTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.ArtsAndDesignTrackStrands)));
+
+            artsAndDesignTrackStrands.forEach((strand) => {
+                document.getElementById('subjectStrandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
             });
         }
 
@@ -195,6 +386,16 @@
             });
         }
 
+        function setSubjectSportsTrackStrands() {
+            document.getElementById('subjectStrandSelectList').innerHTML = "";
+
+            var sportsTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.SportsTrackStrands)));
+
+            sportsTrackStrands.forEach((strand) => {
+                document.getElementById('subjectStrandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+        }
+
         function setTechnicalVocationalTrackStrands() {
             document.getElementById('strandSelectList').innerHTML = "";
 
@@ -202,6 +403,16 @@
 
             technicalVocationalTrackStrands.forEach((strand) => {
                 document.getElementById('strandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`;
+            });
+        }
+
+        function setSubjectTechnicalVocationalTrackStrands() {
+            document.getElementById('subjectStrandSelectList').innerHTML = "";
+
+            var technicalVocationalTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.TVLTrackStrands)));
+
+            technicalVocationalTrackStrands.forEach((strand) => {
+                document.getElementById('subjectStrandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`;
             });
         }
 
@@ -223,6 +434,26 @@
             });
 
             document.getElementById('strandSelectList').innerHTML += `<option value="">N/A</option>`;
+        }
+
+        function subjectDefaultList() {
+            document.getElementById('subjectStrandSelectList').innerHTML = "";
+
+            document.getElementById('subjectStrandSelectList').innerHTML += `<option value="">-- Select Strand --</option>`;
+
+            var academicTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.AcademicTrackStrands)));
+
+            academicTrackStrands.forEach((strand) => {
+                document.getElementById('subjectStrandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`
+            });
+
+            var technicalVocationalTrackStrands = @(Html.Raw(Json.Serialize(ViewBag.TVLTrackStrands)));
+
+            technicalVocationalTrackStrands.forEach((strand) => {
+                document.getElementById('subjectStrandSelectList').innerHTML += `<option value="${strand.Id}">${strand.Name}</option>`;
+            });
+
+            document.getElementById('subjectStrandSelectList').innerHTML += `<option value="">N/A</option>`;
         }
     </script>
 }

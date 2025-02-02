@@ -1,9 +1,7 @@
 ﻿namespace SHS.StudentPortal.Common.Models;
 
-public class SubjectViewModel
+public class CreateSubjectViewModel
 {
-    public int Id { get; set; }
-
     public string Code { get; set; }
 
     public string Name { get; set; }
