@@ -1,0 +1,333 @@
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.Blazor.Components.Shared
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+
+@inject ILoadingService LoadingService;
+@inject IJSRuntime JSRuntime;
+@inject ISender Sender;
+@inject DialogService DialogService;
+@inject NotificationService NotificationService;
+
+<div class="container-fluid">
+    <RadzenTemplateForm TItem="RegisterStudentRazorViewModel" Data="registerStudentViewModel" Submit="Submit">
+        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal">
+            <h6>Login Information</h6>
+            <hr style="margin-top: -10px"/>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Style="margin-bottom: 10px">
+                <div>
+                    <div>
+                        <RadzenFormField Text="Email Address" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                            <RadzenTextBox Name="EmailAddress" @bind-Value="registerStudentViewModel.EmailAddress" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="EmailAddress" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Username" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                            <RadzenTextBox Name="Username" @bind-Value="registerStudentViewModel.Username" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="Username" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Password" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                            <RadzenPassword Name="Password" @bind-Value="registerStudentViewModel.Password" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="Password" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Confirm Password" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                            <RadzenPassword Name="ConfirmPassword" @bind-Value="registerStudentViewModel.ConfirmPassword" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="ConfirmPassword" />
+                </div>
+            </RadzenStack>
+
+            <h6>Personal Information</h6>
+            <hr style="margin-top: -10px" />
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Style="margin-bottom: 5px">
+                <div>
+                    <div>
+                        <RadzenFormField Text="First Name" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                            <RadzenTextBox Name="FirstName" @bind-Value="registerStudentViewModel.FirstName" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="FirstName" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Middle Name" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                            <RadzenTextBox Name="MiddleName" @bind-Value="registerStudentViewModel.MiddleName" />
+                        </RadzenFormField>
+                    </div>
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Last Name" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                            <RadzenTextBox Name="LastName" @bind-Value="registerStudentViewModel.LastName" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="LastName" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Gender" Variant="Variant.Outlined" AllowFloatingLabel=false>
+                            <RadzenDropDown Placeholder="Select Gender"
+                                            AllowFiltering="false"
+                                            AllowClear=false
+                                            Name="GenderDropdown"
+                                            @bind-Value=@selectedGender
+                                            Data=@Genders
+                                            ValueProperty="Key"
+                                            TextProperty="Value" />
+                        </RadzenFormField>
+                    </div>
+                </div>
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Style="margin-bottom: 5px">
+                <div>
+                    <div>
+                        <RadzenFormField Text="Date of Birth" Variant="Variant.Outlined" AllowFloatingLabel=false Style="width: 225px">
+                            <RadzenDatePicker Name="DateOfBirth" @bind-Value=@selectedDateOfBirth DateFormat="MM/dd/yyyy" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenRequiredValidator Component="DateOfBirth" Text="Date of Birth is required" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Place of Birth" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 470px">
+                            <RadzenTextBox Name="PlaceOfBirth" @bind-Value="registerStudentViewModel.PlaceOfBirth" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="PlaceOfBirth" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Civil Status" Variant="Variant.Outlined" AllowFloatingLabel=false>
+                            <RadzenDropDown Placeholder="Select Civil Status"
+                                            AllowFiltering="false"
+                                            AllowClear=false
+                                            Name="CivilStatusDropdown"
+                                            @bind-Value=@selectedCivilStatus
+                                            Data=@CivilStatuses
+                                            ValueProperty="Key"
+                                            TextProperty="Value" />
+                        </RadzenFormField>
+                    </div>
+                </div>
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Style="margin-bottom: 5px">
+                <div>
+                    <div>
+                        <RadzenFormField Text="Nationality" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 225px">
+                            <RadzenTextBox Name="Nationality" @bind-Value="registerStudentViewModel.Nationality" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="Nationality" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Religion" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 230px">
+                            <RadzenTextBox Name="Religion" @bind-Value="registerStudentViewModel.Religion" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="Religion" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Contact Info" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 225px">
+                            <RadzenTextBox Name="ContactInfo" @bind-Value="registerStudentViewModel.ContactInfo" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="ContactInfo" />
+                </div>
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Style="margin-bottom: 10px">
+                <div>
+                    <div>
+                        <RadzenFormField Text="Address" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 715px">
+                            <RadzenTextBox Name="Address" @bind-Value="registerStudentViewModel.Address" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenDataAnnotationValidator Component="Address" />
+                </div>
+            </RadzenStack>
+
+
+            <h6>Academic Information</h6>
+            <hr style="margin-top: -10px" />
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Style="margin-bottom: 10px">
+                <div>
+                    <div>
+                        <RadzenFormField Text="Year Level" Variant="Variant.Outlined" AllowFloatingLabel=false Style="width: 150px">
+                            <RadzenDropDown Placeholder="Select Year Level"
+                                            AllowFiltering="false"
+                                            AllowClear=false
+                                            Name="YearLevelDropdown"
+                                            @bind-Value=@selectedYearLevel
+                                            Data=@YearLevels
+                                            ValueProperty="Key"
+                                            TextProperty="Value" />
+                        </RadzenFormField>
+                    </div>
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 220px">
+                            <RadzenDropDown Data="Tracks"
+                                            @bind-Value="selectedTrack"
+                                            ValueProperty="Id"
+                                            TextProperty="Name"
+                                            Placeholder="Select Track"
+                                            Change="FilterStrandDropdownOnTrackSelect" />
+                        </RadzenFormField>
+                    </div>
+                </div>
+                @if (hasStrands)
+                {
+                    <RadzenFormField Text="Strand" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 440px">
+                        <RadzenDropDown Data="Strands"
+                                        @bind-Value="selectedStrand"
+                                        ValueProperty="Id"
+                                        TextProperty="Name"
+                                        Placeholder="Select Strand" />
+                    </RadzenFormField>
+                }
+            </RadzenStack>
+
+
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Style="margin-top: auto">
+                <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small" Text="Register" />
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small" Text="Close" Click="Close" />
+            </RadzenStack>
+
+        </RadzenStack>
+    </RadzenTemplateForm>
+
+</div>
+
+@code {
+    private RegisterStudentRazorViewModel registerStudentViewModel = new()
+    {
+        EmailAddress = string.Empty,
+        Username = string.Empty,
+        Password = string.Empty,
+        ConfirmPassword = string.Empty,
+        FirstName = string.Empty,
+        MiddleName = string.Empty,
+        LastName = string.Empty,
+        Gender = "female",
+        DateOfBirth = DateTime.Now,
+        PlaceOfBirth = string.Empty,
+        CivilStatus = string.Empty,
+        Nationality = string.Empty,
+        Religion = string.Empty,
+        ContactInfo = string.Empty,
+        Address = string.Empty,
+        YearLevel = 11,
+        Track = string.Empty,
+        Strand = null,
+        ExternalAcademicRecords = new()
+    };
+
+    private List<KeyValuePair<string, string>> Genders = new()
+    {
+        new("female", "Female"),
+        new("male", "Male"),
+        new("other", "Other")
+    };
+    private string selectedGender = "female";
+
+    private DateTime? selectedDateOfBirth = null;
+
+    private List<KeyValuePair<string, string>> CivilStatuses = new()
+    {
+        new("single", "Single"),
+        new("married", "Married"),
+        new("widowed", "Widowed"),
+        new("separated", "Separated"),
+        new("divorced", "Divorced"),
+        new("other", "Other"),
+    };
+
+    private string selectedCivilStatus = "single";
+
+    private List<KeyValuePair<int, string>> YearLevels = new()
+    {
+        new(11, "Grade 11"),
+        new(12, "Grade 12")
+    };
+
+    private int selectedYearLevel = 11;
+
+    private List<Track> Tracks = Track.GetAllTracks;
+
+    private string selectedTrack = Track.AcademicTrack.Id;
+
+    private List<Strand> Strands = Strand.GetAllAcademicTrackStrands;
+
+    private string selectedStrand = Strand.ABM.Id;
+
+    private bool hasStrands = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("localFunctions.setTitle", "Register Student");
+        }
+    }
+
+    private async Task Submit()
+    {
+        LoadingService.IsLoading = true;
+
+        registerStudentViewModel.Gender = selectedGender;
+        registerStudentViewModel.DateOfBirth = selectedDateOfBirth!.Value;
+        registerStudentViewModel.CivilStatus = selectedCivilStatus;
+        registerStudentViewModel.YearLevel = selectedYearLevel;
+        registerStudentViewModel.Track = selectedTrack;
+        registerStudentViewModel.Strand = selectedStrand == Strand.Placeholder.Id ? null : selectedStrand;
+
+        var command = new RegisterStudentCommandV2(registerStudentViewModel);
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if(result.IsSuccess)
+        {
+            DialogService.Close(true);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task Close()
+    {
+        var result = await DialogService.Confirm("Discard changes?", options: DialogHelper.DefaultConfirmOptions);
+
+        if (result != null && result.Value)
+            DialogService.Close(false);
+    }
+
+    private void FilterStrandDropdownOnTrackSelect()
+    {
+        hasStrands = selectedTrack == Track.AcademicTrack.Id || selectedTrack == Track.TechnicalVocationalTrack.Id;
+
+        Strands = Track.GetTrack(selectedTrack).Strands;
+
+        selectedStrand = Strands.First().Id;
+
+        StateHasChanged();
+    }
+}

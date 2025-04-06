@@ -1,0 +1,113 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Implementations.Security
+@using SHS.StudentPortal.Blazor.Components.Shared
+@using System.Security.Claims
+@using SHS.StudentPortal.Common.Utilities
+@inherits LayoutComponentBase
+
+@inject ILoadingService LoadingService;
+@inject NavigationManager NavigationManager;
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject IUserStateService UserStateService;
+@inject NotificationService NotificationService;
+
+<RadzenComponents @rendermode="InteractiveServer" />
+<SystemLoading />
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+                <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenLink Path="/" Text="Go to Home" Style="text-decoration: none">
+                    <RadzenImage Path="/cnchs_logo_white_bg.jfif" Style="width:37px; height:34px; " />
+                    Cabatuan National Comprehensive High School
+                </RadzenLink>
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Right" AlignItems="AlignItems.Center" Style="margin-right: 20px">
+                <RadzenMenu>
+                    <RadzenMenuItem Text=@($"Welcome, {PrincipalUser?.Claims.FirstOrDefault(c => c.Type == "FullName")?.Value}")>
+                        <RadzenMenuItem Text="Personal Info" Icon="account_circle"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Change Password" Icon="lock_reset"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Logout" Icon="logout" Click="Logout"></RadzenMenuItem>
+                    </RadzenMenuItem>
+                </RadzenMenu>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenSidebar @bind-Expanded="sidebarExpanded" Responsive="false">
+        <RadzenPanelMenu DisplayStyle="@(sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)" ShowArrow="false">
+            <RadzenPanelMenuItem Text="Students" Icon="groups" Click="RedirectToStudents" />
+            <RadzenPanelMenuItem Text="Instructors" Icon="supervisor_account" />
+            <RadzenPanelMenuItem Text="Departments" Icon="domain" />
+            <RadzenPanelMenuItem Text="Subjects" Icon="book_6" />
+            <RadzenPanelMenuItem Text="Schedules" Icon="calendar_month" />
+            <RadzenPanelMenuItem Text="System Settings" Icon="settings_applications" />
+        </RadzenPanelMenu>
+        <div class="rz-p-4">
+            Sidebar
+        </div>
+    </RadzenSidebar>
+    <RadzenBody>
+        <div class="rz-p-4">
+            @Body
+        </div>
+    </RadzenBody>
+</RadzenLayout>
+
+
+@code {
+    bool sidebarExpanded = true;
+    private bool firstRender = true;
+    private ClaimsPrincipal? PrincipalUser = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await UserStateService.Initialize();
+
+        if (firstRender)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            PrincipalUser = authState.User;
+
+            if (PrincipalUser.Identity?.IsAuthenticated != true)
+            {
+                NavigationManager.NavigateTo("/Login");
+            }
+            else
+                StateHasChanged();
+
+            this.firstRender = false;
+        }
+    }
+
+    private void Logout()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        LoadingService.IsLoading = true;
+
+        UserStateService.ResetUser();
+
+        ((CustomAuthStateProvider)AuthenticationStateProvider).ResetUser();
+
+        LoadingService.IsLoading = false;
+
+        NotificationService.Notify(NotificationHelper.SuccessNotif("Logging out", onClose: () => NavigationManager.NavigateTo("/Login")));
+    }
+
+    #region > Side Menu Redirects
+
+    private void RedirectToStudents()
+    {
+        if (NavigationManager.Uri.ToLower().EndsWith("/students"))
+            return;
+        else
+            NavigationManager.NavigateTo("/students");
+    }
+
+    #endregion
+}

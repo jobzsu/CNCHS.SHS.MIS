@@ -25,15 +25,15 @@ public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
             .ToListAsync(cancellationToken));
     }
 
-    public async Task<List<Subject>?> GetAllSubjects(CancellationToken cancellationToken = default, bool shouldTrack = false)
+    public async Task<List<Subject>?> GetAllSubjects(bool includeOther = false, CancellationToken cancellationToken = default, bool shouldTrack = false)
     {
         return await (shouldTrack ?
             GetAll()
-            .Where(x => x.Code != "000000")
+            .Where(x => includeOther ? true : x.Code != "000000")
             .ToListAsync(cancellationToken) :
             GetAll()
             .AsNoTracking()
-            .Where(x => x.Code != "000000")
+            .Where(x => includeOther ? true : x.Code != "000000")
             .ToListAsync(cancellationToken));
     }
 

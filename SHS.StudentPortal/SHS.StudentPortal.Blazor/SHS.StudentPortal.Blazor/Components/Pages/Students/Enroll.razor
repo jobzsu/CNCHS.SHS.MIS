@@ -1,0 +1,66 @@
+﻿@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.Common.Models
+
+@inject DialogService DialogService;
+@inject ILoadingService LoadingService;
+
+<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="0.5rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="2rem">
+        <h4>Semester: @(CurrentSemester)</h4>
+        <h4>Academic Year: @(CurrentAcademicYear)</h4>
+    </RadzenStack>
+
+    <RadzenFieldset Text="Academic Information">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+            <RadzenFormField Text="Designated Grade Level" AllowFloatingLabel="false">
+                <RadzenDropDown @bind-Value="EnrollmentInfo.DesignatedGradeLevel" Data="GradeLevels" TextProperty="Value" ValueProperty="Key" Placeholder="Select Grade Level" />
+            </RadzenFormField>
+            <RadzenFormField Text="Designated Section" AllowFloatingLabel="false">
+                <RadzenDropDown @bind-Value="EnrollmentInfo.DesignatedSectionId" Data="Sections" TextProperty="Value" ValueProperty="Key" Placeholder="Select Section" />
+            </RadzenFormField>
+            <RadzenFormField Text="Designated Status" AllowFloatingLabel="false">
+                <RadzenDropDown @bind-Value="EnrollmentInfo.DesignatedStatus" Data="StudentStatuses.AllStatusList" TextProperty="Name" ValueProperty="Id" Placeholder="Select Status" />
+            </RadzenFormField>
+        </RadzenStack>
+    </RadzenFieldset>
+
+    <RadzenFieldset Text="Student Schedules">
+
+    </RadzenFieldset>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px" Style="margin-top: auto">
+        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
+    </RadzenStack>
+
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public Guid StudentId { get; set; }
+
+    [Parameter]
+    public Guid CurrentUser { get; set; }
+
+    [Parameter]
+    public string CurrentSemester { get; set; }
+
+    [Parameter]
+    public string CurrentAcademicYear { get; set; }
+
+    [Parameter]
+    public List<KeyValuePair<Guid, string>> Sections { get; set; }
+
+    private List<KeyValuePair<int, string>> GradeLevels = new()
+    {
+        new KeyValuePair<int, string>(11, "Grade 11"),
+        new KeyValuePair<int, string>(12, "Grade 12")
+    };
+
+    private EnrollmentViewModel EnrollmentInfo = EnrollmentViewModel.New();
+
+    private async Task Close()
+    {
+        DialogService.Close(null);
+    }
+}

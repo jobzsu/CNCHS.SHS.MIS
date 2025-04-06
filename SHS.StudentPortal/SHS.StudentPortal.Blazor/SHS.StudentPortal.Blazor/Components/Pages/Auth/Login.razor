@@ -1,0 +1,172 @@
+﻿@page "/login"
+@layout EmptyLayout
+
+@using System.Security.Claims
+@using MediatR
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@using Radzen.Blazor
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.App.Implementations.Security
+@using SHS.StudentPortal.Blazor.Components.Layout
+@using SHS.StudentPortal.Blazor.Components.Pages.Students
+@using SHS.StudentPortal.Blazor.Components.Shared
+@using SHS.StudentPortal.Common.Models;
+@using SHS.StudentPortal.Common.Utilities;
+@using Microsoft.AspNetCore.Authentication;
+
+@inject ILoadingService LoadingService;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
+@inject NavigationManager NavigationManager;
+@inject AuthenticationStateProvider AuthStateProvider;
+@inject IUserStateService UserStateService;
+@inject IJSRuntime JSRuntime;
+@inject DialogService DialogService;
+
+<RadzenStack Style="height: 100vh" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+    <RadzenCard class="rz-my-12 rz-mx-auto" Style="max-width: 420px">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="2rem" class="rz-p-4">
+            <RadzenTemplateForm TItem="LoginViewModel" Data="loginViewModel" Submit="Submit">
+                <RadzenStack Gap="1rem" class="rz-p-sm-12">
+                    <RadzenFormField Text="User Account Type" Variant="Variant.Outlined" AllowFloatingLabel=false>
+                        <ChildContent>
+                            <RadzenDropDown Placeholder="Select Account Type"
+                                            AllowFiltering="false"
+                                            AllowClear=true
+                                            Name="UserAccountTypeDropdown"
+                                            @bind-Value=@SelectedUserAccountType
+                                            Data=@UserAccountTypes
+                                            ValueProperty="Key"
+                                            TextProperty="Value" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="UserAccountTypeDropdown" Text="User Account Type is required" />
+                        </Helper>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Username" Variant="Variant.Outlined" AllowFloatingLabel=false>
+                        <ChildContent>
+                            <RadzenTextBox Name="Username" @bind-Value=@loginViewModel.UserName />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Username" Text="Username is required" />
+                        </Helper>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Password" Variant="Variant.Outlined" AllowFloatingLabel=false>
+                        <ChildContent>
+                            <RadzenPassword Name="Password" @bind-Value=@loginViewModel.Password />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Password" Text="Password is required" />
+                        </Helper>
+                    </RadzenFormField>
+                    <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info" Text="Login" IsBusy=@(LoadingService.IsLoading || isSuccessLogin) BusyText=@(isSuccessLogin ? "Logging In" : "Loading...") />
+                    <RadzenButton ButtonType="ButtonType.Button" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info" Text="Register Student" IsBusy=@(LoadingService.IsLoading || isSuccessLogin) BusyText=@(isSuccessLogin ? "Logging In" : "Loading...") Click="RegisterStudent" />
+                </RadzenStack>
+            </RadzenTemplateForm>
+        </RadzenStack>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private string? SelectedUserAccountType = null;
+
+    private LoginViewModel loginViewModel = new()
+    {
+        UserName = string.Empty,
+        Password = string.Empty,
+        UserAccountType = "admin"
+    };
+
+    private IEnumerable<KeyValuePair<string, string>> UserAccountTypes = new List<KeyValuePair<string, string>>()
+    {
+        new("admin", "Admin"),
+        new("instructor", "Instructor"),
+        new("student", "Student")
+    };
+
+    private bool isSuccessLogin = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("localFunctions.setTitle", "Login");
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if(loginViewModel is null || string.IsNullOrWhiteSpace(SelectedUserAccountType) ||
+           string.IsNullOrWhiteSpace(loginViewModel.UserName) || string.IsNullOrWhiteSpace(loginViewModel.Password))
+        {
+            NotificationService.Notify(NotificationHelper.NewNotif("Please fill in all required fields.", NotificationSeverity.Warning));
+
+            return;
+        }
+
+        LoadingService.IsLoading = true;
+
+        var command = new AuthenticateLoginViewModelCommand(loginViewModel.UserAccountType,
+            loginViewModel.UserAccountType, 
+            loginViewModel.UserName,
+            loginViewModel.Password);
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if(result.IsSuccess)
+        {
+            isSuccessLogin = true;
+
+            var claims = new List<Claim>()
+            {
+                new Claim("UserId", result.Data!.UserId.ToString()),
+                new Claim("Username", result.Data!.Username),
+                new Claim("FullName", $"{result.Data!.Firstname} {result.Data!.Lastname}"),
+                new Claim("FirstName", $"{result.Data!.Firstname}"),
+                new Claim("MiddleName", $"{result.Data!.Middlename}"),
+                new Claim("LastName", $"{result.Data!.Lastname}"),
+                new Claim(ClaimTypes.Role, result.Data!.RoleType)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var userPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+            // Set the user in the UserStateService
+            UserStateService.SetUser(userPrincipal);
+
+            ((CustomAuthStateProvider)AuthStateProvider).SetCurrentUser(userPrincipal); // Update the auth state provider.
+
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Logging In", onClose: () => NavigationManager.NavigateTo("/students")));
+        }
+        else
+        {
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+        }
+    }
+
+    private async Task RegisterStudent()
+    {
+        if(LoadingService.IsLoading || isSuccessLogin)
+            return;
+
+        var dialogResult = await DialogService.OpenAsync<Register>("Register Student",
+            options: DialogHelper.DefaultWideDialogOptions);
+
+        await JSRuntime.InvokeVoidAsync("localFunctions.setTitle", "Login");
+
+        if(dialogResult)
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Student successfully registered."));
+        }
+    }
+}

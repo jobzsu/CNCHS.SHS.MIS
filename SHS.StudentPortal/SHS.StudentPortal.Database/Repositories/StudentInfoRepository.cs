@@ -76,4 +76,14 @@ public class StudentInfoRepository : BaseRepository<StudentInfo>, IStudentInfoRe
                         (!string.IsNullOrWhiteSpace(strand) ? x.TrackAndStrand.Contains(strand) : true))
             .ToListAsync(cancellationToken));
     }
+
+    public async Task<List<StudentInfo>?> GetList(CancellationToken cancellationToken = default)
+    {
+        return await GetAll()
+            .AsNoTracking()
+            .Include(x => x.User)
+            .Include(x => x.Section)
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+    }
 }

@@ -1,0 +1,10 @@
+﻿@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.Blazor.Components.Shared
+@inherits LayoutComponentBase
+
+@inject ILoadingService LoadingService;
+
+<RadzenComponents @rendermode="InteractiveServer" />
+<SystemLoading />
+
+@Body

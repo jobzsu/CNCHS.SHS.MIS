@@ -1,0 +1,44 @@
+﻿@using SHS.StudentPortal.App.Abstractions
+
+
+@inject ILoadingService LoadingService;
+
+<div class="spinner-overlay" style="@(LoadingService.IsLoading ? "display: flex;" : "display: none;")">
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Medium" />
+    </RadzenStack>
+</div>
+
+@code {
+    
+    protected override void OnInitialized()
+    {
+        LoadingService.OnLoadingChanged += OnLoadingChanged;
+    }
+
+    public void Dispose()
+    {
+        LoadingService.OnLoadingChanged -= OnLoadingChanged;
+    }
+
+    private void OnLoadingChanged(bool isLoading)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+}
+
+<style>
+    .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999 !important;
+    }
+</style>

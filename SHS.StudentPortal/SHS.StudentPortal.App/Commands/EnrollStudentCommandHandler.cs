@@ -60,7 +60,7 @@ internal sealed class EnrollStudentCommandHandler
                 return ResultModel.Fail(error);
             }
 
-            var sectionId = Guid.Parse(request.view.DesignatedSection);
+            var sectionId = request.view.DesignatedSectionId;
 
             var section = await _sectionRepository.GetById(sectionId, cancellationToken: cancellationToken);
 
@@ -87,8 +87,8 @@ internal sealed class EnrollStudentCommandHandler
                 return ResultModel.Fail(error);
             }
 
-            studentInfo.YearLevel = int.Parse(request.view.DesignatedGradeLevel);
-            studentInfo.SectionId = Guid.Parse(request.view.DesignatedSection);
+            studentInfo.YearLevel = request.view.DesignatedGradeLevel;
+            studentInfo.SectionId = request.view.DesignatedSectionId;
             studentInfo.StudentStatus = StudentStatuses.Get(request.view.DesignatedStatus).Id;
 
             await _studentInfoRepository.Update(studentInfo, cancellationToken);

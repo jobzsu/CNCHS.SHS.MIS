@@ -1,0 +1,81 @@
+﻿@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+@inject ILoadingService LoadingService;
+@inject DialogService DialogService;
+
+<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+
+    <RadzenDataGrid Style="height: 335px"
+    @ref="AcademicRecordsDataGrid"
+    IsLoading="LoadingService.IsLoading"
+    Count="AcademicRecordsCount"
+    Data="AcademicRecordsList"
+    AllowSorting="false"
+    AllowFiltering="false"
+    AllowPaging="true"
+    PageSize="5"
+    PagerHorizontalAlign="HorizontalAlign.Center"
+    PagerPosition="PagerPosition.Bottom"
+    ShowPagingSummary="true">
+        <EmptyTemplate>
+            <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+        </EmptyTemplate>
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.AcademicYear)" Title="Academic Year" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.Semester)" Title="Semester" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.SubjectName)" Title="Subject Name" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.Rating)" Title="Rating" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.EncodedDate)" Title="Encoded Date" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.EncodedBy)" Title="Encoded By" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.VerifiedDate)" Title="Verified Date" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.VerifiedBy)" Title="Verified By" Width="120px" TextAlign="TextAlign.Center" />
+        </Columns>
+    </RadzenDataGrid>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
+        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Encode Grade" Click="EncodeGrade" IsBusy="LoadingService.IsLoading" />
+        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
+    </RadzenStack>
+
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public List<AcademicRecordAdminViewDTO> AcademicRecordsParam { get; set; }
+
+    private RadzenDataGrid<AcademicRecordAdminViewDTO> AcademicRecordsDataGrid;
+    private IEnumerable<AcademicRecordAdminViewDTO> AcademicRecordsList = new List<AcademicRecordAdminViewDTO>();
+    private int AcademicRecordsCount = 0;
+
+    private bool StudentUpdated = false;
+
+    protected override void OnParametersSet()
+    {
+        AcademicRecordsList = AcademicRecordsParam.AsEnumerable();
+        AcademicRecordsCount = AcademicRecordsParam.Count();
+    }
+
+    private async Task EncodeGrade()
+    {
+        var dialogResult = await DialogService.OpenAsync<EncodeGrades>("Encode Grade", options: DialogHelper.DefaultSmallDialogOptions);
+
+        if (dialogResult is not null && dialogResult.GetType() == typeof(AcademicRecordAdminViewDTO))
+        {
+            AcademicRecordsParam.Add((AcademicRecordAdminViewDTO)dialogResult!);
+            AcademicRecordsList.Append((AcademicRecordAdminViewDTO)dialogResult!);
+
+            AcademicRecordsCount = AcademicRecordsList.Count();
+
+            StudentUpdated = true;
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void Close()
+    {
+        DialogService.Close(StudentUpdated);
+    }
+}

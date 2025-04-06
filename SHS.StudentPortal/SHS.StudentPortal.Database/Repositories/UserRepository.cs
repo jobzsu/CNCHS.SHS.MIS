@@ -23,6 +23,13 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         await DeleteAsync(user, cancellationToken);
     }
 
+    public async Task<List<User>?> GetAllList(CancellationToken cancellationToken = default, bool shouldTrack = false)
+    {
+        return shouldTrack ?
+            await GetAll().ToListAsync(cancellationToken) :
+            await GetAll().AsNoTracking().ToListAsync(cancellationToken);
+    }
+
     public async Task<User?> GetUserByFirstAndLastName(string firstName, string lastName, bool shouldTrack = false, CancellationToken cancellationToken = default)
     {
         return shouldTrack ?

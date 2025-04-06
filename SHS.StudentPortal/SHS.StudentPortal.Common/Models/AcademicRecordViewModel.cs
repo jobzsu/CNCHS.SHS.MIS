@@ -28,3 +28,49 @@ public class AcademicRecordViewModel
 
     public int TempId { get; set; }
 }
+
+public class AcademicRecordAdminViewDTO
+{
+    public long Id { get; set; }
+
+    [Required(ErrorMessage = "Please enter a rating for this subject")]
+    public string Rating { get; set; }
+
+    [Required(ErrorMessage = "Please enter a semester")]
+    public string Semester { get; set; }
+
+    public int SubjectId { get; set; }
+
+    [Required(ErrorMessage = "Please enter a subject name")]
+    public string SubjectName { get; set; }
+
+    [Required(ErrorMessage = "Please enter an academic year")]
+    public string AcademicYear { get; set; }
+
+    public string EncodedBy { get; set; }
+
+    public Guid EncodedById { get; set; }
+
+    public DateTime? EncodedDate { get; set; }
+
+    public string VerifiedBy { get; set; }
+
+    public Guid? VerifiedById { get; set; }
+
+    public DateTime? VerifiedDate { get; set; }
+
+    public int TempId { get; set; }
+}
+
+public class NewAcademicRecordDTO
+{
+    public string AcademicYear { get; set; }
+
+    public string Semester { get; set; }
+
+    public int SubjectId { get; set; }
+
+    public string SubjectName { get; set; }
+
+    public string Rating { get; set; }
+}

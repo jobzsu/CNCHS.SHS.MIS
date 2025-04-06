@@ -2,4 +2,4 @@
 
 namespace SHS.StudentPortal.App.Queries;
 
-public sealed record GetSectionListQuery() : IQuery<List<KeyValuePair<string, string>>>;
+public sealed record GetSectionListQuery(bool includeNotApplicable = false) : IQuery<List<KeyValuePair<Guid, string>>>;

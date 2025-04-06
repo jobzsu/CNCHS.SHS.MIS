@@ -92,8 +92,8 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
                     Id = studentInfo.Id,
                     StudentIdNum = studentInfo.IdNumber.ToString().PadLeft(7, '0'),
                     Status = studentInfo.StudentStatus.ToUpper(),
-                    Track = studentInfo.TrackAndStrand.Split('-')[0].ToUpper(),
-                    Strand = studentInfo.TrackAndStrand.Split('-')[1].ToUpper(),
+                    Track = studentInfo.TrackAndStrand.Split('-')[0],
+                    Strand = studentInfo.TrackAndStrand.Split('-')[1],
                     YearLevel = studentInfo.YearLevel,
                     SectionId = studentInfo.SectionId,
                     Username = studentInfo.User.UserAccount.Username.ToLower(),
@@ -115,7 +115,7 @@ internal sealed class GetStudentForAdminApprovalQueryHandler :
                     AcademicRecordsSubjectsDropdownList = new()
                 };
 
-                var subjects = await _subjectRepository.GetAllSubjects(cancellationToken);
+                var subjects = await _subjectRepository.GetAllSubjects(cancellationToken: cancellationToken);
                 var otherSubject = await _subjectRepository.GetSubjectById(0, false, cancellationToken);
 
                 if (subjects is not null && subjects.Any())

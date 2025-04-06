@@ -20,4 +20,6 @@ public interface IStudentInfoRepository
         string track,
         string strand,
         CancellationToken cancellationToken = default);
+
+    Task<List<StudentInfo>?> GetList(CancellationToken cancellationToken = default);
 }

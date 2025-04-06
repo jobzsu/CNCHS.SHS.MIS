@@ -43,12 +43,10 @@ internal sealed class ApproveStudentCommandHandler
 
             studentInfo.UpdateStudentStatus(StudentStatuses.ForAssessment.Id, request.approvedById);
 
-            await _studentInfoRepository.Update(studentInfo, cancellationToken);
-
             var studentUserAccount = await _userAccountRepository
-                .GetUserAccountById(studentInfo.User.UserAccountId, cancellationToken, true);
+                        .GetUserAccountById(studentInfo.User.UserAccountId, cancellationToken, true);
 
-            if(studentUserAccount is null)
+            if (studentUserAccount is null)
             {
                 error = new(nameof(KeyNotFoundException), "Student User Account not found.");
 
@@ -57,9 +55,25 @@ internal sealed class ApproveStudentCommandHandler
 
             studentUserAccount.SetToActive(request.approvedById);
 
-            await _userAccountRepository.UpdateUserAccount(studentUserAccount, cancellationToken);
+            using (var txn = _baseUnitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    await _studentInfoRepository.Update(studentInfo, cancellationToken);
 
-            await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+                    await _userAccountRepository.UpdateUserAccount(studentUserAccount, cancellationToken);
+
+                    await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+
+                    await txn.CommitAsync(cancellationToken);
+                }
+                catch (Exception)
+                {
+                    await txn.RollbackAsync(cancellationToken);
+
+                    throw;
+                }
+            }
 
             return ResultModel.Success();
         }

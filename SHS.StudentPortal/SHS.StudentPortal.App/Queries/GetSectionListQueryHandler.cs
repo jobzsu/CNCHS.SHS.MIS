@@ -6,7 +6,7 @@ using SHS.StudentPortal.Common.Models;
 namespace SHS.StudentPortal.App.Queries;
 
 internal sealed class GetSectionListQueryHandler : 
-    IQueryHandler<GetSectionListQuery, List<KeyValuePair<string, string>>>
+    IQueryHandler<GetSectionListQuery, List<KeyValuePair<Guid, string>>>
 {
     private readonly ILogger<GetSectionListQueryHandler> _logger;
     private readonly ISectionRepository _sectionRepository;
@@ -18,36 +18,25 @@ internal sealed class GetSectionListQueryHandler :
         _sectionRepository = sectionRepository;
     }
 
-    public async Task<ResultModel<List<KeyValuePair<string, string>>>> Handle(GetSectionListQuery request, 
+    public async Task<ResultModel<List<KeyValuePair<Guid, string>>>> Handle(GetSectionListQuery request, 
         CancellationToken cancellationToken)
     {
         ErrorModel error;
 
         try
         {
-            var sectionList = new List<KeyValuePair<string, string>>();
+            var sectionList = new List<KeyValuePair<Guid, string>>();
 
-            var sections = await _sectionRepository.GetAllSections(includeNotApplicable: true, cancellationToken: cancellationToken);
+            var sections = await _sectionRepository.GetAllSections(includeNotApplicable: request.includeNotApplicable, cancellationToken: cancellationToken);
 
-            if(sections is null || sections.Count == 0)
+            if(sections is not null || sections.Any())
             {
-                sectionList.Add(new KeyValuePair<string, string>(string.Empty, "N/A"));
-            }
-            else
-            {
-                var itemToMove = sections.FirstOrDefault(x => x.Name.ToLower() == "n/a");
+                var sortedSections = sections.OrderBy(s => s.Name).ToList();
 
-                var sortedSections = sections.OrderByDescending(x => x.Id).ToList();
-
-                // remove from list
-                sortedSections.Remove(itemToMove);
-                // add to list
-                sortedSections.Add(itemToMove);
-
-                sectionList.AddRange(sortedSections.Select(x => new KeyValuePair<string, string>(x.Id.ToString(), x.Name)));
+                sectionList.AddRange(sortedSections.Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)));
             }
 
-            return ResultModel<List<KeyValuePair<string, string>>>.Success(sectionList);
+            return ResultModel<List<KeyValuePair<Guid, string>>>.Success(sectionList);
         }
         catch (Exception ex)
         {
@@ -55,7 +44,7 @@ internal sealed class GetSectionListQueryHandler :
 
             error = new(nameof(ex), "Error while getting section list.");
 
-            return ResultModel<List<KeyValuePair<string, string>>>.Fail(error);
+            return ResultModel<List<KeyValuePair<Guid, string>>>.Fail(error);
         }
     }
 }
