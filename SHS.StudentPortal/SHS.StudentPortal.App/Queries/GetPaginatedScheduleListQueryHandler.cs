@@ -64,7 +64,7 @@ internal sealed class GetPaginatedScheduleListQueryHandler
             if (scheduleList is null || scheduleList.Count() == 0)
             {
                 var paginatedList = PaginatedList<ScheduleListViewModel>
-                    .Create(new List<ScheduleListViewModel>().AsQueryable(), 1, 10);
+                    .Create(new List<ScheduleListViewModel>().AsQueryable(), 1, 999999);
 
                 SchedulePaginatedList retVal = new() 
                 { 
@@ -134,7 +134,7 @@ internal sealed class GetPaginatedScheduleListQueryHandler
                 }));
 
                 var paginatedList = PaginatedList<ScheduleListViewModel>
-                    .Create(scheduleListViewModel.AsQueryable(), request.filter.PageNumber, 10);
+                    .Create(scheduleListViewModel.AsQueryable(), request.filter.PageNumber, 999999);
 
                 var schedulePaginatedList = new SchedulePaginatedList
                 {

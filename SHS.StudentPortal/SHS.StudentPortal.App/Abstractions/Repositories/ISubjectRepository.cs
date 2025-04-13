@@ -4,6 +4,8 @@ namespace SHS.StudentPortal.App.Abstractions.Repositories;
 
 public interface ISubjectRepository
 {
+    Task<Subject> CreateSubject(Subject subject, CancellationToken cancellationToken = default);
+
     Task<Subject> UpdateSubject(Subject subject, CancellationToken cancellationToken = default);
 
     Task<List<Subject>?> GetAllSubjectBySemester(string semester, bool shouldTrack = false, CancellationToken cancellationToken = default);

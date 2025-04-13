@@ -95,4 +95,9 @@ public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
                     .Where(s => subjectIds.Contains(s.Id))
                     .ToListAsync(cancellationToken);
     }
+
+    public async Task<Subject> CreateSubject(Subject subject, CancellationToken cancellationToken = default)
+    {
+        return await InsertAsync(subject, cancellationToken);
+    }
 }

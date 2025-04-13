@@ -31,7 +31,7 @@ internal sealed class GetPaginatedDepartmentListQueryHandler
             if(departments is null || departments.Count() == 0)
             {
                 var paginatedList = PaginatedList<DepartmentListViewModel>
-                    .Create(new List<DepartmentListViewModel>().AsQueryable(), 1, 10);
+                    .Create(new List<DepartmentListViewModel>().AsQueryable(), 1, 999999);
 
                 return ResultModel<PaginatedList<DepartmentListViewModel>>.Success(paginatedList);
             }
@@ -47,7 +47,7 @@ internal sealed class GetPaginatedDepartmentListQueryHandler
                 }));
 
                 var paginatedList = PaginatedList<DepartmentListViewModel>
-                    .Create(departmentListViewModel.AsQueryable(), request.filter.PageNumber, 10);
+                    .Create(departmentListViewModel.AsQueryable(), request.filter.PageNumber, 999999);
 
                 return ResultModel<PaginatedList<DepartmentListViewModel>>.Success(paginatedList);
             }

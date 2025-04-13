@@ -39,7 +39,7 @@ internal sealed class GetPaginatedStudentListQueryHandler :
             if(studentList is null || studentList.Count() == 0)
             {
                 var paginatedList = PaginatedList<StudentListViewModel>
-                    .Create(new List<StudentListViewModel>().AsQueryable(), 1, 10);
+                    .Create(new List<StudentListViewModel>().AsQueryable(), 1, 999999);
 
                 return ResultModel<PaginatedList<StudentListViewModel>>.Success(paginatedList);
             }
@@ -80,7 +80,7 @@ internal sealed class GetPaginatedStudentListQueryHandler :
                 }));
 
                 var paginatedList = PaginatedList<StudentListViewModel>
-                    .Create(studentListViewModel.AsQueryable(), request.filter.PageNumber, 10);
+                    .Create(studentListViewModel.AsQueryable(), request.filter.PageNumber, 999999);
 
                 return ResultModel<PaginatedList<StudentListViewModel>>.Success(paginatedList);
             }

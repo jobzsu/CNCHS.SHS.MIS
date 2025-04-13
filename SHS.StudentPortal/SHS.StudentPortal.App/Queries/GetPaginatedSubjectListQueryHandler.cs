@@ -58,14 +58,8 @@ internal sealed class GetPaginatedSubjectListQueryHandler
                     else
                         trackStr = "TVL";
 
-                    var strandStr = Strand.GetStrand(trackStrandSplitStr![1]).IsPlaceholder ?
-                        Strand.Placeholder.Name :
-                        Strand.GetStrand(trackStrandSplitStr![1]).Name;
-
-                    //if (Strand.GetStrand(x.TrackAndStrand.Split('-')[1]).IsPlaceholder)
-                    //    strandStr = "N/A";
-                    //else
-                    //    strandStr = Strand.GetStrand(x.TrackAndStrand.Split('-')[1]).Id.ToUpper();
+                    var trackAndStrand = trackStrandSplitStr![1] == Strand.Placeholder.Id ?
+                        trackStr : $"{trackStr} - {Strand.GetStrand(trackStrandSplitStr![1]).Name}";
 
                     return new SubjectListViewModel
                     {
@@ -73,12 +67,12 @@ internal sealed class GetPaginatedSubjectListQueryHandler
                         Name = x.Name,
                         Code = x.Code,
                         Units = x.Units.ToString(),
-                        TrackAndStrand = $"{trackStr} - {strandStr}"
+                        TrackAndStrand = trackAndStrand
                     };
                 }));
 
                 var paginatedList = PaginatedList<SubjectListViewModel>
-                    .Create(subjectListViewModel.AsQueryable(), request.filter.PageNumber, 10);
+                    .Create(subjectListViewModel.AsQueryable(), request.filter.PageNumber, 999999);
 
                 return ResultModel<PaginatedList<SubjectListViewModel>>.Success(paginatedList);
             }

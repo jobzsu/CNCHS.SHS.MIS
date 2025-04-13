@@ -51,7 +51,7 @@ internal sealed class GetPaginatedInstructorListQueryHandler
             if(instructorList is null || instructorList.Count() == 0)
             {
                 var paginatedList = PaginatedList<InstructorListViewModel>
-                    .Create(new List<InstructorListViewModel>().AsQueryable(), 1, 10);
+                    .Create(new List<InstructorListViewModel>().AsQueryable(), 1, 999999);
 
                 var instructorPaginatedList = new InstructorPaginatedList
                 {
@@ -74,7 +74,7 @@ internal sealed class GetPaginatedInstructorListQueryHandler
                 }));
 
                 var paginatedList = PaginatedList<InstructorListViewModel>
-                    .Create(instructorListViewModel.AsQueryable(), request.filter.PageNumber, 10);
+                    .Create(instructorListViewModel.AsQueryable(), request.filter.PageNumber, 999999);
 
                 var instructorPaginatedList = new InstructorPaginatedList
                 {

@@ -1,0 +1,297 @@
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.App.Queries
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+@inject IUserStateService UserStateService;
+@inject NavigationManager NavigationManager;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
+@inject ILoadingService LoadingService;
+@inject DialogService DialogService;
+
+<RadzenTemplateForm Data="SubjectInfo" Context="SubjectViewModel" @ref="SubjectInfoFormRef" Submit="@(async(SubjectViewModel args) => { await Submit(); })">
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="0.5rem">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+            <div>
+                <div>
+                    <RadzenFormField Text="Code" AllowFloatingLabel="false">
+                        <RadzenTextBox Name="SubjectCode" @bind-Value="SubjectInfo.Code" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SubjectCode" Popup="false" Text="Code is Required" />
+            </div>
+            <div>
+                <div>
+                    <RadzenFormField Text="Name" AllowFloatingLabel="false">
+                        <RadzenTextBox Name="SubjectName" @bind-Value="SubjectInfo.Name" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SubjectName" Popup="false" Text="Name is Required" />
+            </div>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+            <div>
+                <div>
+                    <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenDropDown Data="Tracks"
+                                        @bind-Value="SubjectInfo.TrackId"
+                                        ValueProperty="Id"
+                                        TextProperty="Name"
+                                        Placeholder="Select Track"
+                                        AllowClear=true
+                                        Style="width: 250px"
+                                        Change="FilterStrandDropdownOnTrackSelect"
+                                        Name="SubjectTrack" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SubjectTrack" Popup="false" Text="Track is Required" />
+            </div>
+            @if (hasStrands)
+            {
+                <div>
+                    <div>
+                        <RadzenFormField Text="Strand" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                            <RadzenDropDown Data="Strands"
+                                            @bind-Value="SubjectInfo.StrandId"
+                                            ValueProperty="Id"
+                                            TextProperty="Name"
+                                            Placeholder="Select Strand"
+                                            AllowClear=true
+                                            Style="width: 500px"
+                                            Name="SubjectStrand" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenRequiredValidator Component="SubjectStrand" Popup="false" Text="Strand is Required" />
+                </div>
+            }
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+            <div>
+                <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDropDown Data="Semesters"
+                                    @bind-Value="SubjectInfo.Semester"
+                                    ValueProperty="Key"
+                                    TextProperty="Value"
+                                    Placeholder="Select Semester"
+                                    AllowClear=false
+                                    Style="width: 250px" />
+                </RadzenFormField>
+            </div>
+            <div>
+                <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDropDown Data="AcademicYears"
+                                    @bind-Value="SubjectInfo.AcademicYear"
+                                    ValueProperty="Key"
+                                    TextProperty="Value"
+                                    Placeholder="Select Academic Year"
+                                    AllowClear=false
+                                    Style="width: 250px" />
+                </RadzenFormField>
+            </div>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+            <div>
+                <div>
+                    <RadzenFormField Text="Hours" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenNumeric Name="SubjectHours" @bind-Value="SubjectInfo.Hours" ShowUpDown="false" />
+                    </RadzenFormField>
+                </div>
+                <RadzenNumericRangeValidator Component="SubjectHours" AllowNull="false" Min="1" Max="999" Text="Invalid Hours" />
+            </div>
+            <div>
+                <div>
+                    <RadzenFormField Text="Days" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenNumeric Name="SubjectDays" @bind-Value="SubjectInfo.Days" ShowUpDown="false" />
+                    </RadzenFormField>
+                </div>
+                <RadzenNumericRangeValidator Component="SubjectDays" AllowNull="false" Min="1" Max="999" Text="Invalid Days" />
+            </div>
+            <div>
+                <div>
+                    <RadzenFormField Text="Units" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenNumeric Name="SubjectUnits" @bind-Value="SubjectInfo.Units" ShowUpDown="false" />
+                    </RadzenFormField>
+                </div>
+                <RadzenNumericRangeValidator Component="SubjectUnits" AllowNull="false" Min="1" Max="999" Text="Invalid Units" />
+            </div>
+
+        </RadzenStack>
+        <div>
+            <RadzenFormField Text="Description" AllowFloatingLabel="false" Style="width: 100%">
+                <RadzenTextArea Name="SubjectDesc" @bind-Value="SubjectInfo.Description" Rows="5" />
+            </RadzenFormField>
+        </div>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
+            <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Save" IsBusy="LoadingService.IsLoading" />
+            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    private UserPrincipalViewModel CurrentUser;
+
+    [Parameter]
+    public int SubjectId { get; set; }
+
+    private SubjectViewModel SubjectInfo = SubjectViewModel.New();
+    private RadzenTemplateForm<SubjectViewModel> SubjectInfoFormRef;
+
+    private List<KeyValuePair<string, string>> Semesters = new()
+    {
+        new KeyValuePair<string, string>("1st", "1st Semester"),
+        new KeyValuePair<string, string>("2nd", "2nd Semester")
+    };
+
+    private List<KeyValuePair<string, string>> AcademicYears = new()
+    {
+        new KeyValuePair<string, string>("2023-2024", "2023-2024"),
+        new KeyValuePair<string, string>("2024-2025", "2024-2025"),
+        new KeyValuePair<string, string>("2025-2026", "2025-2026"),
+    };
+
+    private List<Track> Tracks = Track.GetAllTracks;
+    private List<Strand> Strands = Strand.GetAllStrands;
+    private bool hasStrands = false;
+
+    private bool SubjectUpserted = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserInfo();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadSubjectInfo();
+    }
+
+    private async Task LoadCurrentUserInfo()
+    {
+        await UserStateService.Initialize();
+        var principalUser = UserStateService.GetUser();
+
+        if (!(principalUser.Identity?.IsAuthenticated) ?? true)
+            NavigationManager.NavigateTo("/Login");
+        else
+        {
+            CurrentUser = new()
+                {
+                    UserId = Guid.Parse(principalUser.Claims.FirstOrDefault(c => c.Type == "UserId")!.Value),
+                    Username = principalUser.Claims.FirstOrDefault(c => c.Type == "Username")!.Value,
+                    Firstname = principalUser.Claims.FirstOrDefault(c => c.Type == "FirstName")!.Value,
+                    Middlename = principalUser.Claims.FirstOrDefault(c => c.Type == "MiddleName")!.Value,
+                    Lastname = principalUser.Claims.FirstOrDefault(c => c.Type == "LastName")!.Value,
+                };
+        }
+    }
+
+    private void FilterStrandDropdownOnTrackSelect()
+    {
+        SubjectInfo.StrandId = null;
+
+        if (SubjectInfo.TrackId == null)
+        {
+            hasStrands = false;
+
+            Strands = Strand.GetAllStrands;
+
+            StateHasChanged();
+
+            return;
+        }
+
+        hasStrands = SubjectInfo.TrackId == Track.AcademicTrack.Id || SubjectInfo.TrackId == Track.TechnicalVocationalTrack.Id;
+
+        Strands = Track.GetTrack(SubjectInfo.TrackId).Strands;
+
+        StateHasChanged();
+    }
+
+    private async Task LoadSubjectInfo()
+    {
+        if (SubjectId == 0)
+            return;
+
+        LoadingService.IsLoading = true;
+
+        var query = new GetSubjectByIdQuery(SubjectId);
+
+        var result = await Sender.Send(query);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            SubjectInfo = result.Data!;
+
+            hasStrands = SubjectInfo.TrackId == Track.AcademicTrack.Id || SubjectInfo.TrackId == Track.TechnicalVocationalTrack.Id;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task Submit()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (!SubjectInfoFormRef.EditContext.IsModified() && SubjectId != 0)
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Subject Updated"));
+
+            return;
+        }
+
+        var command = new UpsertSubjectCommand(SubjectInfo, CurrentUser.UserId);
+
+        LoadingService.IsLoading = true;
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            SubjectUpserted = true;
+
+            NotificationService.Notify(NotificationHelper.SuccessNotif(SubjectId == 0 ? "Subject Created" : "Subject Updated"));
+
+            if (SubjectId == 0)
+                DialogService.Close(SubjectUpserted);
+            else
+            {
+                await OnParametersSetAsync();
+
+                SubjectInfoFormRef.EditContext.MarkAsUnmodified();
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task Close()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (SubjectInfoFormRef.EditContext.IsModified())
+        {
+            var confirmResult = await DialogService.Confirm("Discard changes?", options: DialogHelper.DefaultConfirmOptions);
+
+            if (confirmResult!.Value)
+                DialogService.Close(SubjectUpserted);
+        }
+        else
+            DialogService.Close(SubjectUpserted);
+    }
+}

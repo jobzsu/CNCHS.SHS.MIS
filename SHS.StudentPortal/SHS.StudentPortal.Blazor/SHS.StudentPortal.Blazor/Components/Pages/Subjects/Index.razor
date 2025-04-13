@@ -1,0 +1,246 @@
+﻿@page "/subjects"
+@page "/subjects/index"
+
+@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Queries
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+@using SHS.StudentPortal.Common.Utilities.Models
+
+@inject ILoadingService LoadingService;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
+@inject DialogService DialogService;
+
+<div class="container-fluid">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Start" Gap="2rem">
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Start" Gap="1rem">
+                <RadzenFormField Text="Search Keyword" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenTextBox @bind-Value="SearchKeyword" />
+                </RadzenFormField>
+                <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDropDown Data="Tracks"
+                                    @bind-Value="selectedTrack"
+                                    ValueProperty="Id"
+                                    TextProperty="Name"
+                                    Placeholder="Select Track"
+                                    AllowClear=true
+                                    Style="width: 250px"
+                                    Change="FilterStrandDropdownOnTrackSelect" />
+                </RadzenFormField>
+                @if (hasStrands)
+                {
+                    <RadzenFormField Text="Strand" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenDropDown Data="Strands"
+                                        @bind-Value="selectedStrand"
+                                        ValueProperty="Id"
+                                        TextProperty="Name"
+                                        Placeholder="Select Strand"
+                                        AllowClear=true
+                                        Style="width: 500px" />
+                    </RadzenFormField>
+                }
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Success"
+                              Size="ButtonSize.Medium"
+                              Icon="search"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Search"
+                              Click="DoSearch"
+                              Style="margin-top:10px" />
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Info"
+                              Size="ButtonSize.Medium"
+                              Icon="restart_alt"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Reset"
+                              Click="ResetFilters"
+                              Style="margin-top:10px" />
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Info"
+                              Size="ButtonSize.Medium"
+                              Icon="add_circle"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Add Subject"
+                              Style="margin-top:10px"
+                              Click="AddSubject" />
+            </RadzenStack>
+            <RadzenDataGrid style="height: 400px"
+                            @ref="grid"
+                            IsLoading="LoadingService.IsLoading"
+                            Count="@SubjectCount"
+                            Data="@Subjects"
+                            LoadData="@LoadData"
+                            AllowSorting="false"
+                            AllowFiltering="false"
+                            AllowPaging="true"
+                            PageSize="5"
+                            RowClick=@((DataGridRowMouseEventArgs<SubjectListViewModel> args) => ViewSubject(args))
+                            PagerHorizontalAlign="HorizontalAlign.Center"
+                            PagerPosition="PagerPosition.Bottom"
+                            ShowPagingSummary="true">
+                <EmptyTemplate>
+                    <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+                </EmptyTemplate>
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(SubjectListViewModel.Code)" Title="Code" Width="100px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(SubjectListViewModel.Name)" Title="Name" Width="150px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(SubjectListViewModel.Units)" Title="Unit" Width="50px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(SubjectListViewModel.TrackAndStrand)" Width="250px" Title="Track and Strand" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Width="100px" TextAlign="TextAlign.Center">
+                        <Template>
+                            <RadzenButton ButtonType="ButtonType.Button"
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Size="ButtonSize.Small"
+                                          Icon="edit"
+                                          IsBusy="LoadingService.IsLoading"
+                                          Text="View" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenStack>
+    </RadzenCard>
+</div>
+
+@code {
+    private string SearchKeyword = string.Empty;
+    private string? selectedTrack = null;
+    private string? selectedStrand = null;
+    private bool hasStrands = false;
+
+    private RadzenDataGrid<SubjectListViewModel> grid;
+    private IEnumerable<SubjectListViewModel> Subjects;
+    private int SubjectCount = 0;
+    private List<Track> Tracks = Track.GetAllTracks;
+    private List<Strand> Strands = Strand.GetAllStrands;
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        LoadingService.IsLoading = true;
+
+        var filters = SubjectsPaginationFilter.NewSubjectsListSearch(SearchKeyword, selectedTrack, selectedStrand, 1);
+
+        var query = new GetPaginatedSubjectListQuery(filters);
+
+        var result = await Sender.Send(query);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            var resultQuery = result.Data!;
+
+            SubjectCount = resultQuery.Count();
+
+            Subjects = resultQuery.Skip(args.Skip.Value).Take(args.Top.Value).ToList();
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task DoSearch()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var searchArgs = new LoadDataArgs()
+            {
+                Filter = string.Empty,
+                OrderBy = string.Empty,
+                Filters = new List<FilterDescriptor>(),
+                Sorts = new List<SortDescriptor>(),
+                Skip = 0,
+                Top = int.MaxValue
+            };
+
+        await LoadData(searchArgs);
+    }
+
+    private async Task ResetFilters()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        SearchKeyword = string.Empty;
+        selectedTrack = null;
+        selectedStrand = null;
+        hasStrands = false;
+
+        var searchArgs = new LoadDataArgs()
+        {
+            Filter = string.Empty,
+            OrderBy = string.Empty,
+            Filters = new List<FilterDescriptor>(),
+            Sorts = new List<SortDescriptor>(),
+            Skip = 0,
+            Top = int.MaxValue
+        };
+
+        await LoadData(searchArgs);
+    }
+
+    private void FilterStrandDropdownOnTrackSelect()
+    {
+        selectedStrand = null;
+
+        if (selectedTrack == null)
+        {
+            hasStrands = false;
+
+            Strands = Strand.GetAllStrands;
+
+            StateHasChanged();
+
+            return;
+        }
+
+        hasStrands = selectedTrack == Track.AcademicTrack.Id || selectedTrack == Track.TechnicalVocationalTrack.Id;
+
+        Strands = Track.GetTrack(selectedTrack).Strands;
+
+        StateHasChanged();
+    }
+
+    private async Task AddSubject()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var parameters = new Dictionary<string, object>()
+        {
+            { "SubjectId", 0 }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<UpsertSubject>($"Create Subject", parameters, DialogHelper.DefaultFullAutoDialogOptions);
+
+        if (dialogResult != null && typeof(bool) == dialogResult!.GetType())
+        {
+            if (dialogResult)
+                await DoSearch();
+        }
+    }
+
+    private async Task ViewSubject(DataGridRowMouseEventArgs<SubjectListViewModel> subject)
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var parameters = new Dictionary<string, object>()
+        {
+            { "SubjectId", subject.Data.Id }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<UpsertSubject>($"View Subject", parameters, DialogHelper.DefaultFullAutoDialogOptions);
+
+        if (dialogResult != null && typeof(bool) == dialogResult!.GetType())
+        {
+            if (dialogResult)
+                await DoSearch();
+        }
+    }
+}
