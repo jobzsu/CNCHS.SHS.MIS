@@ -1,0 +1,114 @@
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+@inject ILoadingService LoadingService;
+@inject DialogService DialogService
+@inject IUserStateService UserStateService;
+@inject NotificationService NotificationService;
+@inject NavigationManager NavigationManager;
+@inject ISender Sender;
+
+<RadzenTemplateForm Data="Department" Context="CreateDepartmentViewModel" @ref="DepartmentFormRef" Submit="@(async(CreateDepartmentViewModel args) => { await Submit(); })">
+
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+
+        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="0.5rem">
+            <div>
+                <div>
+                    <RadzenFormField Text="Department Name" AllowFloatingLabel="false">
+                        <RadzenTextBox Name="DeptName" @bind-Value="Department.Name" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="DeptName" Popup="false" Text="Department Name is Required" />
+            </div>
+            <div>
+                <RadzenFormField Text="Description" AllowFloatingLabel="false">
+                    <RadzenTextArea Name="DeptDesc" @bind-Value="Department.Description" Rows="5" />
+                </RadzenFormField>
+            </div>
+
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
+                <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Save" IsBusy="LoadingService.IsLoading" />
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
+            </RadzenStack>
+        </RadzenStack>
+
+    </RadzenStack>
+
+</RadzenTemplateForm>
+
+@code {
+    private UserPrincipalViewModel CurrentUser;
+
+    private CreateDepartmentViewModel Department = CreateDepartmentViewModel.New();
+
+    private RadzenTemplateForm<CreateDepartmentViewModel> DepartmentFormRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserInfo();
+    }
+
+    private async Task LoadCurrentUserInfo()
+    {
+        await UserStateService.Initialize();
+        var principalUser = UserStateService.GetUser();
+
+        if (!(principalUser.Identity?.IsAuthenticated) ?? true)
+            NavigationManager.NavigateTo("/Login");
+        else
+        {
+            CurrentUser = new()
+            {
+                UserId = Guid.Parse(principalUser.Claims.FirstOrDefault(c => c.Type == "UserId")!.Value),
+                Username = principalUser.Claims.FirstOrDefault(c => c.Type == "Username")!.Value,
+                Firstname = principalUser.Claims.FirstOrDefault(c => c.Type == "FirstName")!.Value,
+                Middlename = principalUser.Claims.FirstOrDefault(c => c.Type == "MiddleName")!.Value,
+                Lastname = principalUser.Claims.FirstOrDefault(c => c.Type == "LastName")!.Value,
+            };
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var command = new CreateDepartmentCommand(Department, CurrentUser.UserId);
+
+        LoadingService.IsLoading = true;
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Department Created"));
+
+            DialogService.Close(true);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task Close()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (DepartmentFormRef.EditContext.IsModified())
+        {
+            var confirmResult = await DialogService.Confirm("Discard changes?", options: DialogHelper.DefaultConfirmOptions);
+
+            if (confirmResult!.Value)
+                DialogService.Close(false);
+        }
+        else
+            DialogService.Close(false);
+    }
+}

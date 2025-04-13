@@ -1,0 +1,191 @@
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.App.Queries
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+@inject IUserStateService UserStateService;
+@inject NavigationManager NavigationManager;
+@inject ILoadingService LoadingService;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
+@inject DialogService DialogService;
+
+<RadzenTemplateForm Data="DepartmentInfo" Context="InstructorInfoAdminViewDTO" @ref="DepartmentInfoFormRef" Submit="@(async(DepartmentViewModel args) => { await SubmitUpdateDepartment(); })">
+
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="0.5rem">
+
+        <RadzenFieldset Text="Department Information">
+            <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="0.5rem">
+                <div>
+                    <div>
+                        <RadzenFormField Text="Department Name" AllowFloatingLabel="false" Style="width: 100%">
+                            <RadzenTextBox Name="DeptName" @bind-Value="DepartmentInfo.Name" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenRequiredValidator Component="DeptName" Popup="false" Text="Name is Required" />
+                </div>
+                <div>
+                    <RadzenFormField Text="Description" AllowFloatingLabel="false" Style="width: 100%">
+                        <RadzenTextArea Name="DeptDesc" @bind-Value="DepartmentInfo.Description" Rows="5" />
+                    </RadzenFormField>
+                </div>
+            </RadzenStack>
+        </RadzenFieldset>
+
+        <RadzenFieldset Text="Instructors">
+            <RadzenDataGrid Style="height: 335px; width: 500px"
+                            @ref="grid"
+                            IsLoading="LoadingService.IsLoading"
+                            Count="count"
+                            Data="DepartmentInstructors"
+                            AllowSorting="false"
+                            AllowFiltering="false"
+                            AllowPaging="true"
+                            PageSize="5"
+                            PagerHorizontalAlign="HorizontalAlign.Center"
+                            PagerPosition="PagerPosition.Bottom"
+                            ShowPagingSummary="true">
+                <EmptyTemplate>
+                    <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+                </EmptyTemplate>
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(DepartmentInstructors)" Title="Instructor Name" TextAlign="TextAlign.Center" />
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenFieldset>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
+            <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Save" IsBusy="LoadingService.IsLoading" />
+            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
+        </RadzenStack>
+
+    </RadzenStack>
+
+</RadzenTemplateForm>
+
+@code {
+    private UserPrincipalViewModel CurrentUser;
+
+    [Parameter]
+    public int DepartmentId { get; set; }
+
+    private DepartmentViewModel DepartmentInfo = DepartmentViewModel.New();
+    private RadzenTemplateForm<DepartmentViewModel> DepartmentInfoFormRef;
+
+    private RadzenDataGrid<string> grid;
+    private IEnumerable<string> DepartmentInstructors;
+    private int count = 0;
+
+    private bool DepartmentUpdated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserInfo();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDepartmentInfo();
+    }
+
+    private async Task LoadCurrentUserInfo()
+    {
+        await UserStateService.Initialize();
+        var principalUser = UserStateService.GetUser();
+
+        if (!(principalUser.Identity?.IsAuthenticated) ?? true)
+            NavigationManager.NavigateTo("/Login");
+        else
+        {
+            CurrentUser = new()
+                {
+                    UserId = Guid.Parse(principalUser.Claims.FirstOrDefault(c => c.Type == "UserId")!.Value),
+                    Username = principalUser.Claims.FirstOrDefault(c => c.Type == "Username")!.Value,
+                    Firstname = principalUser.Claims.FirstOrDefault(c => c.Type == "FirstName")!.Value,
+                    Middlename = principalUser.Claims.FirstOrDefault(c => c.Type == "MiddleName")!.Value,
+                    Lastname = principalUser.Claims.FirstOrDefault(c => c.Type == "LastName")!.Value,
+                };
+        }
+    }
+
+    private async Task LoadDepartmentInfo()
+    {
+        if (DepartmentId == 0)
+            return;
+
+        LoadingService.IsLoading = true;
+
+        var query = new GetDepartmentViewModel(DepartmentId);
+
+        var result = await Sender.Send(query);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            DepartmentInfo = result.Data!;
+
+            DepartmentInstructors = result.Data!.Instructors;
+            count = DepartmentInstructors.Count();
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task SubmitUpdateDepartment()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (!DepartmentInfoFormRef.EditContext.IsModified())
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Department Updated"));
+
+            return;
+        }
+
+        var command = new UpdateDepartmentCommand(DepartmentInfo, CurrentUser.UserId);
+
+        LoadingService.IsLoading = true;
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Department Updated"));
+
+            DepartmentUpdated = true;
+
+            await OnParametersSetAsync();
+
+            DepartmentInfoFormRef.EditContext.MarkAsUnmodified();
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task Close()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (DepartmentInfoFormRef.EditContext.IsModified())
+        {
+            var confirmResult = await DialogService.Confirm("Discard changes?", options: DialogHelper.DefaultConfirmOptions);
+
+            if (confirmResult!.Value)
+                DialogService.Close(DepartmentUpdated);
+        }
+        else
+            DialogService.Close(DepartmentUpdated);
+    }
+}

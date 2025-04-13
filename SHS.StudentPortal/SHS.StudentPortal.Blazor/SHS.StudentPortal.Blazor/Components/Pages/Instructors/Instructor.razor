@@ -294,7 +294,7 @@
             { "CurrentUserId", CurrentUser.UserId  }
         };
 
-        var dialogResult = await DialogService.OpenAsync<UpdateInstructorPassword>("Update Student Password", parameters, DialogHelper.DefaultSmallDialogOptions);
+        var dialogResult = await DialogService.OpenAsync<UpdateInstructorPassword>("Update Instructor Password", parameters, DialogHelper.DefaultSmallDialogOptions);
 
         if (dialogResult is not null && dialogResult.GetType() == typeof(bool))
         {
