@@ -12,17 +12,17 @@
 <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
     <RadzenFieldset Text="Available Schedules">
         <RadzenDataGrid Style="height: 335px; width: auto"
-        Count="AvailableStudentSchedulesCount"
-        Data="AvailableStudentSchedules"
-        SelectionMode="DataGridSelectionMode.Multiple"
-        @bind-Value="CurrentlySelectedSchedules"
-        AllowSorting="false"
-        AllowFiltering="false"
-        AllowPaging="true"
-        PageSize="5"
-        PagerHorizontalAlign="HorizontalAlign.Center"
-        PagerPosition="PagerPosition.Bottom"
-        ShowPagingSummary="true">
+                        Count="AvailableStudentSchedulesCount"
+                        Data="AvailableStudentSchedules"
+                        SelectionMode="DataGridSelectionMode.Multiple"
+                        @bind-Value="CurrentlySelectedSchedules"
+                        AllowSorting="false"
+                        AllowFiltering="false"
+                        AllowPaging="true"
+                        PageSize="5"
+                        PagerHorizontalAlign="HorizontalAlign.Center"
+                        PagerPosition="PagerPosition.Bottom"
+                        ShowPagingSummary="true">
             <EmptyTemplate>
                 <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
             </EmptyTemplate>
@@ -30,11 +30,11 @@
                 <RadzenDataGridColumn Width="60px" Sortable="false" Filterable="false">
                     <Template Context="data">
                         <RadzenCheckBox TabIndex="-1"
-                        TriState="false"
-                        Value="@(CurrentlySelectedSchedules != null && CurrentlySelectedSchedules.Contains(data))"
-                        InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Select item" }})"
-                        TValue="bool"
-                        Change="@(() => OnSelectedSchedulesChanged(data))" />
+                                        TriState="false"
+                                        Value="@(CurrentlySelectedSchedules != null && CurrentlySelectedSchedules.Contains(data))"
+                                        InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Select item" }})"
+                                        TValue="bool"
+                                        Change="@(() => OnSelectedSchedulesChanged(data))" />
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Days)" Title="Days" Width="120px" TextAlign="TextAlign.Center" />

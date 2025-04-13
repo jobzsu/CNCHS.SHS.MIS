@@ -45,7 +45,7 @@
             <RadzenPanelMenuItem Text="Departments" Icon="domain" Click="RedirectToDepartments" />
             <RadzenPanelMenuItem Text="Subjects" Icon="book_6" Click="RedirectToSubjects" />
             <RadzenPanelMenuItem Text="Schedules" Icon="calendar_month" />
-            <RadzenPanelMenuItem Text="System Settings" Icon="settings_applications" />
+            <RadzenPanelMenuItem Text="System Settings" Icon="settings_applications" Click="RedirectToSystemSettings" />
         </RadzenPanelMenu>
     </RadzenSidebar>
     <RadzenBody>
@@ -179,6 +179,14 @@
             return;
         else
             NavigationManager.NavigateTo("/subjects");
+    }
+    
+    private void RedirectToSystemSettings()
+    {
+        if (NavigationManager.Uri.ToLower().EndsWith("/systemsettings"))
+            return;
+        else
+            NavigationManager.NavigateTo("/systemsettings");
     }
 
     #endregion

@@ -17,4 +17,9 @@ public class SettingRepository : BaseRepository<Setting>, ISettingRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Name.ToLower() == name, cancellationToken));
     }
+
+    public async Task<Setting> UpdateSystemSetting(Setting setting, CancellationToken cancellationToken = default)
+    {
+        return await UpdateAsync(setting, cancellationToken);
+    }
 }
