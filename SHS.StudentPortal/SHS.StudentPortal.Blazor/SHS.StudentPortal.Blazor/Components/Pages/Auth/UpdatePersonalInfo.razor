@@ -1,0 +1,91 @@
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+
+@inject ILoadingService LoadingService;
+@inject DialogService DialogService;
+@inject NotificationService NotificationService;
+@inject ISender Sender;
+
+<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+    <RadzenFormField AllowFloatingLabel="false" Text="First Name">
+        <RadzenTextBox @bind-Value="FirstName" Placeholder="Enter First Name" />
+    </RadzenFormField>
+    <RadzenFormField AllowFloatingLabel="false" Text="Middle Name">
+        <RadzenTextBox @bind-Value="MiddleName" Placeholder="Enter Middle Name" />
+    </RadzenFormField>
+    <RadzenFormField AllowFloatingLabel="false" Text="Last Name">
+        <RadzenTextBox @bind-Value="LastName" Placeholder="Enter Last Name" />
+    </RadzenFormField>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="10px">
+        <RadzenButton Text="Save" ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="SubmitUpdatePersonalInfo" />
+        <RadzenButton Text="Cancel" ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Click="Cancel" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public Guid CurrentUserId { get; set; }
+
+    [Parameter]
+    public string FirstName { get; set; }
+
+    [Parameter]
+    public string MiddleName { get; set; }
+
+    [Parameter]
+    public string LastName { get; set; }
+
+    private async Task SubmitUpdatePersonalInfo()
+    {
+        if(LoadingService.IsLoading)
+            return;
+
+        if(string.IsNullOrEmpty(FirstName))
+        {
+            NotificationService.Notify(NotificationHelper.WarningNotif("First name is required"));
+
+            return;
+        }
+
+        if (string.IsNullOrEmpty(LastName))
+        {
+            NotificationService.Notify(NotificationHelper.WarningNotif("Last name is required"));
+
+            return;
+        }
+
+        LoadingService.IsLoading = true;
+
+        var updatedUserInfo = new UpdatePersonalInfoViewModel()
+        {
+            FirstName = FirstName,
+            MiddleName = MiddleName,
+            LastName = LastName
+        };
+
+        var command = new UpdatePersonalInfoCommand(CurrentUserId, updatedUserInfo);
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if(result.IsSuccess)
+        {
+            DialogService.Close(true);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private void Cancel()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        DialogService.Close(null);
+    }
+}

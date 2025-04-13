@@ -2,6 +2,7 @@
 @using SHS.StudentPortal.App.Abstractions
 @using SHS.StudentPortal.App.Abstractions.Security
 @using SHS.StudentPortal.App.Implementations.Security
+@using SHS.StudentPortal.Blazor.Components.Pages.Auth
 @using SHS.StudentPortal.Blazor.Components.Shared
 @using System.Security.Claims
 @using SHS.StudentPortal.Common.Utilities
@@ -12,6 +13,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider;
 @inject IUserStateService UserStateService;
 @inject NotificationService NotificationService;
+@inject DialogService DialogService;
 
 <RadzenComponents @rendermode="InteractiveServer" />
 <SystemLoading />
@@ -28,8 +30,8 @@
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Right" AlignItems="AlignItems.Center" Style="margin-right: 20px">
                 <RadzenMenu>
                     <RadzenMenuItem Text=@($"Welcome, {PrincipalUser?.Claims.FirstOrDefault(c => c.Type == "FullName")?.Value}")>
-                        <RadzenMenuItem Text="Personal Info" Icon="account_circle"></RadzenMenuItem>
-                        <RadzenMenuItem Text="Change Password" Icon="lock_reset"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Personal Info" Icon="account_circle" Click="UpdatePersonalInfo"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Change Password" Icon="lock_reset" Click="UpdateUserPassword"></RadzenMenuItem>
                         <RadzenMenuItem Text="Logout" Icon="logout" Click="Logout"></RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenu>
@@ -80,6 +82,55 @@
                 StateHasChanged();
 
             this.firstRender = false;
+        }
+    }
+
+    private async Task UpdatePersonalInfo()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var parameters = new Dictionary<string, object>
+        {
+            { "CurrentUserId", Guid.Parse(PrincipalUser!.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value!) },
+            { "FirstName", PrincipalUser!.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value! },
+            { "MiddleName", PrincipalUser!.Claims.FirstOrDefault(c => c.Type == "MiddleName")?.Value! },
+            { "LastName", PrincipalUser!.Claims.FirstOrDefault(c => c.Type == "LastName")?.Value! }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<UpdatePersonalInfo>("Update Personal Info", parameters, DialogHelper.DefaultSmallDialogOptions);
+
+        if (dialogResult is not null && dialogResult.GetType() == typeof(bool))
+        {
+            var castedDialogResult = (bool)dialogResult!;
+
+            if (castedDialogResult)
+            {
+                NotificationService.Notify(NotificationHelper.SuccessNotif("Personal Info Updated", "Please login again", onClose: () => Logout()));
+            }
+        }
+    }
+
+    private async Task UpdateUserPassword()
+    {
+        if(LoadingService.IsLoading)
+            return;
+
+        var parameters = new Dictionary<string, object>
+        {
+            { "CurrentUserId", Guid.Parse(PrincipalUser!.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value!) }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<UpdatePassword>("Update Password", parameters, DialogHelper.DefaultSmallDialogOptions);
+
+        if (dialogResult is not null && dialogResult.GetType() == typeof(bool))
+        {
+            var castedDialogResult = (bool)dialogResult!;
+
+            if(castedDialogResult)
+            {
+                NotificationService.Notify(NotificationHelper.SuccessNotif("Password Updated", "Please login again", onClose: () => Logout()));
+            }
         }
     }
 

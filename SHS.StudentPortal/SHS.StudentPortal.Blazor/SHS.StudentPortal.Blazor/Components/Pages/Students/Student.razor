@@ -59,12 +59,12 @@
                     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
                             <RadzenButton ButtonType="ButtonType.Button"
-                            ButtonStyle="ButtonStyle.Primary"
-                            Size="ButtonSize.Small"
-                            Icon="edit_document"
-                            IsBusy="LoadingService.IsLoading"
-                            Text="View / Edit Records"
-                            Click="ViewRecords" />
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Size="ButtonSize.Small"
+                                          Icon="edit_document"
+                                          IsBusy="LoadingService.IsLoading"
+                                          Text="View / Edit Records"
+                                          Click="ViewRecords" />
                         </RadzenStack>
                     </RadzenStack>
                 }
@@ -88,12 +88,12 @@
                     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
                             <RadzenButton ButtonType="ButtonType.Button"
-                            ButtonStyle="ButtonStyle.Primary"
-                            Size="ButtonSize.Small"
-                            Icon="lock_reset"
-                            IsBusy="LoadingService.IsLoading"
-                            Text="Update Password"
-                            Click="UpdatePassword" />
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Size="ButtonSize.Small"
+                                          Icon="lock_reset"
+                                          IsBusy="LoadingService.IsLoading"
+                                          Text="Update Password"
+                                          Click="UpdateStudentPassword" />
                         </RadzenStack>
                     </RadzenStack>
                 }
@@ -156,17 +156,17 @@
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
                 <RadzenFieldset Text="Schedule Information">
                     <RadzenDataGrid Style="height: 335px; width: auto"
-                    @ref="SchedulesDataGrid"
-                    IsLoading="LoadingService.IsLoading"
-                    Count="SchedulesCount"
-                    Data="StudentSchedules"
-                    AllowSorting="false"
-                    AllowFiltering="false"
-                    AllowPaging="true"
-                    PageSize="5"
-                    PagerHorizontalAlign="HorizontalAlign.Center"
-                    PagerPosition="PagerPosition.Bottom"
-                    ShowPagingSummary="true">
+                                    @ref="SchedulesDataGrid"
+                                    IsLoading="LoadingService.IsLoading"
+                                    Count="SchedulesCount"
+                                    Data="StudentSchedules"
+                                    AllowSorting="false"
+                                    AllowFiltering="false"
+                                    AllowPaging="true"
+                                    PageSize="5"
+                                    PagerHorizontalAlign="HorizontalAlign.Center"
+                                    PagerPosition="PagerPosition.Bottom"
+                                    ShowPagingSummary="true">
                         <EmptyTemplate>
                             <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
                         </EmptyTemplate>
@@ -187,7 +187,7 @@
             {
                 <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Approve" Click="ApproveStudent" IsBusy="LoadingService.IsLoading" />
             }
-            @if(StudentInfo.Status.ToLower() == StudentStatuses.ForEnrollment.Id)
+            @if (StudentInfo.Status.ToLower() == StudentStatuses.ForEnrollment.Id)
             {
                 <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Enroll" Click="BeginEnrollment" IsBusy="LoadingService.IsLoading" />
             }
@@ -399,9 +399,9 @@
         }
     }
 
-    private async Task UpdatePassword()
+    private async Task UpdateStudentPassword()
     {
-        if(LoadingService.IsLoading)
+        if (LoadingService.IsLoading)
             return;
 
         var parameters = new Dictionary<string, object>()
