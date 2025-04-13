@@ -1,8 +1,14 @@
-﻿@using SHS.StudentPortal.App.Abstractions
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.App.Queries
 @using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
 
 @inject DialogService DialogService;
 @inject ILoadingService LoadingService;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
 
 <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="0.5rem">
 
@@ -20,17 +26,41 @@
                 <RadzenDropDown @bind-Value="EnrollmentInfo.DesignatedSectionId" Data="Sections" TextProperty="Value" ValueProperty="Key" Placeholder="Select Section" />
             </RadzenFormField>
             <RadzenFormField Text="Designated Status" AllowFloatingLabel="false">
-                <RadzenDropDown @bind-Value="EnrollmentInfo.DesignatedStatus" Data="StudentStatuses.AllStatusList" TextProperty="Name" ValueProperty="Id" Placeholder="Select Status" />
+                <RadzenDropDown @bind-Value="EnrollmentInfo.DesignatedStatus" Data="StudentStatuses.AllForEnrollment" TextProperty="Name" ValueProperty="Id" Placeholder="Select Status" />
             </RadzenFormField>
         </RadzenStack>
     </RadzenFieldset>
 
     <RadzenFieldset Text="Student Schedules">
-
+        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+            <RadzenButton ButtonType="ButtonType.Button" Icon="edit_calendar" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Browse Schedules" Click="OpenAvailableSchedulesDialog" IsBusy="LoadingService.IsLoading" Style="width: fit-content" />
+            <RadzenDataGrid Style="height: 335px; width: auto"
+            Count="SchedulesCount"
+            Data="Schedules"
+            AllowSorting="false"
+            AllowFiltering="false"
+            AllowPaging="true"
+            PageSize="5"
+            PagerHorizontalAlign="HorizontalAlign.Center"
+            PagerPosition="PagerPosition.Bottom"
+            ShowPagingSummary="true">
+                <EmptyTemplate>
+                    <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+                </EmptyTemplate>
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Days)" Title="Days" Width="120px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Subject)" Title="Subject" Width="120px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Instructor)" Title="Instructor" Width="120px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Time)" Title="Time" Width="120px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Room)" Title="Room" Width="120px" TextAlign="TextAlign.Center" />
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenStack>
     </RadzenFieldset>
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px" Style="margin-top: auto">
-        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
+        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Save" Click="Save" IsBusy="LoadingService.IsLoading" />
+        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
     </RadzenStack>
 
 </RadzenStack>
@@ -57,7 +87,90 @@
         new KeyValuePair<int, string>(12, "Grade 12")
     };
 
+    protected override void OnParametersSet()
+    {
+        EnrollmentInfo.StudentId = StudentId;
+    }
+
     private EnrollmentViewModel EnrollmentInfo = EnrollmentViewModel.New();
+
+    private List<EnrollStudentScheduleListViewModel> Schedules = new();
+
+    private int SchedulesCount = 0;
+
+    private async Task OpenAvailableSchedulesDialog()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var parameters = new Dictionary<string, object>()
+        {
+            { "StudentId", StudentId },
+            { "PreviouslySelectedSchedules", Schedules }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<BrowseSchedules>("Select Schedules", parameters, DialogHelper.DefaultMediumDialogOptions);
+
+        var castedDialogResult = (List<EnrollStudentScheduleListViewModel>)dialogResult;
+
+        Schedules = castedDialogResult!;
+        SchedulesCount = Schedules.Count;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Save()
+    {
+        if(LoadingService.IsLoading)
+            return;
+
+        if(EnrollmentInfo.DesignatedGradeLevel == 0)
+        {
+            NotificationService.Notify(NotificationHelper.WarningNotif("Please select a designated Grade Level"));
+
+            return;
+        }
+
+        if (EnrollmentInfo.DesignatedSectionId == Guid.Empty)
+        {
+            NotificationService.Notify(NotificationHelper.WarningNotif("Please select a designated Section"));
+
+            return;
+        }
+
+        if (EnrollmentInfo.DesignatedStatus == string.Empty)
+        {
+            NotificationService.Notify(NotificationHelper.WarningNotif("Please select a designated Status"));
+
+            return;
+        }
+
+        if(Schedules is null || !Schedules.Any())
+        {
+            NotificationService.Notify(NotificationHelper.WarningNotif("Please select at least one Schedule"));
+
+            return;
+        }
+
+        EnrollmentInfo.SelectedSchedules = Schedules.Select(s => s.ScheduleId).ToList();
+
+        LoadingService.IsLoading = true;
+
+        var command = new EnrollStudentCommand(CurrentUser, EnrollmentInfo);
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if(result.IsSuccess)
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Student Enrolled"));
+
+            DialogService.Close(true);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
 
     private async Task Close()
     {

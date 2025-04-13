@@ -74,3 +74,22 @@ public class NewAcademicRecordDTO
 
     public string Rating { get; set; }
 }
+
+public class UpsertAcademicRecordDTO
+{
+    public long Id { get; set; }
+
+    public string AcademicYear { get; set; }
+
+    public string Semester { get; set; }
+
+    public string Rating { get; set; }
+
+    public Guid StudentId { get; set; }
+
+    public int SubjectId { get; set; }
+
+    public string OtherSubjectName { get; set; }
+
+    public Guid CreatedById { get; set; }
+}

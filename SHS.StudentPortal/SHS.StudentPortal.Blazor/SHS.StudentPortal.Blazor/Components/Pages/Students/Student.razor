@@ -54,17 +54,20 @@
                     </RadzenStack>
                 </RadzenStack>
                 <!-- Lower row -->
-                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
-                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
-                        <RadzenButton ButtonType="ButtonType.Button"
-                        ButtonStyle="ButtonStyle.Primary"
-                        Size="ButtonSize.Small"
-                        Icon="edit_document"
-                        IsBusy="LoadingService.IsLoading"
-                        Text="View / Edit Records"
-                        Click="ViewRecords" />
+                @if (StudentInfo.Status.ToLower() != StudentStatuses.Pending.Id)
+                {
+                    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+                            <RadzenButton ButtonType="ButtonType.Button"
+                            ButtonStyle="ButtonStyle.Primary"
+                            Size="ButtonSize.Small"
+                            Icon="edit_document"
+                            IsBusy="LoadingService.IsLoading"
+                            Text="View / Edit Records"
+                            Click="ViewRecords" />
+                        </RadzenStack>
                     </RadzenStack>
-                </RadzenStack>
+                }
             </RadzenStack>
         </RadzenFieldset>
 
@@ -79,6 +82,21 @@
                         <RadzenTextBox Value="@(StudentInfo.LastLogin?.ToString("MM/dd/yyyy") ?? "N/A")" ReadOnly />
                     </RadzenFormField>
                 </RadzenStack>
+                <!-- Lower row -->
+                @if (StudentInfo.Status.ToLower() != StudentStatuses.Pending.Id)
+                {
+                    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+                            <RadzenButton ButtonType="ButtonType.Button"
+                            ButtonStyle="ButtonStyle.Primary"
+                            Size="ButtonSize.Small"
+                            Icon="lock_reset"
+                            IsBusy="LoadingService.IsLoading"
+                            Text="Update Password"
+                            Click="UpdatePassword" />
+                        </RadzenStack>
+                    </RadzenStack>
+                }
             </RadzenFieldset>
         </RadzenStack>
 
@@ -95,28 +113,37 @@
                     <RadzenFormField Text="Last Name" AllowFloatingLabel="false">
                         <RadzenTextBox @bind-Value="StudentInfo.LastName" ReadOnly />
                     </RadzenFormField>
-                    <RadzenFormField Text="Gender" AllowFloatingLabel="false">
-                        <RadzenTextBox @bind-Value="StudentInfo.Gender" ReadOnly />
-                    </RadzenFormField>
                     <RadzenFormField Text="Date of Birth" AllowFloatingLabel="false">
-                        <RadzenTextBox Value="@StudentInfo.DateOfBirth.ToString("MM/dd/yyyy")" ReadOnly />
+                        <RadzenDatePicker @bind-Value="@StudentInfo.DateOfBirth" DateFormat="MM/dd/yyyy" ShowTime="false" ReadOnly />
                     </RadzenFormField>
-                    <RadzenFormField Text="Place of Birth" AllowFloatingLabel="false">
-                        <RadzenTextBox @bind-Value="StudentInfo.PlaceOfBirth" ReadOnly />
+                </RadzenStack>
+
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+                    <RadzenFormField Text="Gender" AllowFloatingLabel="false">
+                        <RadzenDropDown @bind-Value="StudentInfo.Gender" Data="Genders" ValueProperty="Key" TextProperty="Value" ReadOnly />
                     </RadzenFormField>
                     <RadzenFormField Text="Civil Status" AllowFloatingLabel="false">
-                        <RadzenTextBox @bind-Value="StudentInfo.CivilStatus" ReadOnly />
-                    </RadzenFormField>
-                    <RadzenFormField Text="Nationality" AllowFloatingLabel="false">
-                        <RadzenTextBox @bind-Value="StudentInfo.Nationality" ReadOnly />
+                        <RadzenDropDown @bind-Value="StudentInfo.CivilStatus" Data="CivilStatuses" ValueProperty="Key" TextProperty="Value" ReadOnly />
                     </RadzenFormField>
                     <RadzenFormField Text="Religion" AllowFloatingLabel="false">
                         <RadzenTextBox @bind-Value="StudentInfo.Religion" ReadOnly />
                     </RadzenFormField>
+                    <RadzenFormField Text="Nationality" AllowFloatingLabel="false">
+                        <RadzenTextBox @bind-Value="StudentInfo.Nationality" ReadOnly />
+                    </RadzenFormField>
+                </RadzenStack>
+
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
                     <RadzenFormField Text="Contact" AllowFloatingLabel="false">
                         <RadzenTextBox @bind-Value="StudentInfo.ContactInfo" ReadOnly />
                     </RadzenFormField>
-                    <RadzenFormField Text="Address" AllowFloatingLabel="false">
+                </RadzenStack>
+
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+                    <RadzenFormField Text="Place of Birth" AllowFloatingLabel="false" Style="width: 500px">
+                        <RadzenTextBox @bind-Value="StudentInfo.PlaceOfBirth" ReadOnly />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Address" AllowFloatingLabel="false" Style="width: 500px">
                         <RadzenTextBox @bind-Value="StudentInfo.Address" ReadOnly />
                     </RadzenFormField>
                 </RadzenStack>
@@ -124,55 +151,47 @@
         </RadzenStack>
 
         <!-- Schedule Information -->
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
-            <RadzenFieldset Text="Schedule Information">
-                <!-- Schedule Information -->
-                <RadzenDataGrid Style="height: 335px"
-                @ref="SchedulesDataGrid"
-                IsLoading="LoadingService.IsLoading"
-                Count="SchedulesCount"
-                Data="StudentSchedules"
-                AllowSorting="false"
-                AllowFiltering="false"
-                AllowPaging="true"
-                PageSize="5"
-                PagerHorizontalAlign="HorizontalAlign.Center"
-                PagerPosition="PagerPosition.Bottom"
-                ShowPagingSummary="true">
-                    <EmptyTemplate>
-                        <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
-                    </EmptyTemplate>
-                    <Columns>
-                        <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Days)" Title="Day" Width="120px" TextAlign="TextAlign.Center" />
-                        <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Subject)" Title="Subject" Width="300px" TextAlign="TextAlign.Center" />
-                        <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Instructor)" Title="Instructor" Width="120px" TextAlign="TextAlign.Center" />
-                        <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Time)" Title="Time" Width="120px" TextAlign="TextAlign.Center" />
-                        <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.RoomNumber)" Title="Room" Width="300px" TextAlign="TextAlign.Center" />
-                        <RadzenDataGridColumn Width="100px" TextAlign="TextAlign.Center">
-                            <Template Context="data">
-                                <RadzenButton ButtonType="ButtonType.Button"
-                                ButtonStyle="ButtonStyle.Primary"
-                                Size="ButtonSize.Small"
-                                Icon="edit"
-                                IsBusy="LoadingService.IsLoading"
-                                Text="View" />
-                            </Template>
-                        </RadzenDataGridColumn>
-                    </Columns>
-                </RadzenDataGrid>
-            </RadzenFieldset>
-        </RadzenStack>
+        @if (StudentInfo.Status.ToLower() == StudentStatuses.Regular.Id.ToLower() || StudentInfo.Status.ToLower() == StudentStatuses.Irregular.Id.ToLower())
+        {
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+                <RadzenFieldset Text="Schedule Information">
+                    <RadzenDataGrid Style="height: 335px; width: auto"
+                    @ref="SchedulesDataGrid"
+                    IsLoading="LoadingService.IsLoading"
+                    Count="SchedulesCount"
+                    Data="StudentSchedules"
+                    AllowSorting="false"
+                    AllowFiltering="false"
+                    AllowPaging="true"
+                    PageSize="5"
+                    PagerHorizontalAlign="HorizontalAlign.Center"
+                    PagerPosition="PagerPosition.Bottom"
+                    ShowPagingSummary="true">
+                        <EmptyTemplate>
+                            <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+                        </EmptyTemplate>
+                        <Columns>
+                            <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Days)" Title="Day" Width="120px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Subject)" Title="Subject" Width="300px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Instructor)" Title="Instructor" Width="120px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Time)" Title="Time" Width="120px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.RoomNumber)" Title="Room" Width="300px" TextAlign="TextAlign.Center" />
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenFieldset>
+            </RadzenStack>
+        }
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
             @if (StudentInfo.Status.ToLower() == StudentStatuses.Pending.Id)
             {
-                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Text="Approve" Click="ApproveStudent" IsBusy="LoadingService.IsLoading" />
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Approve" Click="ApproveStudent" IsBusy="LoadingService.IsLoading" />
             }
-            @* @if(StudentInfo.Status.ToLower() == StudentStatuses.ForEnrollment.Id)
+            @if(StudentInfo.Status.ToLower() == StudentStatuses.ForEnrollment.Id)
             {
-                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Text="Enroll" Click="BeginEnrollment" IsBusy="LoadingService.IsLoading" />
-            } *@
-            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Enroll" Click="BeginEnrollment" IsBusy="LoadingService.IsLoading" />
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Enroll" Click="BeginEnrollment" IsBusy="LoadingService.IsLoading" />
+            }
+            @* <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary"  Text="Enroll" Click="BeginEnrollment" IsBusy="LoadingService.IsLoading" /> *@
             <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
         </RadzenStack>
 
@@ -195,6 +214,23 @@
     {
         new KeyValuePair<int, string>(11, "Grade 11"),
         new KeyValuePair<int, string>(12, "Grade 12")
+    };
+
+    private List<KeyValuePair<string, string>> Genders = new()
+    {
+        new KeyValuePair<string, string>("male", "Male"),
+        new KeyValuePair<string, string>("female", "Female"),
+        new KeyValuePair<string, string>("other", "Other"),
+    };
+
+    private List<KeyValuePair<string, string>> CivilStatuses = new()
+    {
+        new KeyValuePair<string, string>("single", "Single"),
+        new KeyValuePair<string, string>("married", "Married"),
+        new KeyValuePair<string, string>("widowed", "Widowed"),
+        new KeyValuePair<string, string>("separated", "Separated"),
+        new KeyValuePair<string, string>("divorced", "Divorced"),
+        new KeyValuePair<string, string>("other", "Other"),
     };
 
     private List<KeyValuePair<Guid, string>> Sections = new();
@@ -226,13 +262,13 @@
         else
         {
             CurrentUser = new()
-            {
-                UserId = Guid.Parse(principalUser.Claims.FirstOrDefault(c => c.Type == "UserId")!.Value),
-                Username = principalUser.Claims.FirstOrDefault(c => c.Type == "Username")!.Value,
-                Firstname = principalUser.Claims.FirstOrDefault(c => c.Type == "FirstName")!.Value,
-                Middlename = principalUser.Claims.FirstOrDefault(c => c.Type == "MiddleName")!.Value,
-                Lastname = principalUser.Claims.FirstOrDefault(c => c.Type == "LastName")!.Value,
-            };
+                {
+                    UserId = Guid.Parse(principalUser.Claims.FirstOrDefault(c => c.Type == "UserId")!.Value),
+                    Username = principalUser.Claims.FirstOrDefault(c => c.Type == "Username")!.Value,
+                    Firstname = principalUser.Claims.FirstOrDefault(c => c.Type == "FirstName")!.Value,
+                    Middlename = principalUser.Claims.FirstOrDefault(c => c.Type == "MiddleName")!.Value,
+                    Lastname = principalUser.Claims.FirstOrDefault(c => c.Type == "LastName")!.Value,
+                };
         }
     }
 
@@ -305,14 +341,20 @@
     {
         var parameters = new Dictionary<string, object>()
         {
+            { "StudentId", StudentInfo.Id },
+            { "StudentStatus", StudentInfo.Status },
             { "AcademicRecordsParam", StudentInfo.AcademicRecords }
         };
 
         var dialogResult = await DialogService.OpenAsync<AcademicRecords>("Student Academic Records", parameters, DialogHelper.DefaultMediumDialogOptions);
 
-        if(dialogResult is not null && dialogResult.GetType() == typeof(bool) && dialogResult.Value)
+        if (dialogResult is not null && dialogResult.GetType() == typeof(bool))
         {
-            
+            var castedDialogResult = (bool)dialogResult!;
+
+            StudentUpdated = castedDialogResult;
+
+            await OnParametersSetAsync();
         }
     }
 
@@ -345,9 +387,39 @@
             { "Sections", Sections }
         };
 
-        var dialogResult = await DialogService.OpenAsync<Enroll>("Enroll Student", parameters, DialogHelper.DefaultMediumDialogOptions);
+        var dialogResult = await DialogService.OpenAsync<Enroll>("Enroll Student", parameters, DialogHelper.DefaultAutoDialogOptions);
 
+        if (dialogResult is not null && dialogResult.GetType() == typeof(bool))
+        {
+            var castedDialogResult = (bool)dialogResult!;
 
+            StudentUpdated = castedDialogResult;
+
+            await OnParametersSetAsync();
+        }
+    }
+
+    private async Task UpdatePassword()
+    {
+        if(LoadingService.IsLoading)
+            return;
+
+        var parameters = new Dictionary<string, object>()
+        {
+            { "StudentId", StudentInfo.Id },
+            { "CurrentUserId", CurrentUser.UserId  }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<UpdateStudentPassword>("Update Student Password", parameters, DialogHelper.DefaultSmallDialogOptions);
+
+        if (dialogResult is not null && dialogResult.GetType() == typeof(bool))
+        {
+            var castedDialogResult = (bool)dialogResult!;
+
+            StudentUpdated = castedDialogResult;
+
+            await OnParametersSetAsync();
+        }
     }
 
     private async Task Close()

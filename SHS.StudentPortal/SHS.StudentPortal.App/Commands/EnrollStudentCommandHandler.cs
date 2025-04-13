@@ -90,28 +90,46 @@ internal sealed class EnrollStudentCommandHandler
             studentInfo.YearLevel = request.view.DesignatedGradeLevel;
             studentInfo.SectionId = request.view.DesignatedSectionId;
             studentInfo.StudentStatus = StudentStatuses.Get(request.view.DesignatedStatus).Id;
+            studentInfo.ModifiedById = request.enrolledById;
+            studentInfo.ModifiedDate = DateTime.Now;
 
-            await _studentInfoRepository.Update(studentInfo, cancellationToken);
-
-            foreach(var schedule in schedules)
+            using (var txn = _baseUnitOfWork.BeginTransaction())
             {
-                var newSched = new StudentSchedule()
-                    .Create(request.view.StudentId,
-                        schedule.Id,
-                        currentSemester!.Value,
-                        currentAcademicYear!.Value,
-                        request.enrolledById);
+                try
+                {
+                    await _studentInfoRepository.Update(studentInfo, cancellationToken);
 
-                await _studentScheduleRepository.CreateStudentSchedule(newSched, cancellationToken);
+                    await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+
+                    foreach (var schedule in schedules)
+                    {
+                        var newSched = new StudentSchedule()
+                            .Create(request.view.StudentId,
+                                schedule.Id,
+                                currentSemester!.Value,
+                                currentAcademicYear!.Value,
+                                request.enrolledById);
+
+                        await _studentScheduleRepository.CreateStudentSchedule(newSched, cancellationToken);
+
+                        await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+                    }
+
+                    await txn.CommitAsync(cancellationToken);
+                }
+                catch (Exception)
+                {
+                    await txn.RollbackAsync(cancellationToken);
+
+                    throw;
+                }
             }
-
-            await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResultModel.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error enrolling student.");
+            _logger.LogError(ex, "Error enrolling student");
 
             error = new(nameof(ex), "Error enrolling student");
 

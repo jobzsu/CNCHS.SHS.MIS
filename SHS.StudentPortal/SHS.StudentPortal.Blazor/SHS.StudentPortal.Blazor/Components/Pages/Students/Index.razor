@@ -19,73 +19,73 @@
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Start" Gap="1rem">
                 <RadzenFormField Text="Year Level" Variant="Variant.Outlined" AllowFloatingLabel="false">
                     <RadzenDropDown Data="GradeLevels"
-                    @bind-Value="selectedYearLevel"
-                    ValueProperty="Key"
-                    TextProperty="Value"
-                    Placeholder="Select Year Level"
-                    AllowClear=true />
+                                    @bind-Value="selectedYearLevel"
+                                    ValueProperty="Key"
+                                    TextProperty="Value"
+                                    Placeholder="Select Year Level"
+                                    AllowClear=true />
                 </RadzenFormField>
                 <RadzenFormField Text="Section" Variant="Variant.Outlined" AllowFloatingLabel="false">
                     <RadzenDropDown Data="Sections"
-                    @bind-Value="selectedSection"
-                    ValueProperty="Key"
-                    TextProperty="Value"
-                    Placeholder="Select Section"
-                    AllowClear=true />
+                                    @bind-Value="selectedSection"
+                                    ValueProperty="Key"
+                                    TextProperty="Value"
+                                    Placeholder="Select Section"
+                                    AllowClear=true />
                 </RadzenFormField>
                 <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false">
                     <RadzenDropDown Data="Tracks"
-                    @bind-Value="selectedTrack"
-                    ValueProperty="Id"
-                    TextProperty="Name"
-                    Placeholder="Select Track"
-                    AllowClear=true
-                    Style="width: 250px"
-                    Change="FilterStrandDropdownOnTrackSelect" />
+                                    @bind-Value="selectedTrack"
+                                    ValueProperty="Id"
+                                    TextProperty="Name"
+                                    Placeholder="Select Track"
+                                    AllowClear=true
+                                    Style="width: 250px"
+                                    Change="FilterStrandDropdownOnTrackSelect" />
                 </RadzenFormField>
                 @if (hasStrands)
                 {
                     <RadzenFormField Text="Strand" Variant="Variant.Outlined" AllowFloatingLabel="false">
                         <RadzenDropDown Data="Strands"
-                        @bind-Value="selectedStrand"
-                        ValueProperty="Id"
-                        TextProperty="Name"
-                        Placeholder="Select Strand"
-                        AllowClear=true
-                        Style="width: 500px" />
+                                        @bind-Value="selectedStrand"
+                                        ValueProperty="Id"
+                                        TextProperty="Name"
+                                        Placeholder="Select Strand"
+                                        AllowClear=true
+                                        Style="width: 500px" />
                     </RadzenFormField>
                 }
                 <RadzenButton ButtonType="ButtonType.Button"
-                ButtonStyle="ButtonStyle.Success"
-                Size="ButtonSize.Medium"
-                Icon="search"
-                IsBusy="LoadingService.IsLoading"
-                Text="Search"
-                Click="DoSearch"
-                Style="margin-top:10px" />
+                              ButtonStyle="ButtonStyle.Success"
+                              Size="ButtonSize.Medium"
+                              Icon="search"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Search"
+                              Click="DoSearch"
+                              Style="margin-top:10px" />
                 <RadzenButton ButtonType="ButtonType.Button"
-                ButtonStyle="ButtonStyle.Info"
-                Size="ButtonSize.Medium"
-                Icon="restart_alt"
-                IsBusy="LoadingService.IsLoading"
-                Text="Reset"
-                Click="ResetFilters"
-                Style="margin-top:10px" />
+                              ButtonStyle="ButtonStyle.Info"
+                              Size="ButtonSize.Medium"
+                              Icon="restart_alt"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Reset"
+                              Click="ResetFilters"
+                              Style="margin-top:10px" />
             </RadzenStack>
-            <RadzenDataGrid style="height: 335px"
-            @ref="grid"
-            IsLoading="LoadingService.IsLoading"
-            Count="@count"
-            Data="@students"
-            LoadData="@LoadData"
-            AllowSorting="false"
-            AllowFiltering="false"
-            AllowPaging="true"
-            PageSize="5"
-            RowClick=@((DataGridRowMouseEventArgs<StudentListViewModel> args) => ViewStudentInfo(args))
-            PagerHorizontalAlign="HorizontalAlign.Center"
-            PagerPosition="PagerPosition.Bottom"
-            ShowPagingSummary="true">
+            <RadzenDataGrid style="height: 400px"
+                            @ref="grid"
+                            IsLoading="LoadingService.IsLoading"
+                            Count="@count"
+                            Data="@students"
+                            LoadData="@LoadData"
+                            AllowSorting="false"
+                            AllowFiltering="false"
+                            AllowPaging="true"
+                            PageSize="5"
+                            RowClick=@((DataGridRowMouseEventArgs<StudentListViewModel> args) => ViewStudentInfo(args))
+                            PagerHorizontalAlign="HorizontalAlign.Center"
+                            PagerPosition="PagerPosition.Bottom"
+                            ShowPagingSummary="true">
                 <EmptyTemplate>
                     <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
                 </EmptyTemplate>
@@ -99,11 +99,11 @@
                     <RadzenDataGridColumn Width="100px" TextAlign="TextAlign.Center">
                         <Template>
                             <RadzenButton ButtonType="ButtonType.Button"
-                            ButtonStyle="ButtonStyle.Primary"
-                            Size="ButtonSize.Small"
-                            Icon="edit"
-                            IsBusy="LoadingService.IsLoading"
-                            Text="View" />
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Size="ButtonSize.Small"
+                                          Icon="edit"
+                                          IsBusy="LoadingService.IsLoading"
+                                          Text="View" />
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -256,7 +256,7 @@
             { "id", studentInfo.Data.Id }
         };
 
-        var dialogResult = await DialogService.OpenAsync<Student>($"Student {studentInfo.Data.StudentId}", parameters, DialogHelper.DefaultWideDialogOptions);
+        var dialogResult = await DialogService.OpenAsync<Student>($"Student {studentInfo.Data.StudentId}", parameters, DialogHelper.DefaultAutoDialogOptions);
 
         if (dialogResult != null && typeof(bool) == dialogResult!.GetType())
         {

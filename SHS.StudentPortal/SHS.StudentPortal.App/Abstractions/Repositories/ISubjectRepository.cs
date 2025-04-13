@@ -16,6 +16,8 @@ public interface ISubjectRepository
 
     Task<Subject?> GetSubjectByCode(string code, bool shouldTrack = false, CancellationToken cancellationToken = default);
 
+    Task<List<Subject>?> GetAllSubjectByIdList(List<int> subjectIds, CancellationToken cancellationToken = default, bool shouldTrack = false);
+
     Task<List<Subject>?> GetListViaFilter(string? keyword,
         string? track,
         string? strand,

@@ -82,13 +82,13 @@
                     <div>
                         <RadzenFormField Text="Gender" Variant="Variant.Outlined" AllowFloatingLabel=false>
                             <RadzenDropDown Placeholder="Select Gender"
-                                            AllowFiltering="false"
-                                            AllowClear=false
-                                            Name="GenderDropdown"
-                                            @bind-Value=@selectedGender
-                                            Data=@Genders
-                                            ValueProperty="Key"
-                                            TextProperty="Value" />
+                            AllowFiltering="false"
+                            AllowClear=false
+                            Name="GenderDropdown"
+                            @bind-Value=@selectedGender
+                            Data=@Genders
+                            ValueProperty="Key"
+                            TextProperty="Value" />
                         </RadzenFormField>
                     </div>
                 </div>
@@ -114,13 +114,13 @@
                     <div>
                         <RadzenFormField Text="Civil Status" Variant="Variant.Outlined" AllowFloatingLabel=false>
                             <RadzenDropDown Placeholder="Select Civil Status"
-                                            AllowFiltering="false"
-                                            AllowClear=false
-                                            Name="CivilStatusDropdown"
-                                            @bind-Value=@selectedCivilStatus
-                                            Data=@CivilStatuses
-                                            ValueProperty="Key"
-                                            TextProperty="Value" />
+                            AllowFiltering="false"
+                            AllowClear=false
+                            Name="CivilStatusDropdown"
+                            @bind-Value=@selectedCivilStatus
+                            Data=@CivilStatuses
+                            ValueProperty="Key"
+                            TextProperty="Value" />
                         </RadzenFormField>
                     </div>
                 </div>
@@ -170,13 +170,13 @@
                     <div>
                         <RadzenFormField Text="Year Level" Variant="Variant.Outlined" AllowFloatingLabel=false Style="width: 150px">
                             <RadzenDropDown Placeholder="Select Year Level"
-                                            AllowFiltering="false"
-                                            AllowClear=false
-                                            Name="YearLevelDropdown"
-                                            @bind-Value=@selectedYearLevel
-                                            Data=@YearLevels
-                                            ValueProperty="Key"
-                                            TextProperty="Value" />
+                            AllowFiltering="false"
+                            AllowClear=false
+                            Name="YearLevelDropdown"
+                            @bind-Value=@selectedYearLevel
+                            Data=@YearLevels
+                            ValueProperty="Key"
+                            TextProperty="Value" />
                         </RadzenFormField>
                     </div>
                 </div>
@@ -184,11 +184,11 @@
                     <div>
                         <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 220px">
                             <RadzenDropDown Data="Tracks"
-                                            @bind-Value="selectedTrack"
-                                            ValueProperty="Id"
-                                            TextProperty="Name"
-                                            Placeholder="Select Track"
-                                            Change="FilterStrandDropdownOnTrackSelect" />
+                            @bind-Value="selectedTrack"
+                            ValueProperty="Id"
+                            TextProperty="Name"
+                            Placeholder="Select Track"
+                            Change="FilterStrandDropdownOnTrackSelect" />
                         </RadzenFormField>
                     </div>
                 </div>
@@ -196,10 +196,10 @@
                 {
                     <RadzenFormField Text="Strand" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 440px">
                         <RadzenDropDown Data="Strands"
-                                        @bind-Value="selectedStrand"
-                                        ValueProperty="Id"
-                                        TextProperty="Name"
-                                        Placeholder="Select Strand" />
+                        @bind-Value="selectedStrand"
+                        ValueProperty="Id"
+                        TextProperty="Name"
+                        Placeholder="Select Strand" />
                     </RadzenFormField>
                 }
             </RadzenStack>
@@ -303,6 +303,8 @@
         var result = await Sender.Send(command);
 
         LoadingService.IsLoading = false;
+
+        await InvokeAsync(StateHasChanged);
 
         if(result.IsSuccess)
         {

@@ -3,6 +3,7 @@
 @using MediatR
 @using SHS.StudentPortal.App.Abstractions
 @using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Commands
 @using SHS.StudentPortal.App.Queries
 @using SHS.StudentPortal.Common.Models
 @using SHS.StudentPortal.Common.Utilities
@@ -69,6 +70,9 @@
     private UserPrincipalViewModel CurrentUser;
 
     [Parameter]
+    public Guid StudentId { get; set; }
+
+    [Parameter]
     public List<AcademicRecordAdminViewDTO> ExistingRecords { get; set; }
 
     private NewAcademicRecordDTO AcademicRecord = new()
@@ -79,6 +83,7 @@
         SubjectId = -1,
         SubjectName = string.Empty,
     };
+
     private RadzenTemplateForm<NewAcademicRecordDTO> AcademicRecordFormRef;
 
     private List<KeyValuePair<string, string>> AcademicYears = new()
@@ -140,13 +145,13 @@
         DialogService.Close(null);
     }
 
-    private void EncodeGrade()
+    private async Task EncodeGrade()
     {
         if (LoadingService.IsLoading)
             return;
 
         if(ExistingRecords.Any(er => er.SubjectId == AcademicRecord.SubjectId &&
-                                     er.SubjectName.ToLower() == AcademicRecord.SubjectName.ToLower() &&
+                                     (er.SubjectId == 0 ? er.SubjectName.ToLower() == AcademicRecord.SubjectName.ToLower() : true ) &&
                                      er.AcademicYear.ToLower() == AcademicRecord.AcademicYear.ToLower() &&
                                      er.Semester.ToLower() == AcademicRecord.Semester.ToLower()))
         {
@@ -155,23 +160,33 @@
             return;
         }
 
-        AcademicRecordAdminViewDTO newAcademicRecord = new()
+        LoadingService.IsLoading = true;
+
+        UpsertAcademicRecordDTO newAcademicRecord = new()
         {
             Id = 0,
             AcademicYear = AcademicRecord.AcademicYear,
             Semester = AcademicRecord.Semester,
-            SubjectId = AcademicRecord.SubjectId,
-            SubjectName = AcademicRecord.SubjectName,
             Rating = AcademicRecord.Rating,
-            EncodedDate = DateTime.Now,
-            EncodedBy = $"Prof. {CurrentUser.Firstname} {CurrentUser.Lastname}",
-            EncodedById = CurrentUser.UserId,
-            VerifiedDate = null,
-            VerifiedBy = "N/A",
-            VerifiedById = null,
-            TempId = 0
+            StudentId = StudentId,
+            SubjectId = AcademicRecord.SubjectId,
+            OtherSubjectName = AcademicRecord.SubjectName,
+            CreatedById = CurrentUser.UserId
         };
 
-        DialogService.Close(newAcademicRecord);
+        var command = new AddStudentAcademicRecordCommand(newAcademicRecord);
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Academic Record Encoded"));
+
+            DialogService.Close(result.Data!);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
     }
 }

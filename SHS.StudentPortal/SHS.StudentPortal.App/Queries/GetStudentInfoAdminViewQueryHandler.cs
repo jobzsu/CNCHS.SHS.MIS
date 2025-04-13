@@ -116,7 +116,8 @@ internal sealed class GetStudentInfoAdminViewQueryHandler
                             ($"({subjects!.FirstOrDefault(s => s.Id == a.SubjectId)!.Code}) {subjects!.FirstOrDefault(s => s.Id == a.SubjectId)!.Name}");
 
                         var encodedBy = users?.FirstOrDefault(u => u.UserAccountId == a.EncodedById!.Value);
-                        var verifiedBy = users?.FirstOrDefault(u => u.UserAccountId == a.VerifiedById!.Value);
+                        var verifiedBy = a.VerifiedById is null ?
+                            null : users?.FirstOrDefault(u => u.UserAccountId == a.VerifiedById!.Value);
 
                         return new AcademicRecordAdminViewDTO()
                         {
@@ -129,7 +130,8 @@ internal sealed class GetStudentInfoAdminViewQueryHandler
                             EncodedBy = $"Prof. {encodedBy?.FirstName} {encodedBy?.LastName}" ?? "N/A",
                             EncodedById = encodedBy!.Id,
                             EncodedDate = a.EncodedDate,
-                            VerifiedBy = $"Prof. {verifiedBy?.FirstName} {verifiedBy?.LastName}" ?? "N/A",
+                            VerifiedBy = verifiedBy is not null ?
+                                $"Prof. {verifiedBy?.FirstName} {verifiedBy?.LastName}" : "N/A",
                             VerifiedById = verifiedBy?.Id ?? null,
                             VerifiedDate = a.VerifiedDate ?? null,
                             TempId = 0,

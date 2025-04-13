@@ -83,4 +83,16 @@ public class SubjectRepository : BaseRepository<Subject>, ISubjectRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Name.ToLower() == name, cancellationToken);
     }
+
+    public async Task<List<Subject>?> GetAllSubjectByIdList(List<int> subjectIds, CancellationToken cancellationToken = default, bool shouldTrack = false)
+    {
+        return shouldTrack ?
+            await GetAll()
+                    .Where(s => subjectIds.Contains(s.Id))
+                    .ToListAsync(cancellationToken) :
+             await GetAll()
+                    .AsNoTracking()
+                    .Where(s => subjectIds.Contains(s.Id))
+                    .ToListAsync(cancellationToken);
+    }
 }

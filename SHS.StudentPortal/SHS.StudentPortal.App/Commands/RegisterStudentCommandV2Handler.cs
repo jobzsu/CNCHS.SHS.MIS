@@ -65,70 +65,84 @@ internal sealed class RegisterStudentCommandV2Handler : ICommandHandler<Register
             }
             else
             {
-                var passwordHash = _bCryptAuthProvider.EncryptPassword(request.view.Password);
+                using (var txn = _baseUnitOfWork.BeginTransaction())
+                {
+                    try
+                    {
+                        var passwordHash = _bCryptAuthProvider.EncryptPassword(request.view.Password);
 
-                var newStudentUserAccount = new UserAccount()
-                    .Create(request.view.Username,
-                        passwordHash,
-                        request.view.EmailAddress,
-                        Constants.SystemGuid);
+                        var newStudentUserAccount = new UserAccount()
+                            .Create(request.view.Username,
+                                passwordHash,
+                                request.view.EmailAddress,
+                                Constants.SystemGuid);
 
-                var insertedStudentUserAccount = await _userAccountRepository.CreateUserAccount(newStudentUserAccount, cancellationToken);
+                        var insertedStudentUserAccount = await _userAccountRepository.CreateUserAccount(newStudentUserAccount, cancellationToken);
 
-                await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+                        await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
 
-                studentUserAccountInserted = true;
-                studentUserAccount = insertedStudentUserAccount;
+                        studentUserAccountInserted = true;
+                        studentUserAccount = insertedStudentUserAccount;
 
-                var newStudentUser = new User()
-                    .Create(request.view.FirstName,
-                        request.view.MiddleName,
-                        request.view.LastName,
-                        RoleTypes.Student.Id,
-                        insertedStudentUserAccount.Id,
-                        Constants.SystemGuid);
+                        var newStudentUser = new User()
+                            .Create(request.view.FirstName,
+                                request.view.MiddleName,
+                                request.view.LastName,
+                                RoleTypes.Student.Id,
+                                insertedStudentUserAccount.Id,
+                                Constants.SystemGuid);
 
-                var insertedStudentUser = await _userRepository.CreateUser(newStudentUser, cancellationToken);
+                        var insertedStudentUser = await _userRepository.CreateUser(newStudentUser, cancellationToken);
 
-                await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+                        await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
 
-                studentUserInserted = true;
-                studentUser = insertedStudentUser;
+                        studentUserInserted = true;
+                        studentUser = insertedStudentUser;
 
-                var placeHolderSection = await _sectionRepository.GetSectionByName(Constants.NotApplicable, cancellationToken: cancellationToken);
-              
-                var newStudentInfo = new StudentInfo()
-                    .Create(
-                        StudentStatuses.Pending.Id,
-                        request.view.YearLevel,
-                        placeHolderSection!.Id,
-                        $"{Track.GetTrack(request.view.Track).Id}-{Strand.GetStrand(request.view.Strand ?? string.Empty).Id}",
-                        insertedStudentUser.Id,
-                        request.view.Gender,
-                        DateOnly.FromDateTime(request.view.DateOfBirth!.Value),
-                        request.view.PlaceOfBirth,
-                        request.view.CivilStatus,
-                        request.view.Nationality,
-                        request.view.Religion,
-                        request.view.ContactInfo,
-                        request.view.Address,
-                        Constants.SystemGuid);
+                        var placeHolderSection = await _sectionRepository.GetSectionByName(Constants.NotApplicable, cancellationToken: cancellationToken);
 
-                var insertedStudentInfo = await _studentInfoRepository
-                    .Create(newStudentInfo, cancellationToken);
+                        var newStudentInfo = new StudentInfo()
+                            .Create(
+                                StudentStatuses.Pending.Id,
+                                request.view.YearLevel,
+                                placeHolderSection!.Id,
+                                $"{Track.GetTrack(request.view.Track).Id}-{Strand.GetStrand(request.view.Strand ?? string.Empty).Id}",
+                                insertedStudentUser.Id,
+                                request.view.Gender,
+                                DateOnly.FromDateTime(request.view.DateOfBirth!.Value),
+                                request.view.PlaceOfBirth,
+                                request.view.CivilStatus,
+                                request.view.Nationality,
+                                request.view.Religion,
+                                request.view.ContactInfo,
+                                request.view.Address,
+                                Constants.SystemGuid);
 
-                await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+                        var insertedStudentInfo = await _studentInfoRepository
+                            .Create(newStudentInfo, cancellationToken);
 
-                studentInfoInserted = true;
-                studentInfo = insertedStudentInfo;
+                        await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
 
-                await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+                        studentInfoInserted = true;
+                        studentInfo = insertedStudentInfo;
+
+                        await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
+
+                        await txn.CommitAsync(cancellationToken);
+                    }
+                    catch (Exception)
+                    {
+                        await txn.RollbackAsync(cancellationToken);
+
+                        throw;
+                    }
+                }
 
                 return ResultModel.Success();
             }
 
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             _logger.LogError($"Error saving student info: {ex.Message}");
 

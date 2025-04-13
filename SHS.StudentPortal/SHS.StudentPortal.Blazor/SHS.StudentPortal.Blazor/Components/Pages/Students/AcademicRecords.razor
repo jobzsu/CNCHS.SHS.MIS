@@ -1,24 +1,31 @@
-﻿@using SHS.StudentPortal.App.Abstractions
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Commands
 @using SHS.StudentPortal.Common.Models
 @using SHS.StudentPortal.Common.Utilities
 
 @inject ILoadingService LoadingService;
 @inject DialogService DialogService;
+@inject IUserStateService UserStateService;
+@inject NavigationManager NavigationManager;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
 
 <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
 
     <RadzenDataGrid Style="height: 335px"
-    @ref="AcademicRecordsDataGrid"
-    IsLoading="LoadingService.IsLoading"
-    Count="AcademicRecordsCount"
-    Data="AcademicRecordsList"
-    AllowSorting="false"
-    AllowFiltering="false"
-    AllowPaging="true"
-    PageSize="5"
-    PagerHorizontalAlign="HorizontalAlign.Center"
-    PagerPosition="PagerPosition.Bottom"
-    ShowPagingSummary="true">
+                    @ref="AcademicRecordsDataGrid"
+                    IsLoading="LoadingService.IsLoading"
+                    Count="AcademicRecordsCount"
+                    Data="AcademicRecordsList"
+                    AllowSorting="false"
+                    AllowFiltering="false"
+                    AllowPaging="true"
+                    PageSize="5"
+                    PagerHorizontalAlign="HorizontalAlign.Center"
+                    PagerPosition="PagerPosition.Bottom"
+                    ShowPagingSummary="true">
         <EmptyTemplate>
             <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
         </EmptyTemplate>
@@ -27,21 +34,36 @@
             <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.Semester)" Title="Semester" Width="120px" TextAlign="TextAlign.Center" />
             <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.SubjectName)" Title="Subject Name" Width="120px" TextAlign="TextAlign.Center" />
             <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.Rating)" Title="Rating" Width="120px" TextAlign="TextAlign.Center" />
-            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.EncodedDate)" Title="Encoded Date" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.EncodedDate)" Title="Encoded Date" FormatString="{0:MM/dd/yyyy}" Width="120px" TextAlign="TextAlign.Center" />
             <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.EncodedBy)" Title="Encoded By" Width="120px" TextAlign="TextAlign.Center" />
-            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.VerifiedDate)" Title="Verified Date" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.VerifiedDate)" Title="Verified Date" FormatString="{0:MM/dd/yyyy}" Width="120px" TextAlign="TextAlign.Center" />
             <RadzenDataGridColumn Property="@nameof(AcademicRecordAdminViewDTO.VerifiedBy)" Title="Verified By" Width="120px" TextAlign="TextAlign.Center" />
         </Columns>
     </RadzenDataGrid>
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
-        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Encode Grade" Click="EncodeGrade" IsBusy="LoadingService.IsLoading" />
+        @if (AcademicRecordsCount > 0 && StudentStatus.ToLower() == StudentStatuses.ForAssessment.Id)
+        {
+            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Mark as Verified" Click="MarkAsVerified" IsBusy="LoadingService.IsLoading" />
+        }
+        @if (StudentStatus.ToLower() == StudentStatuses.ForAssessment.Id || StudentStatus.ToLower() == StudentStatuses.Irregular.Id || StudentStatus.ToLower() == StudentStatuses.Regular.Id)
+        {
+            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Encode Grade" Click="EncodeGrade" IsBusy="LoadingService.IsLoading" />
+        }
         <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
     </RadzenStack>
 
 </RadzenStack>
 
 @code {
+    private UserPrincipalViewModel CurrentUser;
+
+    [Parameter]
+    public Guid StudentId { get; set; }
+
+    [Parameter]
+    public string StudentStatus { get; set; }
+
     [Parameter]
     public List<AcademicRecordAdminViewDTO> AcademicRecordsParam { get; set; }
 
@@ -51,22 +73,84 @@
 
     private bool StudentUpdated = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserInfo();
+    }
+
     protected override void OnParametersSet()
     {
         AcademicRecordsList = AcademicRecordsParam.AsEnumerable();
         AcademicRecordsCount = AcademicRecordsParam.Count();
     }
 
+    private async Task LoadCurrentUserInfo()
+    {
+        await UserStateService.Initialize();
+        var principalUser = UserStateService.GetUser();
+
+        if (!(principalUser.Identity?.IsAuthenticated) ?? true)
+            NavigationManager.NavigateTo("/Login");
+        else
+        {
+            CurrentUser = new()
+                {
+                    UserId = Guid.Parse(principalUser.Claims.FirstOrDefault(c => c.Type == "UserId")!.Value),
+                    Username = principalUser.Claims.FirstOrDefault(c => c.Type == "Username")!.Value,
+                    Firstname = principalUser.Claims.FirstOrDefault(c => c.Type == "FirstName")!.Value,
+                    Middlename = principalUser.Claims.FirstOrDefault(c => c.Type == "MiddleName")!.Value,
+                    Lastname = principalUser.Claims.FirstOrDefault(c => c.Type == "LastName")!.Value,
+                };
+        }
+    }
+
+    private async Task MarkAsVerified()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var confirmResult = await DialogService.Confirm("Are you sure you want to mark this record as verified?", options: DialogHelper.DefaultConfirmOptions);
+
+        if (confirmResult.Value)
+        {
+            LoadingService.IsLoading = true;
+
+            var command = new MarkStudentForEnrollmentCommand(StudentId, CurrentUser.UserId);
+
+            var result = await Sender.Send(command);
+
+            LoadingService.IsLoading = false;
+
+            if (result.IsSuccess)
+            {
+                NotificationService.Notify(NotificationHelper.SuccessNotif("Student ready for Enrollment"));
+
+                StudentUpdated = true;
+
+                DialogService.Close(StudentUpdated);
+            }
+            else
+                NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+        }
+    }
+
     private async Task EncodeGrade()
     {
-        var dialogResult = await DialogService.OpenAsync<EncodeGrades>("Encode Grade", options: DialogHelper.DefaultSmallDialogOptions);
+        var parameters = new Dictionary<string, object>()
+        {
+            { "StudentId", StudentId },
+            { "ExistingRecords", AcademicRecordsParam }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<EncodeGrades>("Encode Grade", parameters, DialogHelper.DefaultSmallDialogOptions);
 
         if (dialogResult is not null && dialogResult.GetType() == typeof(AcademicRecordAdminViewDTO))
         {
             AcademicRecordsParam.Add((AcademicRecordAdminViewDTO)dialogResult!);
-            AcademicRecordsList.Append((AcademicRecordAdminViewDTO)dialogResult!);
 
-            AcademicRecordsCount = AcademicRecordsList.Count();
+            AcademicRecordsList = AcademicRecordsParam.ToList().AsEnumerable();
+
+            AcademicRecordsCount = AcademicRecordsParam.Count();
 
             StudentUpdated = true;
 

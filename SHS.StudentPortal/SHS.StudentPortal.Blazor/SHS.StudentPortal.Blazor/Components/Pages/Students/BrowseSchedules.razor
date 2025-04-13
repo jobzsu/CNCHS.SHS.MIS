@@ -1,0 +1,120 @@
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Queries
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+@inject ILoadingService LoadingService;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
+@inject DialogService DialogService;
+
+<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+    <RadzenFieldset Text="Available Schedules">
+        <RadzenDataGrid Style="height: 335px; width: auto"
+        Count="AvailableStudentSchedulesCount"
+        Data="AvailableStudentSchedules"
+        SelectionMode="DataGridSelectionMode.Multiple"
+        @bind-Value="CurrentlySelectedSchedules"
+        AllowSorting="false"
+        AllowFiltering="false"
+        AllowPaging="true"
+        PageSize="5"
+        PagerHorizontalAlign="HorizontalAlign.Center"
+        PagerPosition="PagerPosition.Bottom"
+        ShowPagingSummary="true">
+            <EmptyTemplate>
+                <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+            </EmptyTemplate>
+            <Columns>
+                <RadzenDataGridColumn Width="60px" Sortable="false" Filterable="false">
+                    <Template Context="data">
+                        <RadzenCheckBox TabIndex="-1"
+                        TriState="false"
+                        Value="@(CurrentlySelectedSchedules != null && CurrentlySelectedSchedules.Contains(data))"
+                        InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Select item" }})"
+                        TValue="bool"
+                        Change="@(() => OnSelectedSchedulesChanged(data))" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Days)" Title="Days" Width="120px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Subject)" Title="Subject" Width="120px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Instructor)" Title="Instructor" Width="120px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Time)" Title="Time" Width="120px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn Property="@nameof(EnrollStudentScheduleListViewModel.Room)" Title="Room" Width="120px" TextAlign="TextAlign.Center" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenFieldset>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px" Style="margin-top: auto">
+        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Save" Click="Close" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public Guid StudentId { get; set; }
+
+    [Parameter]
+    public List<EnrollStudentScheduleListViewModel> PreviouslySelectedSchedules { get; set; }
+
+    private List<EnrollStudentScheduleListViewModel> AvailableStudentSchedules = new();
+    private int AvailableStudentSchedulesCount = 0;
+
+    private IList<EnrollStudentScheduleListViewModel> CurrentlySelectedSchedules = new List<EnrollStudentScheduleListViewModel>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAvailableStudentSchedules();
+
+        if (PreviouslySelectedSchedules is not null && PreviouslySelectedSchedules.Count > 0)
+        {
+            foreach (var schedule in PreviouslySelectedSchedules)
+            {
+                if (AvailableStudentSchedules.Contains(schedule))
+                {
+                    CurrentlySelectedSchedules.Add(schedule);
+                }
+            }
+        }
+    }
+
+    private async Task LoadAvailableStudentSchedules()
+    {
+        LoadingService.IsLoading = true;
+
+        var query = new GetAvailableScheduleForStudentEnrollmentQuery(StudentId);
+
+        var result = await Sender.Send(query);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            AvailableStudentSchedules = result.Data!;
+
+            AvailableStudentSchedulesCount = AvailableStudentSchedules.Count;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private void OnSelectedSchedulesChanged(EnrollStudentScheduleListViewModel data)
+    {
+        if (CurrentlySelectedSchedules.Contains(data))
+        {
+            CurrentlySelectedSchedules.Remove(data);
+        }
+        else
+        {
+            CurrentlySelectedSchedules.Add(data);
+        }
+    }
+
+    private void Close()
+    {
+        DialogService.Close(CurrentlySelectedSchedules);
+    }
+}

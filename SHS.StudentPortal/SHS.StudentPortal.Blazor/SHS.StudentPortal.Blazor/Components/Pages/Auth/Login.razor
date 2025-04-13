@@ -27,48 +27,70 @@
 @inject IJSRuntime JSRuntime;
 @inject DialogService DialogService;
 
-<RadzenStack Style="height: 100vh" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-    <RadzenCard class="rz-my-12 rz-mx-auto" Style="max-width: 420px">
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="2rem" class="rz-p-4">
-            <RadzenTemplateForm TItem="LoginViewModel" Data="loginViewModel" Submit="Submit">
-                <RadzenStack Gap="1rem" class="rz-p-sm-12">
-                    <RadzenFormField Text="User Account Type" Variant="Variant.Outlined" AllowFloatingLabel=false>
-                        <ChildContent>
-                            <RadzenDropDown Placeholder="Select Account Type"
-                                            AllowFiltering="false"
-                                            AllowClear=true
-                                            Name="UserAccountTypeDropdown"
-                                            @bind-Value=@SelectedUserAccountType
-                                            Data=@UserAccountTypes
-                                            ValueProperty="Key"
-                                            TextProperty="Value" />
-                        </ChildContent>
-                        <Helper>
-                            <RadzenRequiredValidator Component="UserAccountTypeDropdown" Text="User Account Type is required" />
-                        </Helper>
-                    </RadzenFormField>
-                    <RadzenFormField Text="Username" Variant="Variant.Outlined" AllowFloatingLabel=false>
-                        <ChildContent>
-                            <RadzenTextBox Name="Username" @bind-Value=@loginViewModel.UserName />
-                        </ChildContent>
-                        <Helper>
-                            <RadzenRequiredValidator Component="Username" Text="Username is required" />
-                        </Helper>
-                    </RadzenFormField>
-                    <RadzenFormField Text="Password" Variant="Variant.Outlined" AllowFloatingLabel=false>
-                        <ChildContent>
-                            <RadzenPassword Name="Password" @bind-Value=@loginViewModel.Password />
-                        </ChildContent>
-                        <Helper>
-                            <RadzenRequiredValidator Component="Password" Text="Password is required" />
-                        </Helper>
-                    </RadzenFormField>
-                    <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info" Text="Login" IsBusy=@(LoadingService.IsLoading || isSuccessLogin) BusyText=@(isSuccessLogin ? "Logging In" : "Loading...") />
-                    <RadzenButton ButtonType="ButtonType.Button" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info" Text="Register Student" IsBusy=@(LoadingService.IsLoading || isSuccessLogin) BusyText=@(isSuccessLogin ? "Logging In" : "Loading...") Click="RegisterStudent" />
+<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: 100vh">
+    <RadzenRow Gap="0" class="rz-my-12 rz-mx-auto rz-border-radius-6 rz-shadow-10" Style="width: 100%; max-width: 800px; overflow: hidden;">
+
+        <RadzenColumn Size="12" SizeMD="6">
+
+            <RadzenCard class="rz-shadow-0 rz-border-radius-0 rz-text-align-center rz-p-12" Style="height: 100%;background: linear-gradient(120deg, rgba(34,193,195,1) 0%, rgba(216,222,10,1) 100%);">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+                    <RadzenImage Path="/CNCHS_Logo-removebg-preview.png" Style="width: 15rem; margin-top: 30px" AlternateText="cnchslogo" />
                 </RadzenStack>
-            </RadzenTemplateForm>
-        </RadzenStack>
-    </RadzenCard>
+            </RadzenCard>
+
+        </RadzenColumn>
+
+        <RadzenColumn Size="12" SizeMD="6">
+
+            <RadzenCard class="rz-shadow-0 rz-border-radius-0 rz-p-12">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="1rem">
+                    <RadzenTemplateForm TItem="LoginViewModel" Data="loginViewModel" Submit="Submit">
+                        <RadzenStack class="rz-p-sm-12">
+                            <RadzenFormField Text="User Account Type" Variant="Variant.Outlined" AllowFloatingLabel=false>
+                                <ChildContent>
+                                    <RadzenDropDown Placeholder="Select Account Type"
+                                    AllowFiltering="false"
+                                    AllowClear=true
+                                    Name="UserAccountTypeDropdown"
+                                    @bind-Value=@SelectedUserAccountType
+                                    Data=@UserAccountTypes
+                                    ValueProperty="Key"
+                                    TextProperty="Value" />
+                                </ChildContent>
+                                <Helper>
+                                    <RadzenRequiredValidator Component="UserAccountTypeDropdown" Text="User Account Type is required" />
+                                </Helper>
+                            </RadzenFormField>
+                            <RadzenFormField Text="Username" Variant="Variant.Outlined" AllowFloatingLabel=false>
+                                <ChildContent>
+                                    <RadzenTextBox Name="Username" @bind-Value=@loginViewModel.UserName />
+                                </ChildContent>
+                                <Helper>
+                                    <RadzenRequiredValidator Component="Username" Text="Username is required" />
+                                </Helper>
+                            </RadzenFormField>
+                            <RadzenFormField Text="Password" Variant="Variant.Outlined" AllowFloatingLabel=false>
+                                <ChildContent>
+                                    <RadzenPassword Name="Password" @bind-Value=@loginViewModel.Password />
+                                </ChildContent>
+                                <Helper>
+                                    <RadzenRequiredValidator Component="Password" Text="Password is required" />
+                                </Helper>
+                            </RadzenFormField>
+                            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+                                <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Info" Text="Login" IsBusy=@(LoadingService.IsLoading || isSuccessLogin) BusyText=@(isSuccessLogin ? "Logging In" : "Loading...") />
+                                @if (SelectedUserAccountType == "student")
+                                {
+                                    <RadzenButton ButtonType="ButtonType.Button" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Info" Text="Register" IsBusy=@(LoadingService.IsLoading || isSuccessLogin) BusyText=@(isSuccessLogin ? "Logging In" : "Loading...") Click="RegisterStudent" />
+                                }
+                            </RadzenStack>
+                        </RadzenStack>
+                    </RadzenTemplateForm>
+                </RadzenStack>
+            </RadzenCard>
+
+        </RadzenColumn>
+    </RadzenRow>
 </RadzenStack>
 
 @code {
@@ -121,6 +143,8 @@
         var result = await Sender.Send(command);
 
         LoadingService.IsLoading = false;
+
+        await InvokeAsync(StateHasChanged);
 
         if(result.IsSuccess)
         {

@@ -21,4 +21,23 @@ public class PreRequisiteRepository : BaseRepository<PreRequisite>, IPreRequisit
             .Where(x => x.SubjectId == subjectId)
             .ToListAsync(cancellationToken));
     }
+
+    public async Task<List<PreRequisite>?> GetAllList(CancellationToken cancellationToken = default, bool shouldTrack = false)
+    {
+        return shouldTrack ?
+            await GetAll().ToListAsync(cancellationToken) :
+            await GetAll().AsNoTracking().ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<PreRequisite>?> GetAllListForSubjects(List<int> subjectIds, CancellationToken cancellationToken = default, bool shouldTrack = false)
+    {
+        return shouldTrack ?
+            await GetAll()
+                    .Where(p => subjectIds.Contains(p.SubjectId))
+                    .ToListAsync(cancellationToken) :
+            await GetAll()
+                    .AsNoTracking()
+                    .Where(p => subjectIds.Contains(p.SubjectId))
+                    .ToListAsync(cancellationToken);
+    }
 }

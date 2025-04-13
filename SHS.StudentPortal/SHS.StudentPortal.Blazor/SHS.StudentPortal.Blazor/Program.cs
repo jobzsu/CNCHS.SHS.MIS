@@ -86,23 +86,23 @@ if (app.Environment.IsDevelopment())
     app.UseWebAssemblyDebugging();
 
     // Seed database
-    //using var scope = app.Services.CreateScope();
+    using var scope = app.Services.CreateScope();
 
-    //var services = scope.ServiceProvider;
+    var services = scope.ServiceProvider;
 
-    //try
-    //{
-    //    var context = services.GetRequiredService<AppDbContext>();
-    //    var bCryptProvider = services.GetRequiredService<IBCryptAuthProvider>();
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        var bCryptProvider = services.GetRequiredService<IBCryptAuthProvider>();
 
-    //    Seeder.Seed(context, bCryptProvider);
-    //}
-    //catch (Exception ex)
-    //{
-    //    var logger = services.GetRequiredService<ILogger<Program>>();
+        Seeder.Seed(context, bCryptProvider);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
 
-    //    logger.LogError($"Error while seeding database: {ex}");
-    //}
+        logger.LogError($"Error while seeding database: {ex}");
+    }
 }
 else
 {
