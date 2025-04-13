@@ -40,12 +40,22 @@
     </RadzenHeader>
     <RadzenSidebar @bind-Expanded="sidebarExpanded" Responsive="false">
         <RadzenPanelMenu DisplayStyle="@(sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)" ShowArrow="false">
-            <RadzenPanelMenuItem Text="Students" Icon="groups" Click="RedirectToStudents" />
-            <RadzenPanelMenuItem Text="Instructors" Icon="supervisor_account" Click="RedirectToInstructors" />
-            <RadzenPanelMenuItem Text="Departments" Icon="domain" Click="RedirectToDepartments" />
+            @if (PrincipalUser?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value == "admin" ||
+            PrincipalUser?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value == "instructor")
+            {
+                <RadzenPanelMenuItem Text="Students" Icon="groups" Click="RedirectToStudents" />
+            }
+            @if(PrincipalUser?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value == "admin")
+            {
+                <RadzenPanelMenuItem Text="Instructors" Icon="supervisor_account" Click="RedirectToInstructors" />
+                <RadzenPanelMenuItem Text="Departments" Icon="domain" Click="RedirectToDepartments" />
+            }
             <RadzenPanelMenuItem Text="Subjects" Icon="book_6" Click="RedirectToSubjects" />
-            <RadzenPanelMenuItem Text="Schedules" Icon="calendar_month" />
-            <RadzenPanelMenuItem Text="System Settings" Icon="settings_applications" Click="RedirectToSystemSettings" />
+            @if(PrincipalUser?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value == "admin")
+            {
+                <RadzenPanelMenuItem Text="Schedules" Icon="calendar_month" />
+                <RadzenPanelMenuItem Text="System Settings" Icon="settings_applications" Click="RedirectToSystemSettings" />
+            }
         </RadzenPanelMenu>
     </RadzenSidebar>
     <RadzenBody>

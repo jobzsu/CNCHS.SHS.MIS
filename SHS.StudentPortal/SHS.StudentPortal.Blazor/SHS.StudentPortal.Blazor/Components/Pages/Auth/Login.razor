@@ -135,8 +135,8 @@
 
         LoadingService.IsLoading = true;
 
-        var command = new AuthenticateLoginViewModelCommand(loginViewModel.UserAccountType,
-            loginViewModel.UserAccountType, 
+        var command = new AuthenticateLoginViewModelCommand(SelectedUserAccountType,
+            SelectedUserAccountType,
             loginViewModel.UserName,
             loginViewModel.Password);
 
