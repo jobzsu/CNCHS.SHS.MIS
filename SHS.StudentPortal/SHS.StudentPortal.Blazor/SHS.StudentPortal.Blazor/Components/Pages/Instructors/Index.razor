@@ -1,0 +1,223 @@
+﻿@page "/instructors"
+@page "/instructors/index"
+
+@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Queries
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+@using SHS.StudentPortal.Common.Utilities.Models
+
+@inject ILoadingService LoadingService;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
+@inject DialogService DialogService;
+
+<div class="container-fluid">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Start" Gap="2rem">
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Start" Gap="1rem">
+                <RadzenFormField Text="Search Keyword" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenTextBox @bind-Value="SearchKeyword" />
+                </RadzenFormField>
+                <RadzenFormField Text="Department" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDropDown Data="DepartmentList"
+                                    @bind-Value="SelectedDepartment"
+                                    ValueProperty="Key"
+                                    TextProperty="Value"
+                                    Placeholder="Select Department"
+                                    AllowClear=true />
+                </RadzenFormField>
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Success"
+                              Size="ButtonSize.Medium"
+                              Icon="search"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Search"
+                              Click="DoSearch"
+                              Style="margin-top:10px" />
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Info"
+                              Size="ButtonSize.Medium"
+                              Icon="restart_alt"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Reset"
+                              Click="ResetFilters"
+                              Style="margin-top:10px" />
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Info"
+                              Size="ButtonSize.Medium"
+                              Icon="add_circle"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Add Instructor"
+                              Click="AddInstructor"
+                              Style="margin-top:10px" />
+            </RadzenStack>
+            <RadzenDataGrid style="height: 400px"
+                            @ref="grid"
+                            IsLoading="LoadingService.IsLoading"
+                            Count="@InstructorCount"
+                            Data="@Instructors"
+                            LoadData="@LoadData"
+                            AllowSorting="false"
+                            AllowFiltering="false"
+                            AllowPaging="true"
+                            PageSize="5"
+                            RowClick=@((DataGridRowMouseEventArgs<InstructorListViewModel> args) => ViewInstructorInfo(args))
+                            PagerHorizontalAlign="HorizontalAlign.Center"
+                            PagerPosition="PagerPosition.Bottom"
+                            ShowPagingSummary="true">
+                <EmptyTemplate>
+                    <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+                </EmptyTemplate>
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(InstructorListViewModel.EmployeeId)" Title="Instructor ID" Width="120px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(InstructorListViewModel.Name)" Title="Name" Width="160px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(InstructorListViewModel.Department)" Title="Department" Width="120px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(InstructorListViewModel.AdvisorySection)" Title="Advisory Section" Width="120px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Width="100px" TextAlign="TextAlign.Center">
+                        <Template>
+                            <RadzenButton ButtonType="ButtonType.Button"
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Size="ButtonSize.Small"
+                                          Icon="edit"
+                                          IsBusy="LoadingService.IsLoading"
+                                          Text="View" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenStack>
+    </RadzenCard>
+</div>
+
+@code {
+    private string SearchKeyword = string.Empty;
+
+    private List<KeyValuePair<int, string>> DepartmentList = new();
+
+    private int? SelectedDepartment = null;
+
+    private RadzenDataGrid<InstructorListViewModel> grid;
+    private IEnumerable<InstructorListViewModel> Instructors;
+    private int InstructorCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartmentList();
+    }
+
+    private async Task LoadDepartmentList()
+    {
+        var query = new GetDepartmentDropdownListQuery();
+
+        var result = await Sender.Send(query);
+
+        if (result.IsSuccess)
+        {
+            DepartmentList = result.Data!;
+        }
+        else
+        {
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+        }
+    }
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        LoadingService.IsLoading = true;
+
+        var filters = InstructorPaginationFilter.NewInstructorListSearch(SearchKeyword,
+                SelectedDepartment ?? 0,
+                1);
+
+        var query = new GetPaginatedInstructorListQuery(filters);
+
+        var result = await Sender.Send(query);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            var resultQuery = result.Data!;
+
+            InstructorCount = resultQuery.InstructorList.Count();
+
+            Instructors = resultQuery.InstructorList.Skip(args.Skip.Value).Take(args.Top.Value).ToList();
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task DoSearch()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var searchArgs = new LoadDataArgs()
+            {
+                Filter = string.Empty,
+                OrderBy = string.Empty,
+                Filters = new List<FilterDescriptor>(),
+                Sorts = new List<SortDescriptor>(),
+                Skip = 0,
+                Top = int.MaxValue
+            };
+
+        await LoadData(searchArgs);
+    }
+
+    private async Task ResetFilters()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        SearchKeyword = string.Empty;
+
+        SelectedDepartment = null;
+
+        var searchArgs = new LoadDataArgs()
+            {
+                Filter = string.Empty,
+                OrderBy = string.Empty,
+                Filters = new List<FilterDescriptor>(),
+                Sorts = new List<SortDescriptor>(),
+                Skip = 0,
+                Top = int.MaxValue
+            };
+
+        await LoadData(searchArgs);
+    }
+
+    private async Task AddInstructor()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var dialogResult = await DialogService.OpenAsync<CreateInstructor>($"Instructor | NEW", options: DialogHelper.DefaultFullAutoDialogOptions);
+
+        if (dialogResult != null && typeof(bool) == dialogResult!.GetType())
+        {
+            if (dialogResult)
+                await DoSearch();
+        }
+    }
+
+    private async Task ViewInstructorInfo(DataGridRowMouseEventArgs<InstructorListViewModel> instructorInfo)
+    {
+        var parameters = new Dictionary<string, object>()
+        {
+            { "InstructorId", Guid.Parse(instructorInfo.Data.Id) }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<Instructor>($"Instructor {instructorInfo.Data.EmployeeId}", parameters, DialogHelper.DefaultAutoDialogOptions);
+
+        if (dialogResult != null && typeof(bool) == dialogResult!.GetType())
+        {
+            if (dialogResult)
+                await DoSearch();
+        }
+    }
+}

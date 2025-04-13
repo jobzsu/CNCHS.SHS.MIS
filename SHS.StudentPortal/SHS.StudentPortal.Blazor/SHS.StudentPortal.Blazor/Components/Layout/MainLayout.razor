@@ -41,7 +41,7 @@
     <RadzenSidebar @bind-Expanded="sidebarExpanded" Responsive="false">
         <RadzenPanelMenu DisplayStyle="@(sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)" ShowArrow="false">
             <RadzenPanelMenuItem Text="Students" Icon="groups" Click="RedirectToStudents" />
-            <RadzenPanelMenuItem Text="Instructors" Icon="supervisor_account" />
+            <RadzenPanelMenuItem Text="Instructors" Icon="supervisor_account" Click="RedirectToInstructors" />
             <RadzenPanelMenuItem Text="Departments" Icon="domain" />
             <RadzenPanelMenuItem Text="Subjects" Icon="book_6" />
             <RadzenPanelMenuItem Text="Schedules" Icon="calendar_month" />
@@ -158,6 +158,14 @@
             return;
         else
             NavigationManager.NavigateTo("/students");
+    }
+
+    private void RedirectToInstructors()
+    {
+        if (NavigationManager.Uri.ToLower().EndsWith("/instructors"))
+            return;
+        else
+            NavigationManager.NavigateTo("/instructors");
     }
 
     #endregion

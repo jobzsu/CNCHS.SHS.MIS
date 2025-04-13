@@ -88,14 +88,14 @@ public class InstructorInfoRepository : BaseRepository<InstructorInfo>, IInstruc
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Department)
-                .Where(x => (departmentId == 0 ? x.EmployeeId != "4000": x.DepartmentId == departmentId && x.EmployeeId != "4000"))
+                .Where(x => (departmentId == 0 ? x.EmployeeId != "9999": x.DepartmentId == departmentId && x.EmployeeId != "9999"))
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken) :
             GetAll()
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Department)
-                .Where(x => (departmentId == 0 ? x.EmployeeId != "4000" : x.DepartmentId == departmentId && x.EmployeeId != "4000") &&
+                .Where(x => (departmentId == 0 ? x.EmployeeId != "9999" : x.DepartmentId == departmentId && x.EmployeeId != "9999") &&
                             ((x.Department.Name.ToLower().Contains(keyword)) ||
                             (x.User.FirstName.ToLower().Contains(keyword)) ||
                             (x.User.MiddleName != null && x.User.MiddleName.ToLower().Contains(keyword))))

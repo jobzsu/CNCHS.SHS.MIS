@@ -51,7 +51,7 @@ internal sealed class UpdateInstructorInfoCommandHandler
                     var notApplicableSection = await _sectionRepository
                         .GetSectionByName(Constants.NotApplicable, cancellationToken: cancellationToken);
                     var previousadvisorySection = await _sectionRepository
-                        .GetByAdviserId(request.instructorId, cancellationToken: cancellationToken);
+                        .GetByAdviserId(request.instructorId, true, cancellationToken: cancellationToken);
                     var notApplicableUser = await _userRepository
                             .GetUserByFirstAndLastName(Constants.NotApplicable.ToLower(), Constants.NotApplicable.ToLower(), cancellationToken: cancellationToken);
                     if (notApplicableUser == null)
@@ -81,6 +81,7 @@ internal sealed class UpdateInstructorInfoCommandHandler
                         previousadvisorySection.AdviserId = notApplicableInstructorInfo.Id;
                         previousadvisorySection.ModifiedById = request.updatedById;
                         previousadvisorySection.ModifiedDate = DateTime.UtcNow;
+                        previousadvisorySection.Students = null;
 
                         await _sectionRepository.UpdateSection(previousadvisorySection, cancellationToken);
                         await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
@@ -107,8 +108,7 @@ internal sealed class UpdateInstructorInfoCommandHandler
                     }
 
                     instructorInfoUser.FirstName = request.model.FirstName;
-                    if (!string.IsNullOrWhiteSpace(request.model.MiddleName))
-                        instructorInfoUser.MiddleName = request.model.MiddleName;
+                    instructorInfoUser.MiddleName = string.IsNullOrWhiteSpace(request.model.MiddleName) ? null : request.model.MiddleName;
                     instructorInfoUser.LastName = request.model.LastName;
 
                     instructorInfoUser.ModifiedById = request.updatedById;

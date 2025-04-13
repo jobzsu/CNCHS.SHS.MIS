@@ -62,3 +62,50 @@ public class ForCreateInstructorViewModel : BaseInstructorViewModel
 
     public string EmailAddress { get; set; }
 };
+
+
+public class InstructorInfoAdminViewDTO
+{
+    public Guid Id { get; set; }
+
+    public string EmployeeId { get; set; }
+
+    public string Major { get; set; }
+
+    public string FirstName { get; set; }
+
+    public string? MiddleName { get; set; }
+
+    public string LastName { get; set; }
+
+    public string ContactInfo { get; set; }
+
+    public int? DepartmentId { get; set; }
+
+    public Guid? AdvisorySectionId { get; set; }
+
+    public string Username { get; set; }
+
+    public DateTime? LastLogin { get; set; }
+
+    public List<Schedules> Schedules { get; set; }
+
+    public static InstructorInfoAdminViewDTO New()
+    {
+        return new InstructorInfoAdminViewDTO()
+        {
+            Id = Guid.Empty,
+            EmployeeId = "NEW",
+            Major = string.Empty,
+            FirstName = string.Empty,
+            MiddleName = string.Empty,
+            LastName = string.Empty,
+            ContactInfo = string.Empty,
+            DepartmentId = null,
+            AdvisorySectionId = null,
+            Username = string.Empty,
+            LastLogin = null,
+            Schedules = new List<Schedules>()
+        };
+    }
+}

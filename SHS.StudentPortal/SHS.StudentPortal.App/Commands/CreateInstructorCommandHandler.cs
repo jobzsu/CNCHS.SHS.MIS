@@ -95,14 +95,14 @@ internal sealed class CreateInstructorCommandHandler
                             request.view.Major,
                             request.view.ContactInfo,
                             insertedUser.Id,
-                            request.view.DepartmentId,
+                            request.view.DepartmentId!.Value!,
                             request.createdById);
 
                     var insertedInstrInfo = await _instructorInfoRepository.CreateInstructorInfo(newInstrInfo, cancellationToken);
 
                     await _baseUnitOfWork.SaveChangesAsync(cancellationToken);
 
-                    var section = await _sectionRepository.GetById(request.view.AdvisorySectionId, true, cancellationToken);
+                    var section = await _sectionRepository.GetById(request.view.AdvisorySectionId!.Value!, true, cancellationToken);
 
                     if (section is not null)
                     {

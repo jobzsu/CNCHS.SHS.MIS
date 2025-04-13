@@ -1,0 +1,380 @@
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.App.Queries
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+
+@inject ILoadingService LoadingService;
+@inject ISender Sender;
+@inject DialogService DialogService;
+@inject NotificationService NotificationService;
+@inject NavigationManager NavigationManager;
+@inject IUserStateService UserStateService;
+
+
+<RadzenTemplateForm Data="InstructorInfo" Context="InstructorInfoAdminViewDTO" @ref="InstructorInfoFormRef" Submit="@(async(InstructorInfoAdminViewDTO args) => { await SubmitUpdateInstructorInfo(); })">
+
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="0.5rem">
+
+        <RadzenFieldset Text="Employee Information">
+            <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+                    <RadzenFormField Text="Employee ID" AllowFloatingLabel="false">
+                        <RadzenTextBox @bind-Value="InstructorInfo.EmployeeId" ReadOnly />
+                    </RadzenFormField>
+                    <div>
+                        <div>
+                            <RadzenFormField Text="Major" AllowFloatingLabel="false">
+                                <RadzenTextBox Name="InstructorMajor" @bind-Value="InstructorInfo.Major" />
+                            </RadzenFormField>
+                        </div>
+                        <RadzenRequiredValidator Component="InstructorMajor" Popup="false" Text="Major is Required" />
+                    </div>
+                    <div>
+                        <div>
+                            <RadzenFormField Text="Department" AllowFloatingLabel="false">
+                                <RadzenDropDown Data="Departments"
+                                                @bind-Value="InstructorInfo.DepartmentId"
+                                                ValueProperty="Key"
+                                                TextProperty="Value"
+                                                Placeholder="Select Department"
+                                                AllowClear=true
+                                                Name="InstructorDept" />
+                            </RadzenFormField>
+                        </div>
+                        <RadzenRequiredValidator Component="InstructorDept" Popup="false" Text="Department is Required" />
+                    </div>
+                    <div>
+                        <div>
+                            <RadzenFormField Text="Advisory Section" AllowFloatingLabel="false">
+                                <RadzenDropDown Data="Sections"
+                                                @bind-Value="InstructorInfo.AdvisorySectionId"
+                                                ValueProperty="Key"
+                                                TextProperty="Value"
+                                                Placeholder="Select Section"
+                                                AllowClear=true
+                                                Name="InstructorAdvisory" />
+                            </RadzenFormField>
+                        </div>
+                        <RadzenRequiredValidator Component="InstructorAdvisory" Popup="false" Text="Advisory is Required" />
+                    </div>
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenFieldset>
+
+        @if (InstructorInfo.Id != Guid.Empty)
+        {
+            <RadzenFieldset Text="Login Information">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+                    <RadzenFormField Text="Username" AllowFloatingLabel="false">
+                        <RadzenTextBox @bind-Value="InstructorInfo.Username" ReadOnly />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Last Login" AllowFloatingLabel="false">
+                        <RadzenTextBox Value="@(InstructorInfo.LastLogin?.ToString("MM/dd/yyyy") ?? "N/A")" ReadOnly />
+                    </RadzenFormField>
+                </RadzenStack>
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Size="ButtonSize.Small"
+                              Icon="lock_reset"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Update Password"
+                              Click="SubmitUpdateInstructorPassword" />
+            </RadzenFieldset>
+        }
+
+        <RadzenFieldset Text="Personal Information">
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+                <div>
+                    <div>
+                        <RadzenFormField Text="First Name" AllowFloatingLabel="false">
+                            <RadzenTextBox Name="InstructorFN" @bind-Value="InstructorInfo.FirstName" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenRequiredValidator Component="InstructorFN" Popup="false" Text="First name is Required" />
+                </div>
+                <RadzenFormField Text="Middle Name" AllowFloatingLabel="false">
+                    <RadzenTextBox Name="InstructorMN" @bind-Value="InstructorInfo.MiddleName" />
+                </RadzenFormField>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Lasts Name" AllowFloatingLabel="false">
+                            <RadzenTextBox Name="InstructorLN" @bind-Value="InstructorInfo.LastName" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenRequiredValidator Component="InstructorLN" Popup="false" Text="Last name is Required" />
+                </div>
+                <div>
+                    <div>
+                        <RadzenFormField Text="Contact Info" AllowFloatingLabel="false">
+                            <RadzenTextBox Name="InstructorInfoContactInfo" @bind-Value="InstructorInfo.ContactInfo" />
+                        </RadzenFormField>
+                    </div>
+                    <RadzenRequiredValidator Component="InstructorInfoContactInfo" Popup="false" Text="Contact Info is Required" />
+                </div>
+            </RadzenStack>
+        </RadzenFieldset>
+
+        @if (InstructorId != Guid.Empty)
+        {
+            <RadzenFieldset Text="Assigned Schedules">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+                        <h4>Semester: @(CurrentSemester)</h4>
+                        <h4>Academic Year: @(CurrentAcademicYear)</h4>
+                    </RadzenStack>
+                    <RadzenDataGrid Style="height: 335px; width: auto"
+                                    @ref="grid"
+                                    IsLoading="LoadingService.IsLoading"
+                                    Count="count"
+                                    Data="InstructorSchedules"
+                                    AllowSorting="false"
+                                    AllowFiltering="false"
+                                    AllowPaging="true"
+                                    PageSize="5"
+                                    PagerHorizontalAlign="HorizontalAlign.Center"
+                                    PagerPosition="PagerPosition.Bottom"
+                                    ShowPagingSummary="true">
+                        <EmptyTemplate>
+                            <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+                        </EmptyTemplate>
+                        <Columns>
+                            <RadzenDataGridColumn Property="@nameof(Schedules.Subject)" Title="Subject" Width="120px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn Property="@nameof(Schedules.Days)" Title="Day" Width="300px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn Property="@nameof(Schedules.Time)" Title="Time" Width="120px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn Property="@nameof(Schedules.RoomNumber)" Title="Room No." Width="120px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn Property="@nameof(Schedules.GradesSubmitted)" Title="Grades Submitted" Width="300px" TextAlign="TextAlign.Center" />
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenStack>
+            </RadzenFieldset>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
+            <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Save" IsBusy="LoadingService.IsLoading" />
+            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
+        </RadzenStack>
+
+    </RadzenStack>
+
+</RadzenTemplateForm>
+
+@code {
+    private UserPrincipalViewModel CurrentUser;
+
+    [Parameter]
+    public Guid InstructorId { get; set; }
+
+    private InstructorInfoAdminViewDTO InstructorInfo = InstructorInfoAdminViewDTO.New();
+    private RadzenTemplateForm<InstructorInfoAdminViewDTO> InstructorInfoFormRef;
+
+    private List<KeyValuePair<int, string>> Departments = new();
+    private List<KeyValuePair<Guid, string>> Sections = new();
+
+    private string CurrentSemester = string.Empty;
+    private string CurrentAcademicYear = string.Empty;
+
+    private RadzenDataGrid<Schedules> grid;
+    private IEnumerable<Schedules> InstructorSchedules;
+    private int count = 0;
+
+    private bool InstructorUpdated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserInfo();
+        await LoadDepartments();
+        await LoadSections();
+        await LoadCurrentSemesterAndAcademicYear();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadInstructorInfo();
+    }
+
+    private async Task LoadCurrentUserInfo()
+    {
+        await UserStateService.Initialize();
+        var principalUser = UserStateService.GetUser();
+
+        if (!(principalUser.Identity?.IsAuthenticated) ?? true)
+            NavigationManager.NavigateTo("/Login");
+        else
+        {
+            CurrentUser = new()
+                {
+                    UserId = Guid.Parse(principalUser.Claims.FirstOrDefault(c => c.Type == "UserId")!.Value),
+                    Username = principalUser.Claims.FirstOrDefault(c => c.Type == "Username")!.Value,
+                    Firstname = principalUser.Claims.FirstOrDefault(c => c.Type == "FirstName")!.Value,
+                    Middlename = principalUser.Claims.FirstOrDefault(c => c.Type == "MiddleName")!.Value,
+                    Lastname = principalUser.Claims.FirstOrDefault(c => c.Type == "LastName")!.Value,
+                };
+        }
+    }
+
+    private async Task LoadDepartments()
+    {
+        var query = new GetDepartmentDropdownListQuery();
+
+        var result = await Sender.Send(query);
+
+        if (result.IsSuccess)
+        {
+            Departments = result.Data!;
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task LoadSections()
+    {
+        var query = new GetSectionListQuery(true);
+
+        var result = await Sender.Send(query);
+
+        if (result.IsSuccess)
+            Sections = result.Data!;
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task LoadCurrentSemesterAndAcademicYear()
+    {
+        var query = new GetCurrentSemesterAndAcademicYearQuery();
+
+        var result = await Sender.Send(query);
+
+        if (result.IsSuccess)
+        {
+            CurrentSemester = result.Data!.Item1;
+            CurrentAcademicYear = result.Data!.Item2;
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task LoadInstructorInfo()
+    {
+        if (InstructorId == Guid.Empty)
+            return;
+
+        LoadingService.IsLoading = true;
+
+        var query = new GetInstructorInfoAdminViewQuery(InstructorId);
+
+        var result = await Sender.Send(query);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            InstructorInfo = result.Data!;
+
+            InstructorSchedules = result.Data!.Schedules;
+            count = InstructorSchedules.Count();
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task SubmitUpdateInstructorPassword()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var parameters = new Dictionary<string, object>()
+        {
+            { "InstructorId", InstructorId},
+            { "CurrentUserId", CurrentUser.UserId  }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<UpdateInstructorPassword>("Update Student Password", parameters, DialogHelper.DefaultSmallDialogOptions);
+
+        if (dialogResult is not null && dialogResult.GetType() == typeof(bool))
+        {
+            var castedDialogResult = (bool)dialogResult!;
+
+            InstructorUpdated = castedDialogResult;
+
+            await OnParametersSetAsync();
+        }
+    }
+
+    private async Task SubmitUpdateInstructorInfo()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (!InstructorInfoFormRef.EditContext.IsModified() && InstructorId != Guid.Empty)
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Instructor Information Updated"));
+
+            return;
+        }
+
+        if (InstructorInfo.Id == Guid.Empty)
+        {
+
+        }
+        else
+        {
+            var updatedInstructorInfo = new UpdateInstructorViewModel()
+                {
+                    Major = InstructorInfo.Major,
+                    DepartmentId = InstructorInfo.DepartmentId!.Value!,
+                    AdvisorySectionId = InstructorInfo.AdvisorySectionId!.Value!,
+                    FirstName = InstructorInfo.FirstName,
+                    MiddleName = InstructorInfo.MiddleName ?? string.Empty,
+                    LastName = InstructorInfo.LastName,
+                    ContactInfo = InstructorInfo.ContactInfo,
+                };
+
+            var command = new UpdateInstructorInfoCommand(InstructorId, updatedInstructorInfo, CurrentUser.UserId);
+
+            LoadingService.IsLoading = true;
+
+            var result = await Sender.Send(command);
+
+            LoadingService.IsLoading = false;
+
+            await InvokeAsync(StateHasChanged);
+
+            if (result.IsSuccess)
+            {
+                NotificationService.Notify(NotificationHelper.SuccessNotif("Instructor Information Updated"));
+
+                InstructorUpdated = true;
+
+                await OnParametersSetAsync();
+
+                InstructorInfoFormRef.EditContext.MarkAsUnmodified();
+
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+                NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+        }
+    }
+
+    private async Task Close()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (InstructorInfoFormRef.EditContext.IsModified())
+        {
+            var confirmResult = await DialogService.Confirm("Discard changes?", options: DialogHelper.DefaultConfirmOptions);
+
+            if (confirmResult!.Value)
+                DialogService.Close(InstructorUpdated);
+        }
+        else
+            DialogService.Close(InstructorUpdated);
+    }
+}

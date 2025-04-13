@@ -53,4 +53,14 @@ public class DialogHelper
         Height = "800px",
         Width = "70%"
     };
+
+    public static DialogOptions DefaultFullAutoDialogOptions => new DialogOptions()
+    {
+        CloseDialogOnEsc = false,
+        CloseDialogOnOverlayClick = false,
+        ShowClose = false,
+        Draggable = false,
+        Height = "auto",
+        Width = "auto"
+    };
 }
