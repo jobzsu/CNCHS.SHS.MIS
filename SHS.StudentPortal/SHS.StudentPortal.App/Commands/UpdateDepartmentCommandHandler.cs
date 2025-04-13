@@ -54,9 +54,7 @@ internal sealed class UpdateDepartmentCommandHandler
                     }
 
                     department.Name = request.view.Name;
-
-                    if (request.view.Description is not null)
-                        department.Description = request.view.Description;
+                    department.Description = string.IsNullOrWhiteSpace(request.view.Description) ? null : request.view.Description;
 
                     department.ModifiedById = request.updatedById;
                     department.ModifiedDate = DateTime.UtcNow;

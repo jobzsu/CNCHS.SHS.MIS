@@ -42,6 +42,7 @@ internal sealed class GetDepartmentViewModelHandler
             {
                 Id = department.Id,
                 Name = department.Name,
+                Description = department.Description,
                 Instructors = new()
             };
 
