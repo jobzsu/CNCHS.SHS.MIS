@@ -1,6 +1,4 @@
-﻿@page "/students/{id}"
-
-@using MediatR
+﻿@using MediatR
 @using SHS.StudentPortal.App.Abstractions
 @using SHS.StudentPortal.App.Abstractions.Security
 @using SHS.StudentPortal.App.Commands
@@ -343,7 +341,8 @@
         {
             { "StudentId", StudentInfo.Id },
             { "StudentStatus", StudentInfo.Status },
-            { "AcademicRecordsParam", StudentInfo.AcademicRecords }
+            { "AcademicRecordsParam", StudentInfo.AcademicRecords },
+            { "StudentView", false }
         };
 
         var dialogResult = await DialogService.OpenAsync<AcademicRecords>("Student Academic Records", parameters, DialogHelper.DefaultMediumDialogOptions);

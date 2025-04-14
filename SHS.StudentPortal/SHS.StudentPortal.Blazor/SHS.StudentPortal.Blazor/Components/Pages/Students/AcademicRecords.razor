@@ -42,13 +42,16 @@
     </RadzenDataGrid>
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
-        @if (AcademicRecordsCount > 0 && StudentStatus.ToLower() == StudentStatuses.ForAssessment.Id)
+        @if (!StudentView)
         {
-            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Mark as Verified" Click="MarkAsVerified" IsBusy="LoadingService.IsLoading" />
-        }
-        @if (StudentStatus.ToLower() == StudentStatuses.ForAssessment.Id || StudentStatus.ToLower() == StudentStatuses.Irregular.Id || StudentStatus.ToLower() == StudentStatuses.Regular.Id)
-        {
-            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Encode Grade" Click="EncodeGrade" IsBusy="LoadingService.IsLoading" />
+            @if (AcademicRecordsCount > 0 && StudentStatus.ToLower() == StudentStatuses.ForAssessment.Id)
+            {
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Mark as Verified" Click="MarkAsVerified" IsBusy="LoadingService.IsLoading" />
+            }
+            @if (StudentStatus.ToLower() == StudentStatuses.ForAssessment.Id || StudentStatus.ToLower() == StudentStatuses.Irregular.Id || StudentStatus.ToLower() == StudentStatuses.Regular.Id)
+            {
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Encode Grade" Click="EncodeGrade" IsBusy="LoadingService.IsLoading" />
+            }
         }
         <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
     </RadzenStack>
@@ -66,6 +69,9 @@
 
     [Parameter]
     public List<AcademicRecordAdminViewDTO> AcademicRecordsParam { get; set; }
+
+    [Parameter]
+    public bool StudentView { get; set; }
 
     private RadzenDataGrid<AcademicRecordAdminViewDTO> AcademicRecordsDataGrid;
     private IEnumerable<AcademicRecordAdminViewDTO> AcademicRecordsList = new List<AcademicRecordAdminViewDTO>();

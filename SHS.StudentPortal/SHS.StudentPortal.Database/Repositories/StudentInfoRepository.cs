@@ -86,4 +86,20 @@ public class StudentInfoRepository : BaseRepository<StudentInfo>, IStudentInfoRe
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<StudentInfo?> GetByUserId(Guid userId, CancellationToken cancellationToken = default, bool shouldTrack = false)
+    {
+        return shouldTrack ?
+            await GetAll()
+                    .Include(x => x.User)
+                    .ThenInclude(x => x.UserAccount)
+                    .AsSplitQuery()
+                    .FirstOrDefaultAsync(si => si.UserId == userId, cancellationToken) :
+            await GetAll()
+                    .Include(x => x.User)
+                    .ThenInclude(x => x.UserAccount)
+                    .AsSplitQuery()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(si => si.UserId == userId, cancellationToken);
+    }
 }

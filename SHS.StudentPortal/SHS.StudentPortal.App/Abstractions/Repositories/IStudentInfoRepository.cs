@@ -14,6 +14,8 @@ public interface IStudentInfoRepository
         bool shouldTrack = false, 
         CancellationToken cancellationToken = default);
 
+    Task<StudentInfo?> GetByUserId(Guid userId, CancellationToken cancellationToken = default, bool shouldTrack = false);
+
     Task<List<StudentInfo>> GetListViaFilter(string? keyword, 
         int yearLevel,
         Guid sectionId,

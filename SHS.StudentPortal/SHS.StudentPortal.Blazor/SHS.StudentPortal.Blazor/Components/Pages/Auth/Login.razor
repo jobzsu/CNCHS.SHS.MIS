@@ -49,13 +49,13 @@
                             <RadzenFormField Text="User Account Type" Variant="Variant.Outlined" AllowFloatingLabel=false>
                                 <ChildContent>
                                     <RadzenDropDown Placeholder="Select Account Type"
-                                    AllowFiltering="false"
-                                    AllowClear=true
-                                    Name="UserAccountTypeDropdown"
-                                    @bind-Value=@SelectedUserAccountType
-                                    Data=@UserAccountTypes
-                                    ValueProperty="Key"
-                                    TextProperty="Value" />
+                                                    AllowFiltering="false"
+                                                    AllowClear=true
+                                                    Name="UserAccountTypeDropdown"
+                                                    @bind-Value=@SelectedUserAccountType
+                                                    Data=@UserAccountTypes
+                                                    ValueProperty="Key"
+                                                    TextProperty="Value" />
                                 </ChildContent>
                                 <Helper>
                                     <RadzenRequiredValidator Component="UserAccountTypeDropdown" Text="User Account Type is required" />
@@ -97,11 +97,11 @@
     private string? SelectedUserAccountType = null;
 
     private LoginViewModel loginViewModel = new()
-    {
-        UserName = string.Empty,
-        Password = string.Empty,
-        UserAccountType = "admin"
-    };
+        {
+            UserName = string.Empty,
+            Password = string.Empty,
+            UserAccountType = "admin"
+        };
 
     private IEnumerable<KeyValuePair<string, string>> UserAccountTypes = new List<KeyValuePair<string, string>>()
     {
@@ -114,7 +114,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
+        if (firstRender)
         {
             await JSRuntime.InvokeVoidAsync("localFunctions.setTitle", "Login");
         }
@@ -125,7 +125,7 @@
         if (LoadingService.IsLoading)
             return;
 
-        if(loginViewModel is null || string.IsNullOrWhiteSpace(SelectedUserAccountType) ||
+        if (loginViewModel is null || string.IsNullOrWhiteSpace(SelectedUserAccountType) ||
            string.IsNullOrWhiteSpace(loginViewModel.UserName) || string.IsNullOrWhiteSpace(loginViewModel.Password))
         {
             NotificationService.Notify(NotificationHelper.NewNotif("Please fill in all required fields.", NotificationSeverity.Warning));
@@ -146,7 +146,7 @@
 
         await InvokeAsync(StateHasChanged);
 
-        if(result.IsSuccess)
+        if (result.IsSuccess)
         {
             isSuccessLogin = true;
 
@@ -170,7 +170,10 @@
 
             ((CustomAuthStateProvider)AuthStateProvider).SetCurrentUser(userPrincipal); // Update the auth state provider.
 
-            NotificationService.Notify(NotificationHelper.SuccessNotif("Logging In", onClose: () => NavigationManager.NavigateTo("/students")));
+            if (result.Data!.RoleType == "admin" || result.Data!.RoleType == "instructor")
+                NotificationService.Notify(NotificationHelper.SuccessNotif("Logging In", onClose: () => NavigationManager.NavigateTo("/students")));
+            else
+                NotificationService.Notify(NotificationHelper.SuccessNotif("Logging In", onClose: () => NavigationManager.NavigateTo($"/student/{result.Data!.UserId}")));
         }
         else
         {
@@ -180,7 +183,7 @@
 
     private async Task RegisterStudent()
     {
-        if(LoadingService.IsLoading || isSuccessLogin)
+        if (LoadingService.IsLoading || isSuccessLogin)
             return;
 
         var dialogResult = await DialogService.OpenAsync<Register>("Register Student",
@@ -188,9 +191,17 @@
 
         await JSRuntime.InvokeVoidAsync("localFunctions.setTitle", "Login");
 
-        if(dialogResult)
+        if (dialogResult)
         {
             NotificationService.Notify(NotificationHelper.SuccessNotif("Student successfully registered."));
         }
     }
 }
+
+<style>
+    body {
+        background: linear-gradient(to bottom, #FFF8E1, #BBDEFB); /* Light gold to soft blue */
+        height: 100%;
+        width: 100%;
+    }
+</style>
