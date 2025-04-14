@@ -1,0 +1,293 @@
+﻿@page "/schedules"
+@page "/schedules/index"
+
+@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Queries
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+@using SHS.StudentPortal.Common.Utilities.Models
+
+
+@inject ILoadingService LoadingService;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
+@inject DialogService DialogService;
+
+<div class="container-fluid">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Start" Gap="2rem">
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Start" Gap="1rem">
+                <RadzenFormField Text="Days" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDropDown @bind-Value=@selectedDays
+                                    Data=@Days
+                                    TextProperty="Value"
+                                    ValueProperty="Key"
+                                    Name="DropDownMultiple"
+                                    Multiple=true
+                                    AllowClear=true
+                                    Placeholder="Select Days"
+                                    MaxSelectedLabels="6"
+                                    Style="width: 100%; max-width: 400px;" />
+                </RadzenFormField>
+                <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDropDown Data="Tracks"
+                                    @bind-Value="selectedTrack"
+                                    ValueProperty="Id"
+                                    TextProperty="Name"
+                                    Placeholder="Select Track"
+                                    AllowClear=true
+                                    Style="width: 250px"
+                                    Change="FilterStrandDropdownOnTrackSelect" />
+                </RadzenFormField>
+                @if (hasStrands)
+                {
+                    <RadzenFormField Text="Strand" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenDropDown Data="Strands"
+                                        @bind-Value="selectedStrand"
+                                        ValueProperty="Id"
+                                        TextProperty="Name"
+                                        Placeholder="Select Strand"
+                                        AllowClear=true
+                                        Style="width: 500px" />
+                    </RadzenFormField>
+                }
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Success"
+                              Size="ButtonSize.Medium"
+                              Icon="search"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Search"
+                              Click="DoSearch"
+                              Style="margin-top:10px" />
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Info"
+                              Size="ButtonSize.Medium"
+                              Icon="restart_alt"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Reset"
+                              Click="ResetFilters"
+                              Style="margin-top:10px" />
+                <RadzenButton ButtonType="ButtonType.Button"
+                              ButtonStyle="ButtonStyle.Info"
+                              Size="ButtonSize.Medium"
+                              Icon="add_circle"
+                              IsBusy="LoadingService.IsLoading"
+                              Text="Add Schedule"
+                              Style="margin-top:10px"
+                              Click=@(async () => await AddSchedule()) />
+            </RadzenStack>
+            
+            <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Start" Gap="10px">
+                <h5>Displaying data for</h5>
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem">
+                    <h4>Semester: @(CurrentSemester)</h4>
+                    <h4>Academic Year: @(CurrentAcademicYear)</h4>
+                </RadzenStack>
+            </RadzenStack>
+            
+            <RadzenDataGrid style="height: 400px"
+                            @ref="grid"
+                            IsLoading="LoadingService.IsLoading"
+                            Count="@count"
+                            Data="@Schedules"
+                            LoadData="@LoadData"
+                            AllowSorting="false"
+                            AllowFiltering="false"
+                            AllowPaging="true"
+                            PageSize="5"
+                            RowClick=@((DataGridRowMouseEventArgs<ScheduleListViewModel> args) => ViewScheduleInfo(args))
+                            PagerHorizontalAlign="HorizontalAlign.Center"
+                            PagerPosition="PagerPosition.Bottom"
+                            ShowPagingSummary="true">
+                <EmptyTemplate>
+                    <p style="color: black; font-size: 24px; text-align: center; margin: 2rem;">No records to display.</p>
+                </EmptyTemplate>
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Days)" Title="Day" Width="100px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Subject)" Title="Subject" Width="160px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.TrackAndStrand)" Title="Track & Strand" Width="200px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Instructor)" Title="Instructor" Width="200px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.Time)" Title="Time" Width="160px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(ScheduleListViewModel.RoomNumber)" Title="Room No." Width="160px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Width="100px" TextAlign="TextAlign.Center">
+                        <Template>
+                            <RadzenButton ButtonType="ButtonType.Button"
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Size="ButtonSize.Small"
+                                          Icon="edit"
+                                          IsBusy="LoadingService.IsLoading"
+                                          Text="View" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenStack>
+    </RadzenCard>
+</div>
+
+@code {
+
+    private string? selectedTrack = null;
+    private string? selectedStrand = null;
+    private bool hasStrands = false;
+
+    private List<Track> Tracks = Track.GetAllTracks;
+    private List<Strand> Strands = Strand.GetAllStrands;
+
+    IEnumerable<string> selectedDays = new List<string>();
+    IEnumerable<KeyValuePair<string, string>> Days = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("M", "Monday"),
+        new KeyValuePair<string, string>("TU", "Tuesday"),
+        new KeyValuePair<string, string>("W", "Wednesday"),
+        new KeyValuePair<string, string>("TH", "Thursday"),
+        new KeyValuePair<string, string>("F", "Friday")
+    };
+
+    private string CurrentSemester = string.Empty;
+    private string CurrentAcademicYear = string.Empty;
+
+    private RadzenDataGrid<ScheduleListViewModel> grid;
+    private int count = 0;
+    private IEnumerable<ScheduleListViewModel> Schedules;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentSemesterAndAcademicYear();
+    }
+
+    private async Task LoadCurrentSemesterAndAcademicYear()
+    {
+        var query = new GetCurrentSemesterAndAcademicYearQuery();
+
+        var result = await Sender.Send(query);
+
+        if (result.IsSuccess)
+        {
+            CurrentSemester = result.Data!.Item1;
+            CurrentAcademicYear = result.Data!.Item2;
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private void FilterStrandDropdownOnTrackSelect()
+    {
+        selectedStrand = null;
+
+        if (selectedTrack == null)
+        {
+            hasStrands = false;
+
+            Strands = Strand.GetAllStrands;
+
+            StateHasChanged();
+
+            return;
+        }
+
+        hasStrands = selectedTrack == Track.AcademicTrack.Id || selectedTrack == Track.TechnicalVocationalTrack.Id;
+
+        Strands = Track.GetTrack(selectedTrack).Strands;
+
+        StateHasChanged();
+    }
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        LoadingService.IsLoading = true;
+
+        var filters = SchedulePaginationFilter.NewScheduleListSearch(null,
+            selectedDays is not null && selectedDays.Any() ? string.Join(',', selectedDays) : string.Empty,
+            selectedTrack,
+            selectedStrand,
+            1);
+
+        var query = new GetPaginatedScheduleListQuery(filters);
+
+        var result = await Sender.Send(query);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            var resultQuery = result.Data!.ScheduleList;
+
+            count = resultQuery.Count();
+
+            Schedules = resultQuery.Skip(args.Skip.Value).Take(args.Top.Value).ToList();
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task DoSearch()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        var searchArgs = new LoadDataArgs()
+            {
+                Filter = string.Empty,
+                OrderBy = string.Empty,
+                Filters = new List<FilterDescriptor>(),
+                Sorts = new List<SortDescriptor>(),
+                Skip = 0,
+                Top = int.MaxValue
+            };
+
+        await LoadData(searchArgs);
+    }
+
+    private async Task ResetFilters()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        selectedTrack = null;
+        selectedStrand = null;
+        hasStrands = false;
+
+        var searchArgs = new LoadDataArgs()
+            {
+                Filter = string.Empty,
+                OrderBy = string.Empty,
+                Filters = new List<FilterDescriptor>(),
+                Sorts = new List<SortDescriptor>(),
+                Skip = 0,
+                Top = int.MaxValue
+            };
+
+        await LoadData(searchArgs);
+    }
+
+    private async Task AddSchedule()
+    {
+        var dialogResult = await DialogService.OpenAsync<CreateSchedule>($"Create Schedule", options: DialogHelper.DefaultFullAutoDialogOptions);
+
+        if (dialogResult != null && typeof(bool) == dialogResult!.GetType())
+        {
+            if (dialogResult)
+                await DoSearch();
+        }
+    }
+
+    private async Task ViewScheduleInfo(DataGridRowMouseEventArgs<ScheduleListViewModel> args)
+    {
+        var parameters = new Dictionary<string, object>()
+        {
+            { "ScheduleId", args.Data.Id }
+        };
+
+        var dialogResult = await DialogService.OpenAsync<UpdateSchedule>($"View Schedule", parameters, DialogHelper.DefaultFullAutoDialogOptions);
+
+        if (dialogResult != null && typeof(bool) == dialogResult!.GetType())
+        {
+            if (dialogResult)
+                await DoSearch();
+        }
+    }
+}

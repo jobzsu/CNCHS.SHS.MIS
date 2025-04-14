@@ -24,7 +24,7 @@ internal sealed class GetSubjectDropdownListQueryHandler
 
         try
         {
-            var subjects = await _subjectRepository.GetAllSubjects(true, cancellationToken);
+            var subjects = await _subjectRepository.GetAllSubjects(request.includeOther, cancellationToken);
 
             List<KeyValuePair<int, string>> retVal = new();
 

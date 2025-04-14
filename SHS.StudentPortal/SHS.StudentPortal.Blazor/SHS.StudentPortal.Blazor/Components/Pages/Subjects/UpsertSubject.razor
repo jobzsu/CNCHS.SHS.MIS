@@ -71,7 +71,7 @@
         </RadzenStack>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
             <div>
-                <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                <RadzenFormField Text="Semester" Variant="Variant.Outlined" AllowFloatingLabel="false">
                     <RadzenDropDown Data="Semesters"
                                     @bind-Value="SubjectInfo.Semester"
                                     ValueProperty="Key"
@@ -82,7 +82,7 @@
                 </RadzenFormField>
             </div>
             <div>
-                <RadzenFormField Text="Track" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                <RadzenFormField Text="Academic Year" Variant="Variant.Outlined" AllowFloatingLabel="false">
                     <RadzenDropDown Data="AcademicYears"
                                     @bind-Value="SubjectInfo.AcademicYear"
                                     ValueProperty="Key"

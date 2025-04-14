@@ -1,0 +1,263 @@
+﻿@using MediatR
+@using SHS.StudentPortal.App.Abstractions
+@using SHS.StudentPortal.App.Abstractions.Security
+@using SHS.StudentPortal.App.Commands
+@using SHS.StudentPortal.App.Queries
+@using SHS.StudentPortal.Common.Models
+@using SHS.StudentPortal.Common.Utilities
+
+@inject IUserStateService UserStateService;
+@inject NavigationManager NavigationManager;
+@inject ISender Sender;
+@inject NotificationService NotificationService;
+@inject ILoadingService LoadingService;
+@inject DialogService DialogService;
+
+<RadzenTemplateForm Data="ScheduleInfo" Context="UpsertScheduleViewModel" @ref="ScheduleInfoFormRef" Submit="@(async(UpsertScheduleViewModel args) => { await Submit(); })">
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="0.5rem">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+            <div>
+                <div>
+                    <RadzenFormField Text="Subject" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenDropDown Data="Subjects"
+                        @bind-Value="ScheduleInfo.SubjectId"
+                        ValueProperty="Key"
+                        TextProperty="Value"
+                        Placeholder="Select Subject"
+                        AllowClear=true
+                        Style="width: fit-content"
+                        Name="SchedSubject" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SchedSubject" Popup="false" Text="Subject is Required" />
+            </div>
+            <div>
+                <div>
+                    <RadzenFormField Text="Instructor" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenDropDown Data="Instructors"
+                        @bind-Value="ScheduleInfo.InstructorId"
+                        ValueProperty="Key"
+                        TextProperty="Value"
+                        Placeholder="Select Instructor"
+                        AllowClear=true
+                        Style="width: fit-content"
+                        Name="SchedInstructor" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SchedInstructor" Popup="false" Text="Instructor is Required" />
+            </div>
+            <div>
+                <div>
+                    <RadzenFormField Text="Room" AllowFloatingLabel="false">
+                        <RadzenTextBox Name="SchedRoom" @bind-Value="ScheduleInfo.Room" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SchedRoom" Popup="false" Text="Room is Required" />
+            </div>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Normal" AlignItems="AlignItems.Normal" Gap="1rem" Style="margin-bottom: 10px">
+            <div>
+                <div>
+                    <RadzenFormField Text="Days" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenDropDown @bind-Value=@ScheduleInfo.Days
+                        Data=@Days
+                        TextProperty="Value"
+                        ValueProperty="Key"
+                        Multiple=true
+                        AllowClear=true
+                        Placeholder="Select Days"
+                        MaxSelectedLabels="6"
+                        Style="width: 100%; max-width: 400px;"
+                        Name="SchedDays" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SchedDays" Popup="false" Text="Days are Required" />
+            </div>
+            <div>
+                <div>
+                    <RadzenFormField Text="Time Start" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenDatePicker @bind-Value=@ScheduleInfo.TimeStart ShowTime="true" TimeOnly="true" DateFormat="HH:mm" Name="SchedTimeStart" Placeholder="Select Time Start" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SchedTimeStart" Popup="false" Text="Time Start is Required" />
+            </div>
+            <div>
+                <div>
+                    <RadzenFormField Text="Time End" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                        <RadzenDatePicker @bind-Value=@ScheduleInfo.TimeEnd ShowTime="true" TimeOnly="true" DateFormat="HH:mm" Name="SchedTimeEnd" Placeholder="Select Time End" />
+                    </RadzenFormField>
+                </div>
+                <RadzenRequiredValidator Component="SchedTimeEnd" Popup="false" Text="Time End is Required" />
+            </div>
+        </RadzenStack>
+        <div>
+            <RadzenFormField Text="Remarks" AllowFloatingLabel="false" Style="width: 100%">
+                <RadzenTextArea Name="SchedRemarks" @bind-Value="ScheduleInfo.Remarks" Rows="5" />
+            </RadzenFormField>
+        </div>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Gap="5px">
+            <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Text="Save" IsBusy="LoadingService.IsLoading" />
+            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Text="Close" Click="Close" IsBusy="LoadingService.IsLoading" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    private UserPrincipalViewModel CurrentUser;
+
+    [Parameter]
+    public long ScheduleId { get; set; }
+
+    private UpsertScheduleViewModel ScheduleInfo = UpsertScheduleViewModel.New();
+    private RadzenTemplateForm<UpsertScheduleViewModel> ScheduleInfoFormRef;
+
+    private List<KeyValuePair<int, string>> Subjects = new();
+    private List<KeyValuePair<Guid, string>> Instructors = new();
+    IEnumerable<KeyValuePair<string, string>> Days = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("monday", "Monday"),
+        new KeyValuePair<string, string>("tuesday", "Tuesday"),
+        new KeyValuePair<string, string>("wednesday", "Wednesday"),
+        new KeyValuePair<string, string>("thursday", "Thursday"),
+        new KeyValuePair<string, string>("friday", "Friday")
+    };
+
+    private bool ScheduleUpserted = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserInfo();
+        await LoadSubjects();
+        await LoadInstructors();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadScheduleInfo();
+    }
+
+    private async Task LoadSubjects()
+    {
+        var query = new GetSubjectDropdownListQuery(false);
+
+        var result = await Sender.Send(query);
+
+        if (result.IsSuccess)
+            Subjects = result.Data!;
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task LoadInstructors()
+    {
+        var query = new GetInstructorDropdownListQuery();
+
+        var result = await Sender.Send(query);
+
+        if (result.IsSuccess)
+            Instructors = result.Data!;
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task LoadScheduleInfo()
+    {
+        if (ScheduleId == 0)
+            return;
+
+        var query = new GetScheduleViewModelQuery(ScheduleId);
+
+        LoadingService.IsLoading = true;
+
+        var result = await Sender.Send(query);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            ScheduleInfo = result.Data!;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task LoadCurrentUserInfo()
+    {
+        await UserStateService.Initialize();
+
+        var principalUser = UserStateService.GetUser();
+
+        if (!(principalUser.Identity?.IsAuthenticated) ?? true)
+            NavigationManager.NavigateTo("/Login");
+        else
+        {
+            CurrentUser = new()
+            {
+                UserId = Guid.Parse(principalUser.Claims.FirstOrDefault(c => c.Type == "UserId")!.Value),
+                Username = principalUser.Claims.FirstOrDefault(c => c.Type == "Username")!.Value,
+                Firstname = principalUser.Claims.FirstOrDefault(c => c.Type == "FirstName")!.Value,
+                Middlename = principalUser.Claims.FirstOrDefault(c => c.Type == "MiddleName")!.Value,
+                Lastname = principalUser.Claims.FirstOrDefault(c => c.Type == "LastName")!.Value,
+            };
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (!ScheduleInfoFormRef.EditContext.IsModified() && ScheduleId != 0)
+        {
+            NotificationService.Notify(NotificationHelper.SuccessNotif("Schedule Updated"));
+
+            return;
+        }
+
+        var command = new UpsertScheduleCommand(ScheduleInfo, CurrentUser.UserId);
+
+        LoadingService.IsLoading = true;
+
+        var result = await Sender.Send(command);
+
+        LoadingService.IsLoading = false;
+
+        if (result.IsSuccess)
+        {
+            ScheduleUpserted = true;
+
+            NotificationService.Notify(NotificationHelper.SuccessNotif(ScheduleId == 0 ? "Schedule Created" : "Schedule Updated"));
+
+            if (ScheduleId == 0)
+                DialogService.Close(ScheduleUpserted);
+            else
+            {
+                await OnParametersSetAsync();
+
+                ScheduleInfoFormRef.EditContext.MarkAsUnmodified();
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        else
+            NotificationService.Notify(NotificationHelper.ErrorNotif(result.Error!.Message));
+    }
+
+    private async Task Close()
+    {
+        if (LoadingService.IsLoading)
+            return;
+
+        if (ScheduleInfoFormRef.EditContext.IsModified())
+        {
+            var confirmResult = await DialogService.Confirm("Discard changes?", options: DialogHelper.DefaultConfirmOptions);
+
+            if (confirmResult!.Value)
+                DialogService.Close(ScheduleUpserted);
+        }
+        else
+            DialogService.Close(ScheduleUpserted);
+    }
+}

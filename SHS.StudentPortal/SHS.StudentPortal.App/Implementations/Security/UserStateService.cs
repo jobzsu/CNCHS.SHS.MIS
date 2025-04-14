@@ -50,7 +50,7 @@ public class UserStateService : IUserStateService
         RemoveUserFromSessionStorage();
     }
 
-    private async void SaveUserToSessionStorage()
+    private async Task SaveUserToSessionStorage()
     {
         if (_currentUser.Identity?.IsAuthenticated == true)
         {
@@ -89,7 +89,7 @@ public class UserStateService : IUserStateService
         }
     }
 
-    private async void RemoveUserFromSessionStorage()
+    private async Task RemoveUserFromSessionStorage()
     {
         await _jsRuntime.InvokeVoidAsync("blazorSessionStorage.removeItem", UserDataKey);
     }

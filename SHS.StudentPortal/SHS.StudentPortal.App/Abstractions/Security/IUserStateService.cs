@@ -9,5 +9,6 @@ public interface IUserStateService
     void SetUser(ClaimsPrincipal user);
 
     void ResetUser();
+
     Task Initialize();
 }
